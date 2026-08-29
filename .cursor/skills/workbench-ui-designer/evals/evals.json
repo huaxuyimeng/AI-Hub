@@ -1,0 +1,57 @@
+{
+  "skill_name": "workbench-ui-designer",
+  "evals": [
+    {
+      "id": 1,
+      "eval_name": "full-build-from-zero",
+      "prompt": "帮我仿造搭建一个真实的工作台，像 gpt work、deepseek hermes、workbuddy、trae work、qoder 那样。工作台，我现在需要你帮我解决 UI 的问题，不能有 emoji 表情，也不能简单渐变色，要有我们自己的特色，就是主体是白色偏奶色的那样，不能是全白，暗色是那种舒服的暗色。然后界面可以一键换肤，就可以自动上传一些图片，然后工作台的背景就变成那个图片，并且是实现永久存储的。然后支持多种 diy 配色。然后界面的 ui，图标，可以参考 cursor，chatgpt 那样，布局参考前面列举的那些布局。",
+      "expected_output": "Phase 1 必须先输出完整设计报告（风格定义 + 配色 + 布局 + 组件清单 + 风险评估），并用 AskQuestion 让用户回答 3 个决策点（背景图存储 / DIY 粒度 / 布局参考）。用户确认后才能进入 Phase 2 分阶段实施（P0 → P1 → P2 → P3 → P4）。最终交付：6 套预设主题可切换、HSL DIY 强调色可调、背景图上传到 R2 并永久持久化、三模式（工作台/对话/项目）可切换、整站无 emoji 无简单渐变。",
+      "files": [
+        "docs/ui-style-report.md",
+        "src/lib/themes.ts",
+        "src/components/theme/theme-provider.tsx",
+        "src/components/theme/theme-switcher.tsx",
+        "src/components/theme/accent-picker.tsx",
+        "src/components/theme/background-uploader.tsx",
+        "src/components/layout/app-shell.tsx",
+        "src/components/layout/sidebar-nav.tsx",
+        "src/components/layout/topbar.tsx",
+        "src/components/layout/command-palette.tsx",
+        "src/app/(app)/workbench/page.tsx",
+        "prisma/schema.prisma",
+        "src/server/routers/preferences.ts",
+        "src/app/api/upload/bg/route.ts"
+      ],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "eval_name": "app-shell-three-modes",
+      "prompt": "重构现有 src/components/app-shell.tsx，让它支持工作台 / 对话 / 项目三模式切换，侧栏保留 240px 不变，顶部加 56px 顶栏放搜索和操作按钮，模式切换器放在侧栏中部。注意：保留现有的 next-auth 鉴权流程，icons 继续用 @tabler/icons-react，绝对不允许出现 emoji。",
+      "expected_output": "仅重写 src/components/layout/app-shell.tsx 与新增 src/components/layout/sidebar-nav.tsx 与 topbar.tsx。保持 (app)/layout.tsx 调用方式不变。完成三模式壳：每个模式侧栏菜单内容不同、顶栏操作不同、主区布局不同。整站扫不到 emoji 与单色渐变。",
+      "files": [
+        "src/components/layout/app-shell.tsx",
+        "src/components/layout/sidebar-nav.tsx",
+        "src/components/layout/topbar.tsx"
+      ],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "eval_name": "theme-system-r2-background",
+      "prompt": "加一个换肤面板：6 套预设主题（paper / ink / mint / lavender / amber / ocean）可一键切换；DIY 强调色支持 HSL 三滑块（H 0-360 / S 0-100% / L 40-80%）；背景图上传到 R2 永久存储（≤ 5MB 原图客户端压到 ≤ 500KB / 1920×1080）。配色用 OKLCH 不要 HSL，浅色用奶白不要纯白，暗色用深蓝灰不要纯黑。所有用户偏好持久化到 UserPreferences 表（userId 唯一索引），加载时优先用服务端数据回填到 ThemeProvider。",
+      "expected_output": "1) prisma/schema.prisma 新增 UserPreferences 模型（userId unique / themePreset / accentHsl / bgUrl）；2) 新增 tRPC router preferences 含 get / update / uploadBg / removeBg；3) src/app/api/upload/bg/route.ts 接 R2 复用现有 S3Client 与 extractR2Key；4) src/components/theme/* 五个组件全部新增；5) 整站 OKLCH 配色验证（用 oklch() 函数，非 hsl）；6) 头部注入同步脚本避免 FOUC。",
+      "files": [
+        "prisma/schema.prisma",
+        "src/server/routers/preferences.ts",
+        "src/app/api/upload/bg/route.ts",
+        "src/lib/themes.ts",
+        "src/components/theme/theme-provider.tsx",
+        "src/components/theme/theme-switcher.tsx",
+        "src/components/theme/accent-picker.tsx",
+        "src/components/theme/background-uploader.tsx"
+      ],
+      "assertions": []
+    }
+  ]
+}

@@ -1,0 +1,369 @@
+// Prisma schema (SQLite dev version). Production schema is the same logic but with postgres / enums / @map.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  plan      String   @default("FREE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users            User[]
+  projects         Project[]
+  apiKeys          ApiKey[]
+  conversations    Conversation[]
+  installedPlugins InstalledPlugin[]
+  pluginAuditLogs  PluginAuditLog[]
+  usageStats       UsageStat[]
+  scores           Score[]
+  preferences      UserPreferences[]
+}
+
+model User {
+  id            String    @id @default(uuid())
+  tenantId      String
+  email         String
+  name          String?
+  image         String?
+  passwordHash  String?
+  emailVerified DateTime?
+  role          String    @default("MEMBER")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  accounts Account[]
+  sessions Session[]
+  preferences UserPreferences?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, email])
+  @@index([tenantId, email])
+  @@index([tenantId, role])
+  @@index([deletedAt])
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  tenantId    String
+  name        String
+  slug        String
+  description String?
+  visibility  String   @default("PRIVATE")
+  latestScore Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+
+  files    File[]
+  analyses Analysis[]
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, slug])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, latestScore])
+  @@index([deletedAt])
+}
+
+model File {
+  id          String   @id @default(uuid())
+  projectId   String
+  path        String
+  language    String?
+  sizeBytes   Int
+  contentHash String
+  r2Key       String
+  createdAt   DateTime @default(now())
+  deletedAt   DateTime?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues  Issue[]
+
+  @@index([projectId, path])
+  @@index([projectId, language])
+  @@index([deletedAt])
+}
+
+model Analysis {
+  id           String    @id @default(uuid())
+  projectId    String
+  status       String    @default("PENDING")
+  aiModel      String
+  inputTokens  BigInt    @default(0)
+  outputTokens BigInt    @default(0)
+  costCents    Int       @default(0)
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  errorMessage String?
+  deletedAt    DateTime?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  score   Score?
+  issues  Issue[]
+
+  @@index([projectId, status])
+  @@index([deletedAt])
+}
+
+model Score {
+  id         String   @id @default(uuid())
+  tenantId   String
+  analysisId String   @unique
+  algorithm  String   @default("v1")
+  overall    Float
+  breakdown  String
+  createdAt  DateTime @default(now())
+  deletedAt  DateTime?
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, analysisId])
+  @@index([deletedAt])
+}
+
+model ApiKey {
+  id         String    @id @default(uuid())
+  tenantId   String
+  provider   String
+  keyHash    String
+  keyLast4   String
+  label      String?
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+  deletedAt  DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, provider])
+  @@index([deletedAt])
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  tenantId  String
+  userId    String
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  messages Message[]
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId])
+  @@index([deletedAt])
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  role           String
+  content        String
+  tokenCount     Int?
+  model          String?
+  createdAt      DateTime @default(now())
+  deletedAt      DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([deletedAt])
+}
+
+model Issue {
+  id         String   @id @default(uuid())
+  analysisId String
+  fileId     String
+  severity   String
+  category   String
+  message    String
+  suggestion String?
+  startLine  Int?
+  endLine    Int?
+  deletedAt  DateTime?
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  file     File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId, severity])
+  @@index([fileId])
+  @@index([deletedAt])
+}
+
+model Plugin {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  displayName String
+  description String?
+  author      String?
+  homepage    String?
+  tags        String   @default("")
+  iconUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  versions      PluginVersion[]
+  installedBy   InstalledPlugin[]
+  auditLogs     PluginAuditLog[]
+  modelRankings ModelRanking[]
+}
+
+model PluginVersion {
+  id          String    @id @default(uuid())
+  pluginId    String
+  version     String
+  manifest    String
+  codeUrl     String
+  signature   String
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  plugin Plugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  @@unique([pluginId, version])
+  @@index([pluginId, isPublished])
+}
+
+model InstalledPlugin {
+  id        String   @id @default(uuid())
+  tenantId  String
+  pluginId  String
+  enabled   Boolean  @default(true)
+  config    String?
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plugin Plugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, pluginId])
+  @@index([deletedAt])
+}
+
+model PluginAuditLog {
+  id        String   @id @default(uuid())
+  tenantId  String
+  pluginId  String
+  action    String
+  payload   String?
+  result    String?
+  duration  Int?
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  plugin Plugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([pluginId, action])
+}
+
+model ModelRanking {
+  id        String   @id @default(uuid())
+  pluginId  String
+  modelName String
+  passRate  Float
+  avgScore  Float
+  testCount Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  plugin Plugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+
+  @@unique([pluginId, modelName])
+  @@index([pluginId])
+}
+
+model UsageStat {
+  id            String   @id @default(uuid())
+  tenantId      String
+  date          DateTime
+  analysisCount Int      @default(0)
+  messageCount  Int      @default(0)
+  inputTokens   BigInt   @default(0)
+  outputTokens  BigInt   @default(0)
+  costCents     Int      @default(0)
+  deletedAt     DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Q5 修复：加唯一约束，防止并发重复行（并发写入时 P2002 重试才真正生效）
+  @@unique([tenantId, date])
+  @@index([tenantId, date])
+  @@index([deletedAt])
+}
+
+/// 用户偏好（每用户一条）
+/// 来源：.cursor/skills/workbench-ui-designer §6.4 — 主题 / 强调色 / 背景图持久化
+model UserPreferences {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  tenantId  String
+  /// paper | ink | mint | lavender | amber | ocean
+  themePreset     String   @default("paper")
+  /// light | dark | system
+  themeMode       String   @default("system")
+  /// DIY HSL 三元组，例如 "65 75% 55%"。null = 跟随预设
+  accentHsl       String?
+  /// R2 背景图 URL（R2 public endpoint 或 /files/xxx）
+  bgImageUrl      String?
+  /// 客户端侧栏折叠状态: "expanded" | "collapsed"
+  sidebarMode     String   @default("expanded")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}

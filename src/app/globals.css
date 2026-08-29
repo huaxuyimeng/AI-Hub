@@ -1,0 +1,236 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+ * Workbench 配色系统 (skill: workbench-ui-designer §4)
+ *
+ * :root 与 .dark 都是「变量占位」，具体值由 <ThemeProvider> 运行时注入。
+ * 这里只声明「这套 token 名是什么」，不写死颜色。
+ *
+ * Tailwind config 中颜色形如 `accent: 'hsl(var(--accent))'`，
+ * 所以注入时变量值必须是 HSL 三元组（如 "220 80% 60%"）。
+ * 但预设色板本身用 OKLCH —— 通过 hsl(var(--accent)) 仅作用于「accent 系」，
+ * 其它 token（background/foreground/muted/border...）直接用 OKLCH 字面量。
+ * ========================================================================= */
+
+:root {
+  /* 这些由 ThemeProvider 注入；这里给 fallback 防 FOUC */
+  --background: oklch(98.5% 0.005 90);
+  --foreground: oklch(22% 0.015 250);
+  /* V-08: card 改为 100% 不透明（不"透"），card-glass 才是半透明 */
+  --surface: oklch(100% 0 0);
+  --surface-glass: oklch(100% 0 0 / 0.6);
+  --surface-elevated: oklch(100% 0 0);
+  --muted: oklch(96% 0.008 90);
+  --muted-foreground: oklch(50% 0.015 250);
+  --border: oklch(92% 0.01 90);
+  --ring: oklch(72% 0.14 65);
+  --accent: 65 75% 55%;          /* HSL 三元组（被 hsl(var(--accent)) 包裹） */
+  --accent-fg: 65 30% 18%;
+  --destructive: oklch(58% 0.22 25);
+  --destructive-fg: oklch(98% 0.005 90);
+  --success: oklch(65% 0.15 145);
+  --success-fg: oklch(98% 0.005 145);
+  --warning: oklch(78% 0.15 75);
+  --warning-fg: oklch(20% 0.02 65);
+
+  --radius: 0.75rem;  /* DT-02: 12px 设计统一（原 0.625rem = 10px） */
+}
+
+.dark {
+  --background: oklch(18% 0.012 250);
+  --foreground: oklch(95% 0.008 90);
+  --surface: oklch(22% 0.012 250);            /* V-08: 100% 不透明 */
+  --surface-glass: oklch(22% 0.012 250 / 0.7); /* 半透明变体 */
+  --surface-elevated: oklch(24% 0.012 250);
+  --muted: oklch(26% 0.012 250);
+  --muted-foreground: oklch(70% 0.012 250);
+  --border: oklch(30% 0.015 250);
+  --ring: oklch(75% 0.16 65);
+  --accent: 65 80% 65%;
+  --accent-fg: 65 30% 12%;
+  --destructive: oklch(68% 0.22 25);
+  --destructive-fg: oklch(98% 0.005 90);
+  --success: oklch(72% 0.16 145);
+  --success-fg: oklch(98% 0.005 145);
+  --warning: oklch(82% 0.15 75);
+  --warning-fg: oklch(15% 0.02 65);
+}
+
+/* =========================================================================
+ * 暗色噪点纹理（skill §3 硬约束：暗色必须有 1% 噪点）
+ * ========================================================================= */
+.dark body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.012;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* =========================================================================
+ * 基础排版
+ * ========================================================================= */
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  /* 键盘 focus-visible 焦点环：用 ring token（fallback 颜色兜底） */
+  *:focus-visible {
+    outline: 2px solid oklch(72% 0.14 65);
+    outline-offset: 2px;
+  }
+  :root:not(.dark) *:focus-visible {
+    outline-color: oklch(72% 0.14 65);
+  }
+  .dark *:focus-visible {
+    outline-color: oklch(75% 0.16 65);
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* 全局基础字号 15px（原 16，太大；改为 15 更精致） */
+  html {
+    font-size: 15px;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: 'rlig' 1, 'calt' 1, 'ss01' 1;
+    line-height: 1.55;
+  }
+
+  /* 滚动条 - 暗色统一感 */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 5px;
+    border: 2px solid var(--background);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--accent) / 0.6);
+  }
+}
+
+/* =========================================================================
+ * 微动效（skill §P4）
+ * ========================================================================= */
+
+@layer utilities {
+  /* I-12: 所有 input/textarea placeholder 默认用 muted-foreground */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  /* 各页面 enter 动画：从下方 8px 上升 + 轻微缩放 + 透明度（用户能看见） */
+  /* M-01: 收窄选择器到 .page-enter（避免全局动画影响 dialog/popover 等） */
+  .page-enter {
+    animation: page-enter 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.995);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* slide-in（toast 用） */
+  .animate-slide-in {
+    animation: slide-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* 输入框 focus 时的柔和过渡 */
+  .input-focus {
+    transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+  }
+
+  /* 减少动效偏好用户 */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* =========================================================================
+ * 通用工具类（覆盖 Tailwind 默认，保留语义化）
+ * ========================================================================= */
+
+@layer utilities {
+  /* 半透明背景叠纸感（skill §3：分层用透明度） */
+  .surface {
+    background-color: var(--surface);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .surface-elevated {
+    background-color: var(--surface-elevated);
+  }
+
+  /* 键盘焦点环 - 琥珀色 */
+  .focus-ring {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* hairline - 1px 细线 */
+  .border-hairline {
+    border-color: var(--border);
+    border-width: 0.5px;
+  }
+
+  /* V-03 修改：背景图机制挂到 body，避免 ::before z-index: -1 与 dialog 冲突 */
+  body.has-bg-image {
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-color: transparent;
+  }
+  body.has-bg-image::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--background);
+    opacity: 0.86;
+    pointer-events: none;
+    z-index: 0;
+  }
+  body.has-bg-image > * {
+    position: relative;
+    z-index: 1;
+  }
+}
