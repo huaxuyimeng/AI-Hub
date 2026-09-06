@@ -1,0 +1,108 @@
+---
+description: 24h 未 commit 的 untracked 文件必须警告用户
+globs:
+  - "**/*"
+---
+
+# Commit Threshold
+
+> 与 `no-destructive-ops.mdc` + `backup-before-cleanup.mdc` 协同。
+> 防止"工作做了一周没 commit，最后被误删"。
+
+## 一、核心原则
+
+**未 commit 的文件是"高风险资产"**——任何清理操作都可能把它们删掉。
+
+## 二、警告阈值
+
+| 文件状态 | 警告时机 | 处理动作 |
+|---|---|---|
+| Untracked > 24 小时 | 每次会话开始时检查 | 必须警告用户 |
+| Untracked > 3 天 | 每次工具调用前检查 | 强烈建议立即 commit 或清理 |
+| Untracked > 7 天 | 每次工具调用前阻塞 | 必须立刻处理（commit 或删） |
+| Modified > 24 小时 | 每次工具调用前警告 | 建议 commit 或 stash |
+| 总 untracked 文件 > 50 | 每次 commit 后提醒 | 提示用户审视 |
+
+## 三、检查方式
+
+每次会话开始时（或每次用户问"现在状态怎么样"时），跑：
+
+```bash
+# 看所有未 commit 文件的最后修改时间
+git status --porcelain
+
+# 看每个文件年龄
+git status --porcelain | ForEach-Object {
+  $line = $_.Line
+  $path = ($line -replace '^..\s+', '')
+  $age = (Get-Item $path).LastWriteTime
+  $now = Get-Date
+  "$path : $(([math]::Round(($now - $age).TotalHours))) 小时"
+}
+```
+
+## 四、警告输出格式
+
+```markdown
+## ⚠️ 未提交文件警告
+
+| 文件 | 状态 | 最后修改 | 距今 |
+|---|---|---|---|
+| docs/archived/foo.md | untracked | 2026-08-25 | 13 天 |
+| src/lib/news/parser.ts | modified | 2026-09-05 | 2 天 |
+
+### 建议
+- **立即 commit** 上面 2 个文件（建议 commit message 草稿：`docs: 补全历史归档 + 修复 parser bug`）
+- 或明确决定**删除**这些文件（请走 backup-before-cleanup.mdc 流程）
+
+### 不处理的风险
+- 任何破坏性 git 操作（reset --hard、clean -fd）会丢失这些工作
+- 会话异常结束（断电、Cursor 崩溃）可能丢失
+```
+
+## 五、触发场景
+
+下列场景**必须**跑检查：
+
+1. **每次会话开始**（用户问"现在状态"时）
+2. **每次 commit 前**（看还有没有没 commit 的）
+3. **执行任何"清理"操作前**（即使看起来只删一个文件）
+4. **每 3 次工具调用**（避免打扰用户，可累计）
+
+## 六、与 commit 的关系
+
+### 不算"已 commit"的情况
+
+- ❌ 只跑过 `git add` 没 commit → 仍算未提交
+- ❌ 在别的分支 commit → 在 main 分支视角仍是 untracked
+- ❌ 在 worktree commit → 主仓库仍算未提交
+
+### 算"已 commit"的情况
+
+- ✅ commit 在当前分支
+- ✅ commit 已 push 到远程（更稳）
+
+## 七、用户回应的处理
+
+| 用户回复 | 处理 |
+|---|---|
+| "我知道了" | 继续工作，但下次仍要警告 |
+| "帮我 commit" | 走标准 commit 流程（参考 no-destructive-ops.mdc） |
+| "删了" | 走 backup-before-cleanup.mdc 五问流程 |
+| "我想想" | 不再警告，直到下次工具调用 |
+
+## 八、反例
+
+- ❌ "我看到一堆 untracked，懒得管了，直接干"（忽略警告 = 高风险）
+- ❌ "用户没问就不警告"（沉默 = 帮凶）
+- ❌ 警告后用户没回应就继续破坏性操作（未授权 = 违反本规则）
+
+---
+
+## 过期条件
+
+下列任一情况发生，本规则失效或需修订：
+
+- 项目 git 工作流变化（如改用 Git LFS、submodule）
+- 阈值需要根据团队节奏调整（用户主动改）
+- 引入新的"未提交"判定方式（如 stash、worktree）

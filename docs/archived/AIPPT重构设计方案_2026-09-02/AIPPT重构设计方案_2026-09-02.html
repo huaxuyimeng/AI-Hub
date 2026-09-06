@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI PPT 重构设计方案 · 2026-09-02</title>
+<style>
+@font-face { font-family: 'Outfit'; src: url('../AIPPT开源调研报告_2026-09-02/_shared/fonts/Outfit-Regular.ttf') format('truetype'); font-weight: 400; }
+@font-face { font-family: 'Outfit'; src: url('../AIPPT开源调研报告_2026-09-02/_shared/fonts/Outfit-Bold.ttf') format('truetype'); font-weight: 700; }
+@font-face { font-family: 'WorkSans'; src: url('../AIPPT开源调研报告_2026-09-02/_shared/fonts/WorkSans-Regular.ttf') format('truetype'); font-weight: 400; }
+@font-face { font-family: 'WorkSans'; src: url('../AIPPT开源调研报告_2026-09-02/_shared/fonts/WorkSans-Bold.ttf') format('truetype'); font-weight: 700; }
+@font-face { font-family: 'JetBrainsMono'; src: url('../AIPPT开源调研报告_2026-09-02/_shared/fonts/JetBrainsMono-Regular.ttf') format('truetype'); font-weight: 400; }
+
+:root {
+  --bg: #F6F8FB;
+  --bg2: #FFFFFF;
+  --ink: #16233A;
+  --muted: #5B6B84;
+  --rule: #E4EAF3;
+  --accent: #2563EB;
+  --accent2: #0891B2;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'WorkSans', 'Microsoft YaHei', 'PingFang SC', 'Noto Sans CJK SC', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.75;
+}
+.container { max-width: 1000px; margin: 0 auto; padding: 0 24px 80px; }
+
+/* ===== 封面 ===== */
+.cover { padding: 72px 0 40px; border-bottom: 1px solid var(--rule); }
+.cover .kicker {
+  font-family: 'JetBrainsMono', monospace; font-size: 13px; letter-spacing: 0.12em;
+  color: var(--accent); text-transform: uppercase; margin-bottom: 18px;
+}
+.cover h1 {
+  font-family: 'Outfit', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font-size: 40px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em;
+  margin-bottom: 14px;
+}
+.cover .subtitle { font-size: 17px; color: var(--muted); max-width: 760px; }
+.cover .meta {
+  margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px 28px;
+  font-size: 13.5px; color: var(--muted); font-family: 'JetBrainsMono', monospace;
+}
+.cover .meta span::before { content: '— '; color: var(--accent); }
+
+/* ===== 目录 ===== */
+.toc {
+  background: var(--bg2); border: 1px solid var(--rule); border-radius: 10px;
+  padding: 26px 30px; margin: 36px 0 8px;
+}
+.toc h2 { font-size: 14px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin-bottom: 14px; font-family: 'JetBrainsMono', monospace; border: none; padding: 0; }
+.toc ol { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 32px; counter-reset: toc; }
+.toc li { counter-increment: toc; }
+.toc a { color: var(--ink); text-decoration: none; font-size: 14.5px; display: flex; gap: 10px; align-items: baseline; }
+.toc a::before { content: counter(toc, decimal-leading-zero); color: var(--accent); font-family: 'JetBrainsMono', monospace; font-size: 12.5px; }
+.toc a:hover { color: var(--accent); }
+
+/* ===== 章节 ===== */
+section { margin-top: 64px; }
+h2 {
+  font-family: 'Outfit', 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  font-size: 27px; font-weight: 700; letter-spacing: -0.01em;
+  padding-bottom: 12px; border-bottom: 2px solid var(--accent);
+  display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px;
+}
+h2 .no { color: var(--accent); font-family: 'JetBrainsMono', monospace; font-size: 19px; }
+h3 {
+  font-size: 19px; font-weight: 700; margin: 36px 0 12px;
+  padding-left: 14px; border-left: 4px solid var(--accent2);
+}
+h4 { font-size: 16px; font-weight: 700; margin: 22px 0 8px; }
+p { margin: 12px 0; }
+strong { font-weight: 700; }
+.lead { font-size: 17px; color: var(--ink); }
+ul.list { margin: 10px 0 10px 22px; }
+ul.list li { margin: 6px 0; }
+ol.list { margin: 10px 0 10px 22px; }
+ol.list li { margin: 6px 0; }
+
+/* ===== 卡片 ===== */
+.card {
+  background: var(--bg2); border: 1px solid var(--rule); border-radius: 10px;
+  padding: 22px 26px; margin: 18px 0;
+}
+.card.callout {
+  border-left: 4px solid var(--accent2); background: var(--bg2);
+}
+.card .card-title { font-weight: 700; font-size: 15.5px; margin-bottom: 8px; }
+.card.decision { border-left: 4px solid var(--accent); }
+
+/* ===== 表格 ===== */
+.table-wrap { overflow-x: auto; margin: 18px 0; border: 1px solid var(--rule); border-radius: 10px; background: var(--bg2); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 720px; }
+thead th {
+  text-align: left; font-weight: 700; padding: 12px 14px;
+  background: var(--bg2); border-bottom: 2px solid var(--ink); white-space: nowrap;
+}
+tbody td { padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) { background: var(--bg); }
+td .dim { color: var(--muted); }
+th:first-child, td:first-child { white-space: nowrap; }
+
+/* ===== 代码 ===== */
+code {
+  font-family: 'JetBrainsMono', monospace; font-size: 13px;
+  background: var(--bg); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 6px;
+}
+pre.code {
+  font-family: 'JetBrainsMono', monospace; font-size: 13px; line-height: 1.65;
+  background: var(--bg); border: 1px solid var(--rule); border-radius: 10px;
+  padding: 18px 22px; overflow-x: auto; margin: 16px 0; color: var(--ink);
+}
+pre.code .cm { color: #6A7A94; }
+pre.code .st { color: #B45309; }
+pre.code .kw { color: #2563EB; font-weight: 600; }
+pre.code .ty { color: #0891B2; }
+
+/* ===== 目录树 ===== */
+pre.tree {
+  font-family: 'JetBrainsMono', monospace; font-size: 13px; line-height: 1.7;
+  background: var(--bg); border: 1px solid var(--rule); border-radius: 10px;
+  padding: 18px 22px; overflow-x: auto; margin: 16px 0;
+}
+pre.tree .new { color: var(--accent); font-weight: 600; }
+pre.tree .keep { color: var(--muted); }
+pre.tree .del { color: #B45309; }
+
+/* ===== 图 ===== */
+.diagram { margin: 26px 0; }
+.diagram figcaption, .chart-figure figcaption {
+  font-size: 13px; color: var(--muted); text-align: center; margin-top: 10px;
+  font-family: 'JetBrainsMono', monospace;
+}
+.mermaid { display: flex; justify-content: center; background: var(--bg2); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; }
+
+/* ===== 徽标 ===== */
+.phase {
+  font-family: 'JetBrainsMono', monospace; font-size: 11.5px; font-weight: 600;
+  color: #fff; background: var(--accent); border-radius: 999px; padding: 2px 10px;
+  white-space: nowrap;
+}
+.phase.alt { background: var(--accent2); }
+
+footer { margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13.5px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- ================= 封面 ================= -->
+<div class="cover">
+  <div class="kicker">AIHub · AI PPT Refactor Design</div>
+  <h1>AI PPT 重构设计方案<br>架构与分阶段计划</h1>
+  <p class="subtitle">基于《AI PPT 自动生成开源项目调研报告（2026-09-02）》的八大机制（M1–M8），把现有 daily-briefing 的双实现、硬编码、无测试代码库，重构为「通用引擎 + 早报模板包」的可测试架构，为开源做准备。</p>
+  <div class="meta">
+    <span>2026-09-02</span>
+    <span>范围：src/features/daily-briefing 与新引擎 src/lib/slide-engine</span>
+    <span>状态：已确认 · 2026-09-02（D1–D4 按推荐方案，D5 按 pt）</span>
+  </div>
+</div>
+
+<nav class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#s1">目标与边界</a></li>
+    <li><a href="#s2">总体架构与核心决策</a></li>
+    <li><a href="#s3">目录结构</a></li>
+    <li><a href="#s4">核心契约与接口</a></li>
+    <li><a href="#s5">布局规划、容量与降级</a></li>
+    <li><a href="#s6">QA Gate 与测试策略</a></li>
+    <li><a href="#s7">迁移策略</a></li>
+    <li><a href="#s8">分阶段计划</a></li>
+    <li><a href="#s9">风险与应对</a></li>
+    <li><a href="#s10">待确认决策点</a></li>
+  </ol>
+</nav>
+
+<!-- ================= 1 目标与边界 ================= -->
+<section id="s1">
+  <h2><span class="no">01</span>目标与边界</h2>
+  <p class="lead">这次重构只回答一个问题：怎样让 AI PPT 生成从「能跑」变成「基底稳、低错误、可测试、可开源」。</p>
+
+  <h3>1.1 验收标准（沿用调研报告第 5 章）</h3>
+  <div class="card callout">
+    <ul class="list">
+      <li><strong>A1 排版零事故：</strong>L1–L6 布局 lint 全绿是每次生成的硬性出口条件；</li>
+      <li><strong>A2 生成链路稳：</strong>大纲先行、逐页成稿、局部降级，单页失败不拖垮整份；</li>
+      <li><strong>A3 可测试可回归：</strong>单页可独立断言，双端（pptx 与 web）可对照，CI 自动跑；</li>
+      <li><strong>A4 可扩展架构：</strong>新增页型或新模板零核心改动，引擎不含早报业务字段。</li>
+    </ul>
+  </div>
+
+  <h3>1.2 范围边界</h3>
+  <ul class="list">
+    <li><strong>改架构不改视觉：</strong>重构期间现有早报的视觉输出保持不变，以旧版作为回归对照基线。视觉升级是重构完成后的独立任务，不在本方案内；</li>
+    <li><strong>保留数据层：</strong>collect.ts（新闻采集）与持久化逻辑不动；</li>
+    <li><strong>保留内容契约主体：</strong>types.ts 的 v4 Zod 契约保留，逐页型拆分后收敛；</li>
+    <li><strong>不换技术路线：</strong>维持路线 A（pptxgenjs 代码排版），理由见调研报告 7.1；</li>
+    <li><strong>开源延后：</strong>引擎按可独立成包的边界组织代码，但拆包、命名、文档在功能稳定后进行。</li>
+  </ul>
+</section>
+
+<!-- ================= 2 总体架构 ================= -->
+<section id="s2">
+  <h2><span class="no">02</span>总体架构与核心决策</h2>
+
+  <h3>2.1 核心决策：布局只实现一次</h3>
+  <p class="lead">消灭双实现（P1）的关键不是「选 pptx 还是选 HTML」，而是把布局收敛为一份<strong>几何模型</strong>：布局规划器输出「这页有哪些盒子、每个盒子的位置尺寸、文本元数据」，pptx 渲染器和 web 预览渲染器都是只消费这份模型的哑渲染器。</p>
+
+  <div class="card">
+    <p><strong>对比两种同源层级：</strong></p>
+    <ul class="list">
+      <li><strong>弱同源（契约同源）：</strong>双渲染器各自实现布局，仅共享内容契约。布局逻辑仍是两份，pptx 与预览还是会漂移——这是现状的根因；</li>
+      <li><strong>强同源（几何同源，本方案）：</strong>布局规划器输出 PlacedSlide 几何模型，双渲染器只做「模型到像素」的翻译。布局逻辑只有一份，预览与导出不可能漂移，lint 也能直接跑在模型上而不是渲染产物上。</li>
+    </ul>
+    <p>选强同源的代价是 web 预览的视觉表达被几何模型的盒子种类约束。早报现有视觉（卡片、徽标、条形、表格、分隔线）都在表达力范围内，特殊效果通过扩展盒子种类解决，风险受控。</p>
+  </div>
+
+  <h3>2.2 架构分层与数据流</h3>
+  <figure class="diagram">
+<pre class="mermaid">
+flowchart LR
+  subgraph L0["L0 数据层（不动）"]
+    D1["collect.ts<br/>新闻采集"]
+  end
+  subgraph L1["L1 内容层（generate.ts 改造）"]
+    G1["大纲先行<br/>页面编排 plan"] --> G2["逐页成稿<br/>页型内容契约"] --> G3["容量预算校验<br/>超限回炉压缩"]
+  end
+  subgraph L2["L2 布局层（引擎核心）"]
+    R1["页型注册表"] --> P1["布局规划器<br/>content 与 theme → PlacedSlide"]
+    T1["主题 Token"] --> P1
+    M1["文本测量"] --> P1
+  end
+  subgraph L3["L3 渲染层（双哑渲染器）"]
+    X1["pptx 渲染器<br/>pptxgenjs"]
+    X2["web 渲染器<br/>React 画布"]
+  end
+  subgraph L4["L4 质量层"]
+    Q1["QA Gate<br/>L1-L6 lint<br/>失败自动降级重排"]
+  end
+  D1 --> G1
+  G3 --> R1
+  P1 --> X1
+  P1 --> X2
+  X1 --> Q1
+  X2 --> Q1
+  Q1 --> O["持久化与导出"]
+</pre>
+    <figcaption>图 1：四层架构。虚线上方是早报模板包，布局层以下是通用引擎</figcaption>
+  </figure>
+
+  <h3>2.3 职责边界规则（写进代码评审清单）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>层</th><th>知道什么</th><th>禁止什么</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>引擎（L2–L4）</td><td>几何、token、容量、lint、渲染翻译</td><td>禁止出现任何早报业务字段（置信度、B站作者、方向）</td></tr>
+        <tr><td>页型（早报模板包）</td><td>页型 key、内容 Zod 契约、容量预算、布局规划函数</td><td>禁止直接调用 pptxgenjs 或写 React 样式</td></tr>
+        <tr><td>渲染器</td><td>PlacedSlide 到 pptx 元素或 DOM 的翻译规则</td><td>禁止做任何布局决策（不改坐标、不改字号）</td></tr>
+        <tr><td>内容层</td><td>LLM 提示词、契约校验、压缩回炉</td><td>禁止知道 pptx 或 DOM 的存在</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= 3 目录结构 ================= -->
+<section id="s3">
+  <h2><span class="no">03</span>目录结构</h2>
+  <p>新建通用引擎目录，早报业务全部下沉为「模板包」。颜色标注：<span style="color:var(--accent)">蓝为新增</span>，灰为保留，<span style="color:#B45309">橙为最终删除</span>。</p>
+
+<pre class="tree"><span class="new">src/lib/slide-engine/                # 通用引擎（零业务依赖，为开源拆包预留边界）</span>
+<span class="new">├─ contracts/</span>
+<span class="new">│  ├─ theme.ts                     # ThemeTokens：五键色板、字体、排版比例、页面与安全边距</span>
+<span class="new">│  ├─ slide-ir.ts                  # SlideIR / SlidePlanEntry：整份演示的中间表示</span>
+<span class="new">│  ├─ geometry.ts                  # Box / PlacedSlide / PlacedBox / TextMeta 几何模型</span>
+<span class="new">│  └─ lint.ts                      # LintIssue / LintReport / LintRule 类型</span>
+<span class="new">├─ registry/registry.ts            # 页型注册表（M3）：registerPageType / getPageType</span>
+<span class="new">├─ layout/</span>
+<span class="new">│  ├─ measure.ts                   # 文本宽度与行数估算（取代 estimateVisualWidth）</span>
+<span class="new">│  ├─ capacity.ts                  # SlotBudget / CapacityCheck（M4）</span>
+<span class="new">│  └─ degrade.ts                   # 降级阶梯：字号档位表与条目裁剪规则</span>
+<span class="new">├─ render/</span>
+<span class="new">│  ├─ pptx/renderer.ts             # PlacedSlide → pptxgenjs（pt 到 in 换算）</span>
+<span class="new">│  └─ web/SlideCanvas.tsx          # PlacedSlide → React 绝对定位画布</span>
+<span class="new">├─ qa/</span>
+<span class="new">│  ├─ lint.ts                      # L1–L6 纯函数实现</span>
+<span class="new">│  └─ gate.ts                      # QA Gate：lint → 降级 → 重排循环</span>
+<span class="new">├─ cli.ts                          # tsx 脚本入口：fixture → 渲染 → lint 报告</span>
+<span class="new">└─ index.ts                        # 引擎公共出口</span>
+
+<span class="keep">src/features/daily-briefing/        # 早报模板包（只依赖引擎）</span>
+<span class="new">├─ slides/                         # 每个页型一个文件：契约 + 预算 + 规划函数</span>
+<span class="new">│  ├─ cover.ts  overview.ts  direction-index.ts  direction-detail.ts</span>
+<span class="new">│  ├─ rumor.ts  authors.ts  verification.ts  trend.ts  ending.ts</span>
+<span class="new">│  └─ index.ts                     # 注册全部页型</span>
+<span class="new">├─ deck/</span>
+<span class="new">│  ├─ theme.ts                     # 6 套主题 token（收敛自现有 themes.ts）</span>
+<span class="new">│  └─ plan.ts                      # 早报页面编排规则（动态页数、页码重编号）</span>
+<span class="keep">├─ lib/</span>
+<span class="keep">│  ├─ collect.ts                   # 保留不动</span>
+<span class="keep">│  ├─ generate.ts                  # 改造：产出 SlideIR，容量压缩进管线</span>
+<span class="keep">│  ├─ types.ts                     # v4 契约保留，逐页型 schema 拆分后收缩</span>
+<span class="del">│  ├─ build-pptx.ts                # 逐页迁移中删除，Phase 3 完全移除</span>
+<span class="keep">│  └─ adapters/v1-to-v4.ts         # 保留</span>
+<span class="keep">├─ components/</span>
+<span class="del">│  ├─ SlidePreview.tsx             # 改为 SlideCanvas 薄包装，布局代码逐页删除</span>
+<span class="keep">│  ├─ BriefingPanel.tsx            # 保留</span>
+<span class="keep">└─ server/                         # router 接入 QA Gate，cron 保留</span></pre>
+
+  <p>页面结构参考：现有 14 页收敛为 9 个页型（封面、概览、方向索引、方向详情、传言、作者、验证表、趋势、结尾），方向索引与详情按 coding 与 embodied 复用同一页型。</p>
+</section>
+
+<!-- ================= 4 核心契约 ================= -->
+<section id="s4">
+  <h2><span class="no">04</span>核心契约与接口</h2>
+  <p class="lead">五个契约定义引擎的全部公共面：主题、几何模型、页型定义、渲染上下文、lint 报告。全部 Zod 或纯类型，无运行时副作用。</p>
+
+  <h3>4.1 主题 Token（M2）</h3>
+<pre class="code"><span class="cm">// slide-engine/contracts/theme.ts —— 单位统一用 pt（1in = 72pt）</span>
+<span class="kw">export type</span> <span class="ty">ThemeTokens</span> = {
+  id: <span class="ty">string</span>;                              <span class="cm">// 'paper' | 'ink' | 'mint' | ...</span>
+  colors: {
+    primary: <span class="ty">string</span>; secondary: <span class="ty">string</span>; accent: <span class="ty">string</span>;   <span class="cm">// 三主色</span>
+    primarySoft: <span class="ty">string</span>; secondarySoft: <span class="ty">string</span>; accentSoft: <span class="ty">string</span>; <span class="cm">// 同族浅底</span>
+    ink: <span class="ty">string</span>; inkMuted: <span class="ty">string</span>; inkSubtle: <span class="ty">string</span>;     <span class="cm">// 文字三档</span>
+    surface: <span class="ty">string</span>; border: <span class="ty">string</span>;
+  };
+  fonts: { cn: <span class="ty">string</span>; num: <span class="ty">string</span>; };
+  type: <span class="ty">Record</span>&lt;<span class="st">'display'</span> | <span class="st">'h1'</span> | <span class="st">'h2'</span> | <span class="st">'body'</span> | <span class="st">'caption'</span> | <span class="st">'number'</span>, {
+    size: <span class="ty">number</span>;        <span class="cm">// pt</span>
+    weight: 400 | 600 | 700;
+    lineHeight: <span class="ty">number</span>;    <span class="cm">// 倍数</span>
+  }&gt;;
+  page: { width: <span class="ty">number</span>; height: <span class="ty">number</span> };   <span class="cm">// 960 × 540</span>
+  margin: { x: <span class="ty">number</span>; y: <span class="ty">number</span> };            <span class="cm">// 安全边距</span>
+};</pre>
+  <p>现有 build-pptx.ts 的 COLORS 常量与字号散落值全部收敛进这份契约。换主题等于换一份 token，页面代码零改动。</p>
+
+  <h3>4.2 几何模型（M5 与 M6 的共同基础）</h3>
+<pre class="code"><span class="cm">// slide-engine/contracts/geometry.ts</span>
+<span class="kw">export type</span> <span class="ty">Box</span> = { x: <span class="ty">number</span>; y: <span class="ty">number</span>; w: <span class="ty">number</span>; h: <span class="ty">number</span> };   <span class="cm">// pt，左上原点</span>
+
+<span class="kw">export type</span> <span class="ty">PlacedBox</span> = {
+  id: <span class="ty">string</span>; slot: <span class="ty">string</span>;                    <span class="cm">// 插槽名，lint 定位用</span>
+  kind: <span class="st">'text'</span> | <span class="st">'card'</span> | <span class="st">'badge'</span> | <span class="st">'bar'</span> | <span class="st">'table'</span> | <span class="st">'image'</span> | <span class="st">'divider'</span>;
+  box: <span class="ty">Box</span>; z: <span class="ty">number</span>;
+  decorative?: <span class="ty">boolean</span>;                     <span class="cm">// 白名单：允许被重叠</span>
+  fill?: <span class="ty">string</span>; radius?: <span class="ty">number</span>; borderColor?: <span class="ty">string</span>;
+  text?: {                                  <span class="cm">// kind 为 text、badge、table 时存在</span>
+    value: <span class="ty">string</span>; font: <span class="st">'cn'</span> | <span class="st">'num'</span>;
+    size: <span class="ty">number</span>; weight: <span class="ty">number</span>; lineHeight: <span class="ty">number</span>;
+    align: <span class="st">'left'</span> | <span class="st">'center'</span> | <span class="st">'right'</span>; color: <span class="ty">string</span>;
+    maxLines: <span class="ty">number</span>;                          <span class="cm">// 行数上限，L2 依据</span>
+  };
+  cells?: <span class="ty">TextMeta</span>[][];                       <span class="cm">// kind 为 table 时</span>
+};
+
+<span class="kw">export type</span> <span class="ty">PlacedSlide</span> = {
+  pageNo: <span class="ty">number</span>; totalPages: <span class="ty">number</span>;
+  pageType: <span class="ty">string</span>;
+  boxes: <span class="ty">PlacedBox</span>[];
+};</pre>
+  <p>这份模型就是「布局的真相」。lint 跑在它上面，pptx 渲染器翻译它，web 渲染器翻译它，快照测试拍它。</p>
+
+  <h3>4.3 页型定义（M1 与 M3 与 M7）</h3>
+<pre class="code"><span class="cm">// slide-engine/contracts/page-type.ts</span>
+<span class="kw">export type</span> <span class="ty">PlanContext</span> = {
+  theme: <span class="ty">ThemeTokens</span>; pageNo: <span class="ty">number</span>; totalPages: <span class="ty">number</span>;
+  measure: <span class="ty">MeasureFn</span>;                          <span class="cm">// 注入文本测量（M7 上下文注入）</span>
+};
+
+<span class="kw">export type</span> <span class="ty">PageTypeDefinition</span> = {
+  key: <span class="ty">string</span>;                               <span class="cm">// 'cover' | 'overview' | ...</span>
+  title: <span class="ty">string</span>;                             <span class="cm">// 人读名</span>
+  contentSchema: <span class="ty">z.ZodTypeAny</span>;                 <span class="cm">// M1：该页型内容契约</span>
+  slots: <span class="ty">string</span>[];                           <span class="cm">// M3：插槽声明（文档化与 lint 定位）</span>
+  capacity(content: <span class="ty">unknown</span>, theme: <span class="ty">ThemeTokens</span>): <span class="ty">CapacityCheck</span>;   <span class="cm">// M4</span>
+  plan(content: <span class="ty">unknown</span>, ctx: <span class="ty">PlanContext</span>): <span class="ty">PlacedSlide</span>;          <span class="cm">// 布局唯一实现</span>
+};
+
+<span class="cm">// registry.ts</span>
+<span class="kw">export function</span> registerPageType(def: <span class="ty">PageTypeDefinition</span>): <span class="ty">void</span>;
+<span class="kw">export function</span> getPageType(key: <span class="ty">string</span>): <span class="ty">PageTypeDefinition</span>;</pre>
+  <p>页型不含任何渲染代码——它只产出几何模型。早报的每个页型文件约 100–200 行：契约、预算、规划函数三段式。</p>
+
+  <h3>4.4 SlideIR 与渲染器接口</h3>
+<pre class="code"><span class="cm">// slide-engine/contracts/slide-ir.ts</span>
+<span class="kw">export const</span> SlideIRSchema = z.object({
+  deckId: z.string(),
+  themeId: z.string(),
+  slides: z.array(z.object({ pageType: z.string(), content: z.unknown() })),
+});
+
+<span class="cm">// render/pptx/renderer.ts</span>
+<span class="kw">export function</span> renderDeckPptx(
+  placed: <span class="ty">PlacedSlide</span>[], theme: <span class="ty">ThemeTokens</span>
+): <span class="ty">PptxGenJS</span>;   <span class="cm">// 哑渲染：遍历盒子逐个翻译，pt 值除以 72 转 in</span>
+
+<span class="cm">// render/web/SlideCanvas.tsx</span>
+<span class="kw">export function</span> SlideCanvas({ slide, theme, scale }: {
+  slide: <span class="ty">PlacedSlide</span>; theme: <span class="ty">ThemeTokens</span>; scale: <span class="ty">number</span>;
+}): JSX.Element;   <span class="cm">// 哑渲染：绝对定位 div，画布 960×540 按 scale 缩放</span></pre>
+
+  <h3>4.5 lint 报告</h3>
+<pre class="code"><span class="cm">// slide-engine/contracts/lint.ts</span>
+<span class="kw">export type</span> <span class="ty">LintIssue</span> = {
+  rule: <span class="st">'L1'</span> | <span class="st">'L2'</span> | <span class="st">'L3'</span> | <span class="st">'L4'</span> | <span class="st">'L5'</span> | <span class="st">'L6'</span>;
+  pageNo: <span class="ty">number</span>; boxId?: <span class="ty">string</span>;
+  level: <span class="st">'error'</span> | <span class="st">'warn'</span>;
+  detail: <span class="ty">string</span>;                               <span class="cm">// 人读说明，含预算数值</span>
+};
+<span class="kw">export type</span> <span class="ty">LintReport</span> = { issues: <span class="ty">LintIssue</span>[]; passed: <span class="ty">boolean</span> };</pre>
+</section>
+
+<!-- ================= 5 布局、容量与降级 ================= -->
+<section id="s5">
+  <h2><span class="no">05</span>布局规划、容量与降级</h2>
+
+  <h3>5.1 文本测量（measure.ts）</h3>
+  <p>按字号建立宽度系数表：全角字符约 1.0em，半角字母约 0.55em，数字约 0.6em，空格与标点按实际宽度归档。提供两个函数：<code>measureWidth(text, size)</code> 与 <code>measureLines(text, size, boxWidth)</code>（模拟折行）。这是现有 estimateVisualWidth 的强化版，误差控制在 5% 以内，lint 阈值为此留出余量。</p>
+
+  <h3>5.2 容量预算（capacity.ts）</h3>
+  <p>每个页型在 <code>capacity()</code> 里声明各插槽预算：字符数、行数、条目数。生成管线在成稿阶段调用；超限项进入降级阶梯。预算数值从现有 LIMITS 常量迁移。</p>
+
+  <h3>5.3 降级阶梯（顺序不可颠倒，M4）</h3>
+  <div class="card callout">
+    <div class="card-title">超限处理顺序</div>
+    <ol class="list">
+      <li><strong>LLM 压缩改写：</strong>只对超限插槽发起，带 2 次次数上限，提示词附上「当前字数与预算字数」；</li>
+      <li><strong>字号降档：</strong>在排版比例允许的档位内降一档（body 降到 caption 档），重新规划；</li>
+      <li><strong>截断兜底：</strong>条目级截断（bullet 整条去掉）优先于字符截断，被截断的条目记入 lint 警告；</li>
+      <li><strong>报警：</strong>以上全失败则该页标记 QA 失败，生成流程返回带警告的成功（不阻塞整份交付）。</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= 6 QA Gate 与测试 ================= -->
+<section id="s6">
+  <h2><span class="no">06</span>QA Gate 与测试策略</h2>
+
+  <h3>6.1 布局 lint（qa/lint.ts，纯函数）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>规则</th><th>检查内容</th><th>级别</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>L1 元素越界</td><td>所有盒子顶点在安全区内（画布减 margin）</td><td>error</td></tr>
+        <tr><td>L2 文本溢出</td><td>measureLines 估算行高合计不超过盒子高度</td><td>error</td></tr>
+        <tr><td>L3 元素重叠</td><td>非 decorative 盒子矩形两两不相交</td><td>error</td></tr>
+        <tr><td>L4 容量超限</td><td>内容满足页型 capacity 预算（截断发生记 warn）</td><td>error / warn</td></tr>
+        <tr><td>L5 页数一致</td><td>plan 页数、实际渲染页数、页脚总页数三者相等</td><td>error</td></tr>
+        <tr><td>L6 密度检查</td><td>bullet 每页不超过 6 条；同页型不连续重复出现</td><td>warn</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>6.2 QA Gate（qa/gate.ts）</h3>
+  <p>生成流程末端：整份 PlacedSlide 过 lint；error 页进入降级重排（降字号档或换页型重规划），最多循环 2 轮；仍失败则输出报告并标记。lint 报告随生成结果持久化，前端可展示「本次生成质量」。</p>
+
+  <h3>6.3 测试策略（沿用项目现有 tsx 脚本模式，不引入新测试框架）</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>层级</th><th>做法</th><th>工具</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>单元</td><td>measure、capacity、lint、每页型 plan 的不变量断言（输入 fixture，断言盒子坐标与页脚）</td><td>tsx 脚本</td></tr>
+        <tr><td>快照</td><td>PlacedSlide 序列化 JSON 快照，布局变更必须显式更新快照</td><td>tsx 脚本</td></tr>
+        <tr><td>视觉对照</td><td>迁移期每页型：新旧 pptx 双开人工对照（这是阶段验收，不是自动测试）</td><td>PowerPoint</td></tr>
+        <tr><td>截图回归（可选档）</td><td>预览页 playwright 截图比对，基准图入库</td><td>playwright（已装）</td></tr>
+        <tr><td>内容评测（后置）</td><td>LLM-judge 按 C1–C3 抽样评分，功能稳定后接入</td><td>generate 管线</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>fixture 固定三份内容样本：<strong>正常样本</strong>（典型日报）、<strong>超限样本</strong>（长文本触发降级）、<strong>空缺样本</strong>（rumor 缺省、空列表触发动态页数）。样本放 <code>slides/__fixtures__/</code>。</p>
+  <p>package.json 增加两条命令：</p>
+<pre class="code"><span class="st">"test:slides"</span>: <span class="st">"tsx src/lib/slide-engine/cli.ts lint"</span>
+<span class="st">"test:slides:snapshot"</span>: <span class="st">"tsx src/lib/slide-engine/cli.ts snapshot"</span></pre>
+</section>
+
+<!-- ================= 7 迁移策略 ================= -->
+<section id="s7">
+  <h2><span class="no">07</span>迁移策略</h2>
+  <p class="lead">不做大爆炸重写。垂直切片先行打通全链路，再逐页型迁移，旧代码随迁移同步删除，全程可发布。</p>
+
+  <h3>7.1 三条纪律</h3>
+  <ul class="list">
+    <li><strong>新旧并存走开关：</strong>生成出口加配置开关（环境变量 SLIDE_ENGINE=v2），默认旧管线。每个页型迁移完成即切开关验证，全部完成默认切新；</li>
+    <li><strong>每页型一个闭环：</strong>迁移一页 = 契约、预算、规划、双渲染、lint、fixture 六件套齐，缺一不算完成；</li>
+    <li><strong>旧代码即删：</strong>新页型上线当次提交删除 build-pptx.ts 与 SlidePreview.tsx 里对应页的代码，不保留「以防万一」的副本。</li>
+  </ul>
+
+  <h3>7.2 迁移顺序（按风险从低到高）</h3>
+  <ol class="list">
+    <li><strong>cover（封面）：</strong>元素少、无动态内容，做垂直切片的最佳人选；</li>
+    <li><strong>ending（结尾）：</strong>同样简单，验证「简单页模式」；</li>
+    <li><strong>overview（概览）：</strong>引入 HeroMetric 数字卡片与 badge；</li>
+    <li><strong>direction-index（方向索引）：</strong>引入条目列表与条形元素；</li>
+    <li><strong>direction-detail（方向详情）：</strong>最复杂页型，条目多、卡片多，容量预算的主战场；</li>
+    <li><strong>verification（验证表）：</strong>表格盒子的验证；</li>
+    <li><strong>authors 与 trend：</strong>中等复杂度收尾；</li>
+    <li><strong>rumor（可选页）：</strong>验证动态页数与页码重编号。</li>
+  </ol>
+</section>
+
+<!-- ================= 8 分阶段计划 ================= -->
+<section id="s8">
+  <h2><span class="no">08</span>分阶段计划</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>阶段</th><th>内容</th><th>产出</th><th>验收标准</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="phase">Phase 0</span> 地基</td>
+          <td>引擎骨架：contracts 全部类型、registry、measure、capacity、lint 的 L1–L3 实现，cli.ts 与 fixture 机制</td>
+          <td>slide-engine 目录可独立跑通 fixture lint</td>
+          <td>measure 误差不超 5%；L1–L3 单测通过；typecheck 与 lint 干净</td>
+        </tr>
+        <tr>
+          <td><span class="phase">Phase 1</span> 垂直切片</td>
+          <td>cover 页型完整迁移：契约、预算、规划、pptx 渲染、web 渲染、lint 全链路；生成出口加开关</td>
+          <td>封面页新管线可用（开关控制）</td>
+          <td>新旧封面 pptx 人工对照视觉一致；web 预览一致；L1–L4 全绿</td>
+        </tr>
+        <tr>
+          <td><span class="phase">Phase 2</span> 逐页型迁移</td>
+          <td>按 7.2 顺序迁移其余 8 个页型，每页型一个提交，旧代码同步删除</td>
+          <td>9 个页型全部走新引擎</td>
+          <td>每页型：对照无回归、lint 全绿、fixture 快照入库</td>
+        </tr>
+        <tr>
+          <td><span class="phase">Phase 3</span> 管线收口</td>
+          <td>generate.ts 产出 SlideIR；容量压缩进成稿阶段；QA Gate 接入 server/router；删除 build-pptx.ts 与 SlidePreview 布局代码；开关默认切新</td>
+          <td>旧渲染路径全部移除</td>
+          <td>完整生成流程跑通；lint 报告持久化；代码量净下降</td>
+        </tr>
+        <tr>
+          <td><span class="phase">Phase 4</span> 回归固化</td>
+          <td>三份 fixture 全量快照；test:slides 进 CI（含 typecheck）；README 重写；C1–C3 内容评测抽样接入</td>
+          <td>回归防线建立</td>
+          <td>test:slides 全绿；连续生成稳定无事故</td>
+        </tr>
+        <tr>
+          <td><span class="phase alt">Phase 5</span> 开源准备</td>
+          <td>引擎边界检查（零 feature 导入断言）、示例模板包、拆包方案、命名与文档</td>
+          <td>可独立发布的引擎包草案</td>
+          <td>引擎目录零业务依赖可证；示例模板可跑</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Phase 0 到 Phase 2 是本次重构主体；Phase 3、4 在功能稳定后推进；Phase 5 按你的要求在全部完成后进行。每个 Phase 结束都是可发布状态，随时可以停在一个稳定点。</p>
+</section>
+
+<!-- ================= 9 风险 ================= -->
+<section id="s9">
+  <h2><span class="no">09</span>风险与应对</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>风险</th><th>影响</th><th>应对</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>几何模型表达力不足，预览视觉打折</td><td>高</td><td>盒子种类按早报实际视觉枚举（text、card、badge、bar、table、divider）；迁移期逐页人工对照，发现缺口即扩 kind，不回头改架构</td></tr>
+        <tr><td>中英混排测量误差导致误报或漏报</td><td>中</td><td>系数表按字体实测校准；lint 阈值留 5% 余量；L2 失败先降字号重排再报警</td></tr>
+        <tr><td>LLM 压缩回炉拖慢生成</td><td>中</td><td>只对超限插槽发起；2 次上限；压缩失败直接进降字号档，不阻塞</td></tr>
+        <tr><td>并存期双管线维护成本</td><td>中</td><td>开关只存在于生成出口一处；旧代码逐页删除而非整体保留，并存窗口被压到最短</td></tr>
+        <tr><td>迁移期间线上事故</td><td>低</td><td>默认走旧管线，新页型逐个灰度切换；出问题切回开关即可</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= 10 待确认 ================= -->
+<section id="s10">
+  <h2><span class="no">10</span>待确认决策点</h2>
+  <p class="lead">五个决策点需要你拍板，其余按方案执行。</p>
+
+  <div class="card decision">
+    <div class="card-title">D1 同源层级：几何同源（推荐）</div>
+    <p>布局只实现一次（几何模型），双渲染器哑翻译。代价是预览视觉受盒子模型约束。备选是弱同源（契约同源，双端各自实现布局），改动小但双实现问题只解决一半。</p>
+  </div>
+  <div class="card decision">
+    <div class="card-title">D2 视觉基线：重构不改视觉</div>
+    <p>迁移期以现有视觉为对照基线，保证零回归。视觉升级（配色、版式翻新）作为重构完成后的独立任务。如果你想重构顺便翻新视觉，对照验收就没法做，风险显著升高。</p>
+  </div>
+  <div class="card decision">
+    <div class="card-title">D3 并存开关：接受新旧管线并存窗口</div>
+    <p>逐页迁移需要一段时间内新旧管线并存（开关控制）。如果你不接受并存，只能整批切换，迁移期不可发布。</p>
+  </div>
+  <div class="card decision">
+    <div class="card-title">D4 测试框架：沿用 tsx 脚本模式（推荐）</div>
+    <p>与项目现有 test:rankings、test:usage 一致，零新依赖。备选引入 vitest，断言体验更好但多一个依赖与配置。</p>
+  </div>
+  <div class="card decision">
+    <div class="card-title">D5 单位制：内部统一 pt</div>
+    <p>画布 960 × 540 pt，pptxgenjs 出口处除以 72 转 in，web 画布按 scale 缩放。备选直接用 in（小数多，可读性差）。</p>
+  </div>
+</section>
+
+<footer>
+  <p>依据：《AI PPT 自动生成开源项目调研报告（2026-09-02）》第 6 章八大机制、第 7 章架构方向。方案已确认（2026-09-02）：D1 几何同源、D2 不改视觉、D3 接受并存开关、D4 tsx 脚本、D5 内部单位 pt。追加纪律：每阶段完成必须跑测试验证，不带 bug 进入下一阶段。</p>
+</footer>
+
+</div>
+<script src="../AIPPT开源调研报告_2026-09-02/_shared/js/mermaid.min.js"></script>
+<script>mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose' });</script>
+</body>
+</html>

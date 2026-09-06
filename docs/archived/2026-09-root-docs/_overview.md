@@ -1,0 +1,131 @@
+# AIHub 工作台
+
+> **AI 代码质量分析工作台** · 已迁移至模块化文档结构
+
+---
+
+## 📚 文档已重组
+
+本项目的开发文档已重组为**总览 + 多个专题设计文档**的结构。请前往 `design/` 目录查看：
+
+| 文档 | 内容 |
+|------|------|
+| 📘 **[design/总览.md](./design/总览.md)** | 项目愿景、技术栈、成本、可行性 |
+| 📐 [design/UI设计.md](./design/UI设计.md) | 布局规范、组件库、颜色字体 |
+| 🗄️ [design/数据库设计.md](./design/数据库设计.md) | Prisma Schema、多租户设计 |
+| 🔌 [design/API设计.md](./design/API设计.md) | REST + tRPC、接口规范 |
+| 🤖 [design/AI集成.md](./design/AI集成.md) | LiteLLM、模型路由、成本优化 |
+| 🚀 [design/部署运维.md](./design/部署运维.md) | Vercel、自托管、CI/CD |
+| 🧩 [design/插件系统.md](./design/插件系统.md) | 沙箱隔离、Capability 权限 |
+| 📊 [design/可行性报告.md](./design/可行性报告.md) | 技术/市场/资金可行性、开发周期 |
+
+---
+
+## 快速概览
+
+### 项目定位
+一个让开发者用 AI 提升代码质量的 Web 工作台，支持多模型对比和插件扩展。
+
+### 技术栈
+- **前端**：Next.js 14 · TypeScript · Tailwind · shadcn/ui
+- **后端**：Next.js 全栈 + Prisma + tRPC
+- **AI**：LiteLLM 统一网关 + DeepSeek 主力 + 多模型路由
+- **部署**：Vercel + Supabase + Cloudflare
+
+### 核心功能
+- 🎯 多模型代码检错对比
+- 📊 5 维度代码质量评分
+- 📰 AI 资讯每日聚合
+- 🏆 LMArena 模型排行
+- 🧩 插件系统扩展
+
+### 成本预估
+**初期月成本：¥60-220**（包含 AI API 调用）
+
+### 开发周期
+**16 周瀑布模型**，详细见 [design/可行性报告.md](./design/可行性报告.md)
+
+---
+
+## 📝 更新日志
+
+### v3.3.1 (2026-08-27 凌晨) — **v3.3 一致性审查**
+**10 处不一致修复，含 3 处高危**
+
+**🔴 高危（实施后会爆）**
+- ✅ 修复中间件白名单错配：File / Message / Issue / Analysis 误入白名单，但 Schema 中没有 tenantId 字段 → 调用会抛 "No tenant context"
+- ✅ 补全 `sha256` 工具函数实现：`API设计.md` 4.4.1 新增 `src/lib/crypto.ts`（含 sha256 / hmacSha256 / generateRandomToken / safeEqual）
+- ✅ 修复 cron 上下文冲突：`scripts/cleanup-orphan-files.ts` 用底层 `PrismaClient`（绕过中间件），不再共用扩展 prisma
+
+**🟡 低/中危（文档一致性）**
+- ✅ 数据库设计.md 顶部注释"4.2.2" → "§4.2"
+- ✅ 整理白名单注释：明确"4 个间接租户过滤模型"
+- ✅ 合并 `scripts/cleanup-orphan-files.ts` 与 `scripts/run-cleanup.ts` 为单一入口
+- ✅ 插件 sandbox-worker.ts 加 ESM 环境说明（`"type": "module"` + tsconfig）
+- ✅ plugin-runtime.mjs sha256 改用 Worker 内 Node.js 内置 crypto 模块（零依赖）
+- ✅ AI 集成修复 4 处残留旧模型名（V3 → V4-pro，架构图与可用性矩阵同步）
+- ✅ ESLint 豁免清单移除误写"User"，仅保留真正全局模型
+- ✅ 部署运维.md"最后更新"日期更新到 2026-08-27
+
+### v3.3 (2026-08-27) — **批次 B 实施完成**
+**软删除 + 多租户闭环 + 工具函数补齐**
+
+**数据库层（B1+B2+B3+B4+B5+B10）**
+- ✅ Schema 加 `deletedAt` 字段（7 个白名单模型：User / Project / ApiKey / File / InstalledPlugin / UsageStat / Score）
+- ✅ 删除 `@@unique` 普通约束，改用 partial unique index + 普通 `@@index`（避开 NULL != NULL 陷阱）
+- ✅ 新增第 7 条 partial unique index：`Score(tenantId, analysisId) WHERE deleted_at IS NULL`
+- ✅ Prisma 中间件真正启用：租户注入 + 默认 `deletedAt: null` 过滤 + 逃生舱
+- ✅ 白名单补全：User / File / UsageStat / Message 全部纳入
+- ✅ Prisma Client 全局单例（防 Serverless 冷启动）
+
+**API 层（B6+B7）**
+- ✅ Project 软删除 mutation（替代硬删除）
+- ✅ 新增 `trash`（回收站查询）和 `restore`（7 天内恢复）
+- ✅ `RawProjectSchema` 字段对齐 Schema（避免 sanitize 抛错）
+- ✅ 上传文件 `sizeBytes` 用 `Buffer.byteLength`（UTF-8 字节数）
+- ✅ 上传文件 `content` 加 10MB 上限校验
+
+**AI 层（B8+B9）**
+- ✅ DeepSeek V3 → V4-flash / V4-pro（V3 已停用）
+- ✅ Kimi K2 / moonshot-v1-128k → Kimi K2.7-code / K3（K2 系列 2026-08-31 停用）
+- ✅ 定价表全面美元计价（V3 时代的 ¥0.14/M 已过期）
+- ✅ Prompt Cache 表修正：Anthropic TTL 用户可控（最长 24h），OpenAI 50%-90% off 因模型而异，GPT-5.6+ 缓存写入收 1.25x
+
+**插件层（B7+B11）**
+- ✅ 沙箱 worker 改 ESM（Worker 加载 .mjs + dynamic import）
+- ✅ manifestPath 解析用 `pathToFileURL`（Windows/Linux 通用）
+- ✅ sha256 / sandboxedRequire 工具函数补齐
+
+**部署层（B12+B13）**
+- ✅ R2 bucket 名从环境变量读取（dev / prod 区分）
+- ✅ `extractR2Key` 用 `URL pathname` + `..` 防穿越校验
+- ✅ Vercel Cron `/api/cron/cleanup` 加 `CRON_SECRET` Bearer 鉴权
+- ✅ 抽取共享 `src/lib/cleanup.ts`，Vercel Cron 与 GitHub Actions 共用一套清理逻辑
+
+### v3.2 (2026-08-26)
+**文档质量优化**
+- 修复 `数据库设计.md` 中 19 处 Prisma `@map` 引号不匹配错误
+- 删除不存在的 `tenantContext` previewFeature，改用 Client Extensions
+- 重写 Prisma Extension 代码，移除对 `findUnique` 的错误拦截
+- 修复 PostgreSQL RLS 中 UUID 与 text 类型比较问题
+- 新增 `PluginVersion`、`PluginAuditLog` 两个 Prisma 模型
+- 补充 `Plugin` 模型的 `isPublished`、`reviewCount` 字段与 `versions` 关系
+- 修复 `API设计.md` REST POST 路由中缺失的 `createProjectSchema` 定义
+- 修复 `部署运维.md` 中 `vercel env pull` 描述错误
+- 修复 `可行性报告.md` 中 `yuku` → `tree-sitter` 错别字
+- 修正长期路线图时间（Q3-Q4 → Q4 起）
+- 收入预测改为更保守的数字（付费率 1-3%），并新增 Team/Enterprise 推迟策略
+- UI 风险概率从"低"改为"中"（更符合学生项目实际）
+- 在 `总览.md` 顶部增加对新读者的导航提示
+
+### v3.1 (2026-08-XX)
+- 初版模块化拆分（总览 + 专题文档）
+
+### v3.0 (2026-XX-XX)
+- 立项版本
+
+---
+
+*详细设计、规范、实现细节请查阅各专题文档。*
+
+*最后更新：2026-08-27 · v3.3.1*

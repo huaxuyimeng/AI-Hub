@@ -1,0 +1,115 @@
+---
+description: 禁止破坏性 git 操作（reset --hard、clean -fd、push --force）
+globs:
+  - "**/*"
+---
+
+# No Destructive Operations
+
+> 与 `00-clarify-before-act.mdc` 协同。
+> 任何破坏性操作前**必须**用 `AskQuestion` 让用户确认。
+
+## 一、绝对禁令
+
+下列命令**未经用户明确确认前严禁执行**：
+
+### 文件删除类
+
+- ❌ `rm -rf <path>`（任何路径）
+- ❌ `Remove-Item -Recurse <path>`（PowerShell）
+- ❌ `rm -rf node_modules`（除非用户明确要求）
+- ❌ `rm -rf .next`、`rm -rf dist`、`rm -rf build`（除非用户明确要求）
+- ❌ 用 `Delete` 工具删除**任何**已存在文件
+- ❌ 任何形式的 `unlink`、`del`、`erase`
+
+### Git 危险操作
+
+- ❌ `git reset --hard <commit>`（**未 commit 工作会全部丢失**）
+- ❌ `git clean -fd` / `git clean -fdx`（**会删除所有 untracked 文件**）
+- ❌ `git push --force` / `git push -f` 到 main 分支
+- ❌ `git checkout -- .` / `git checkout -- <file>`（覆盖本地未提交修改）
+- ❌ `git restore --staged` 后接 `git restore`（组合等于丢弃）
+- ❌ `git stash drop`（默认 stash 不丢，drop 后就丢）
+
+### 数据库/Schema 危险操作
+
+- ❌ `prisma db push --force-reset`（清空数据库）
+- ❌ `prisma migrate reset`
+- ❌ DROP TABLE / DROP DATABASE（任何 SQL）
+- ❌ DELETE FROM（不带 WHERE）
+
+### 配置文件覆盖
+
+- ❌ 用 `Write` 工具覆盖非本次会话新建的文件
+- ❌ 覆盖 `.env*` 文件（除非用户明确说"重写 env"）
+- ❌ 覆盖 `package.json` / `pnpm-lock.yaml`（除非用户明确说"改依赖"）
+
+## 二、强制确认流程
+
+执行任何"看似安全但实际有副作用"的命令前：
+
+### 1. 风险评估（必须先输出）
+
+```markdown
+## 准备执行
+- 命令：git clean -fd
+- 影响范围：会删除所有 untracked 文件
+- 当前 untracked 文件数：X
+- 风险等级：高
+- 回滚方案：删除后无法回滚，只能从 reflog 找 dangling blob
+```
+
+### 2. 用 AskQuestion 让用户确认
+
+不要把确认塞进"是否继续执行"——必须**清晰列出影响**。
+
+### 3. 拿到"是"后才执行
+
+## 三、安全例外（无需确认）
+
+下列操作**算安全**，可以直接执行：
+
+- ✅ `rm -f <tmp_file>`（临时文件，且是本次会话自己创建的）
+- ✅ `git status` / `git diff` / `git log`（只读）
+- ✅ `git add <file>`（把 working tree 加入暂存，未提交）
+- ✅ `git commit -m "..."`（用户已授权的提交）
+- ✅ `pnpm install` / `pnpm typecheck`（用户已授权的依赖与检查）
+- ✅ 跑 `Test-Path` / `Get-ChildItem`（只读检查）
+
+## 四、事故复盘
+
+如发生误删/误重置：
+
+1. **立刻停下**，不再继续操作
+2. 跑 `git reflog` 看能否找回
+3. 跑 `git fsck --unreachable --no-reflogs` 看 dangling blob
+4. 告知用户事实（不要隐瞒）
+5. 启动修复流程：参考 `02-strict-bug-fix.mdc`
+
+## 五、反例
+
+- ❌ "我先 `git clean -fd` 清理一下 untracked"（不问就清 → 删用户文件）
+- ❌ "这个文件没用，我删了"（不告诉用户就不删）
+- ❌ "`rm -rf node_modules` 应该没事吧"（不是 100% 确定就别做）
+- ❌ "我帮你 `git reset --hard` 回到干净状态"（未 commit 工作会丢）
+
+## 六、自检清单
+
+每次执行非纯读操作前自问：
+
+- [ ] 这个操作会影响哪些文件？
+- [ ] 如果错了，能回滚吗？
+- [ ] 用户明确同意了吗？
+- [ ] 我是否输出了"准备执行"清单？
+
+任一 ❌ → 用 `AskQuestion` 让用户确认。
+
+---
+
+## 过期条件
+
+下列任一情况发生，本规则失效或需修订：
+
+- 项目迁移到新工具链（如改用 Drizzle 替代 Prisma）
+- 增加新的破坏性操作类型
+- 用户主动要求放宽某条禁令

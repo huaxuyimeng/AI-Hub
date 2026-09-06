@@ -1,0 +1,128 @@
+---
+description: 删除任何文件前必须先说明用途 + 建议备份 + 询问用户
+globs:
+  - "**/*"
+---
+
+# Backup Before Cleanup
+
+> 与 `no-destructive-ops.mdc` 互补。
+> 本规则聚焦"删文件前的对话流程"。
+
+## 一、核心原则
+
+**永远不要"先删再说"**。删除任何文件前，必须完成"五问 + 一答"。
+
+## 二、五问（每次删除前必须自问并告诉用户）
+
+### 1. 这个文件是干嘛的？
+
+```bash
+# 先读文件
+Read /path/to/file
+
+# 或看 git 历史
+git log --oneline -- /path/to/file
+
+# 或搜文件内容
+Grep "关键词" /path/to/file
+```
+
+告诉用户：
+- 文件名（含路径）
+- 文件用途（1 句话）
+- 最近修改时间
+
+### 2. 这个文件是谁创建的？
+
+- 本次会话内创建的？→ 删除相对安全
+- 之前会话创建的？→ **高风险**，必须告诉用户
+- 用户手工创建的？→ **极高风险**，必须询问
+
+### 3. 文件是否在 git 中？
+
+```bash
+git ls-files /path/to/file    # 已 tracked
+git status --porcelain /path/to/file  # 看 modified/untracked
+```
+
+- 已 tracked → 删除后能从 git 恢复（但用户的工作可能丢）
+- Untracked → **删除就永久丢失**，极高风险
+
+### 4. 删除后会影响什么？
+
+- 哪些 import 引用了它？→ `Grep "from.*filename" .`
+- 哪些配置文件引用了它？→ 查 tsconfig.json、package.json
+- 哪些脚本会运行它？→ 查 cron 配置
+
+### 5. 是否可以备份？
+
+**默认必须备份**。建议备份位置：
+- `.backups/<date>/`（仓库内）
+- 或 `git stash push <file>`（暂存）
+- 或 `Copy-Item` 到临时目录
+
+## 三、一答（必须 AskQuestion）
+
+把上述 5 个问题的答案整理成**结构化提问**：
+
+```markdown
+## 准备删除文件
+- 路径：src/lib/old-module/foo.ts
+- 用途：旧的 AI 模型定价逻辑（已迁移到 src/lib/ai/pricing.ts）
+- 创建时间：2026-08-15（之前会话）
+- Git 状态：已 tracked（cd14a7d commit 中）
+- 引用方：grep 发现 2 处 import 在 src/server/routers/usage.ts
+- 备份位置：.backups/2026-09-07/src_lib_old-module_foo.ts
+
+## 选项
+- A. 删除并备份到 .backups/2026-09-07/
+- B. 暂不删除（保留作为参考）
+- C. 删除且不备份（接受丢失风险）
+- D. 其他
+```
+
+**用 AskQuestion 工具提交**，等用户回答。
+
+## 四、批量删除的特殊规则
+
+如果要删除**多个**文件：
+
+- ❌ **禁止** `rm -rf <dir>` 一锅炖
+- ✅ **必须**逐个或按主题分组，每组都 AskQuestion
+- ✅ 列出"这次要删 N 个文件，全部列出来"，用户逐项确认
+
+## 五、清理临时文件（唯一可豁免的场景）
+
+**严格定义**的"临时文件"可豁免询问：
+
+- ✅ 本次会话内创建的 `*.tmp`、`*.bak`、`*.swp`
+- ✅ `pnpm test` / `pnpm build` 产生的中间文件（且是本会话内产生的）
+- ✅ `prisma/usage-test-*.db`（测试遗留的 SQLite 文件）
+
+**不确定的 → 视为非临时，必须询问**。
+
+## 六、反例
+
+- ❌ "这个文件没用了，我帮你删了"（不问就删）
+- ❌ "`rm -rf node_modules && pnpm install`"（未确认）
+- ❌ "我先 `git clean -fd` 一下"（不知道哪些 untracked 会被删）
+- ❌ "你已经说过了'删干净'"（上次授权不能延续到本次操作）
+
+## 七、删除后的善后
+
+执行删除后：
+
+1. 跑 `git status --porcelain` 确认影响范围
+2. 跑 `pnpm typecheck` 确认没破坏 import
+3. 如果发现误删 → 立即停止后续操作，启动恢复流程
+
+---
+
+## 过期条件
+
+下列任一情况发生，本规则失效或需修订：
+
+- 增加新的"标准临时文件"类型
+- 用户主动要求放宽确认流程
+- 项目引入新的文件删除工具（如 cleanup 脚本）
