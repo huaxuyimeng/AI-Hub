@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { Prisma } from '@prisma/client';
 import { randomBytes, createHash } from 'crypto';
-import { protectedProcedure, router } from '../context';
+import { protectedProcedure, adminProcedure, router } from '../context';
 import { createTenantPrisma, prismaRaw } from '../../lib/db';
 import { softDeleteProject, restoreProject, hardDeleteProject } from '../../lib/lifecycle';
 import { toPublicProject } from '../../lib/sanitize';
@@ -121,19 +121,13 @@ export const projectRouter = router({
       return { ok: true };
     }),
 
-  hardDelete: protectedProcedure
+  hardDelete: adminProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
-      // S-05 TODO: 这里 ctx.session.user.role 来自 session 快照，理论上不可信。
-      // 应当 prismaRaw.user.findUnique 重查 role 防提权。
-      // 当前未做，因为 signIn callback 在登录时写入 role，提权窗口有限；
-      // 配合 S-04 的会话过期策略暂不处理。后续如发现 session 篡改案例必须修。
-      // C14：ADMIN 角色校验
-      if (ctx.session.user.role !== 'ADMIN') {
-        throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin only' });
-      }
-      // C14：再加归属校验，避免跨租户硬删
-      await assertProjectOwned(ctx.tenantId, input.id, true);
+      // BUG-10 修复（2026-09-06）：使用 adminProcedure，实时查库校验 role
+      // 避免 JWT 快照在 token 有效期内被降权后仍带 ADMIN 的越权窗口
+      // adminProcedure 继承自 protectedProcedure，运行时已断言 tenantId 非空
+      await assertProjectOwned(ctx.tenantId ?? undefined, input.id, true);
       await hardDeleteProject(prismaRaw, input.id);
       return { ok: true };
     }),
