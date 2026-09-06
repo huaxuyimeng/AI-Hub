@@ -1,12 +1,18 @@
 // POST /api/upload/bg
-// 接收 multipart form 上传，做校验、调 R2 上传、返回 url。
-// 同时把 url 写到 UserPreferences.bgImageUrl（旧 url 自动失效）。
+// 接收 multipart form 上传，做校验、调 R2 上传、写历史、写 UserPreferences。
+// 每次上传都写到 WallpaperHistory（用户可见的历史列表）。
+//
+// DELETE /api/upload/bg?id=<historyId>
+//   - 不带 id：移除当前激活壁纸，并清空 UserPreferences
+//   - 带 id：删除历史记录项（若是 active 则同时清空）
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { uploadObject, deleteObject, isR2Configured, validateFile } from '@/lib/r2';
 import { prismaBase } from '@/lib/db';
+import { sanitizeError } from '@/lib/sanitize';
+import { logger } from '@/lib/observability/logger';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -43,14 +49,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '缺少 file 字段' }, { status: 400 });
   }
 
-  // 4. 校验（buffer 验完后再丢弃）
+  // 4. 校验
   const buf = Buffer.from(await file.arrayBuffer());
   const v = validateFile({ size: file.size, type: file.type, buffer: buf });
   if (!v.ok) {
     return NextResponse.json({ error: v.reason }, { status: 400 });
   }
 
-  // 7. 上传
+  // 5. 上传
   let url: string;
   let key: string;
   try {
@@ -63,21 +69,42 @@ export async function POST(req: NextRequest) {
     url = r.url;
     key = r.key;
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message ?? '上传失败' }, { status: 500 });
+    // BUG-11 修复（2026-09-06）：不向客户端泄露 R2 原始错误
+    logger.error('[upload/bg] R2 upload failed', { error: (e as Error).message });
+    return NextResponse.json(
+      { error: sanitizeError((e as Error).message ?? '上传失败') },
+      { status: 500 },
+    );
   }
 
-  // 8. 写 UserPreferences + 删旧图
+  // 6. DB：写历史 + 更新 active + 设置 active 为唯一 active + 写 UserPreferences
   try {
-    const existing = await prismaBase.userPreferences.findUnique({ where: { userId } });
-    if (existing?.bgImageUrl && existing.bgImageUrl !== url) {
-      // Q7 修复：传 key 而非 URL，避免 extractR2Key 前缀不匹配导致静默失败
-      deleteObject(key).catch(() => {});
-    }
-    await prismaBase.userPreferences.upsert({
-      where: { userId },
-      update: { bgImageUrl: url },
-      create: { userId, tenantId, bgImageUrl: url },
-    });
+    await prismaBase.$transaction([
+      // 取消所有 active
+      prismaBase.wallpaperHistory.updateMany({
+        where: { userId, isActive: true },
+        data: { isActive: false },
+      }),
+      // 写新历史
+      prismaBase.wallpaperHistory.create({
+        data: {
+          userId,
+          tenantId,
+          r2Key: key,
+          url,
+          isActive: true,
+          sizeBytes: file.size,
+          contentType: file.type,
+          label: (form.get('label') as string | null)?.trim().slice(0, 40) ?? '',
+        },
+      }),
+      // UserPreferences.bgImageUrl
+      prismaBase.userPreferences.upsert({
+        where: { userId },
+        update: { bgImageUrl: url },
+        create: { userId, tenantId, bgImageUrl: url },
+      }),
+    ]);
   } catch (e) {
     // 入库失败：把已上传图删掉，避免悬挂对象
     deleteObject(key).catch(() => {});
@@ -87,23 +114,49 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, url });
 }
 
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const url = new URL(req.url);
+  const id = url.searchParams.get('id');
+
+  if (id) {
+    // 删除指定历史项
+    const row = await prismaBase.wallpaperHistory.findFirst({
+      where: { id, userId: session.user.id },
+    });
+    if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    deleteObject(row.r2Key).catch(() => {});
+    await prismaBase.wallpaperHistory.delete({ where: { id: row.id } });
+    if (row.isActive) {
+      await prismaBase.userPreferences.update({
+        where: { userId: session.user.id },
+        data: { bgImageUrl: null },
+      }).catch(() => {});
+    }
+    return NextResponse.json({ ok: true });
+  }
+
+  // 不带 id：移除当前激活壁纸
   const existing = await prismaBase.userPreferences.findUnique({
     where: { userId: session.user.id },
   });
   if (existing?.bgImageUrl) {
+    // 直接传 URL，deleteObject 内部会 parse key
     deleteObject(existing.bgImageUrl).catch(() => {});
   }
+  // active 历史也一起标 inactive 删掉
+  await prismaBase.wallpaperHistory.updateMany({
+    where: { userId: session.user.id, isActive: true },
+    data: { isActive: false },
+  });
   await prismaBase.userPreferences.update({
     where: { userId: session.user.id },
     data: { bgImageUrl: null },
-  }).catch(() => {
-    // 如果没有记录，忽略
-  });
+  }).catch(() => {});
+
   return NextResponse.json({ ok: true });
 }
