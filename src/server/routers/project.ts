@@ -66,6 +66,17 @@ export const projectRouter = router({
       if (!ctx.tenantId) throw new TRPCError({ code: 'UNAUTHORIZED' });
       const prisma = createTenantPrisma({ tenantId: ctx.tenantId });
 
+      // B-09 修复：预检软删后的同名 slug（DB 层无 partial unique index，应用层兜底）
+      // 软删记录 (deletedAt != null) 不阻塞新建同名——这是设计意图
+      // 但同一 tenant 下「存活」的同名 slug 必须拒绝
+      const aliveDuplicate = await prisma.project.findFirst({
+        where: { tenantId: ctx.tenantId, slug: input.slug, deletedAt: null },
+        select: { id: true },
+      });
+      if (aliveDuplicate) {
+        throw new TRPCError({ code: 'CONFLICT', message: `Slug "${input.slug}" 已存在` });
+      }
+
       // DS-04: create 带 retry，不再做预检（避免 TOCTOU 竞态）
       // tryCreate 在 catch 里自动追加后缀重试，最多重试 2 次
       async function tryCreate(slugAttempt: string, retries = 2) {

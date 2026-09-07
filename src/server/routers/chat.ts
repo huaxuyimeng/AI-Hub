@@ -79,17 +79,8 @@ export const chatRouter = router({
       const temperature = input.temperature ?? 0.7;
       const maxTokens = input.maxTokens ?? 2048;
 
-      // 1. 用户消息落库
-      const userMsg = await prisma.message.create({
-        data: {
-          conversationId: input.conversationId,
-          role: 'user',
-          content: input.content,
-          model: modelName,
-        },
-      });
-
       // Q6 修复：取最新 50 条（倒序取再反转），而非最旧 50 条
+      // 注意：历史读取放在调用 AI 之前（事务外），AI 失败时无需回滚 history 查询
       const historyDesc = await prisma.message.findMany({
         where: { conversationId: input.conversationId },
         orderBy: { createdAt: 'desc' },
@@ -128,18 +119,36 @@ export const chatRouter = router({
         outputTokens = 0;
       }
 
-      // 4. AI 消息落库
-      const aiMsg = await prisma.message.create({
-        data: {
-          conversationId: input.conversationId,
-          role: 'assistant',
-          content: aiText,
-          tokenCount: isMock ? null : outputTokens,
-          model: modelName,
-        },
+      // 4. 事务：userMsg + aiMsg + conversation.updatedAt 三者原子提交
+      //    任一失败 → 全部回滚，避免「半截对话」「列表时间戳不更新」等不一致
+      //    AI 调用已在事务外完成（避免持锁 30s+），此处只负责落库与时间戳
+      const { userMsg, aiMsg } = await prisma.$transaction(async (tx) => {
+        const userMessage = await tx.message.create({
+          data: {
+            conversationId: input.conversationId,
+            role: 'user',
+            content: input.content,
+            model: modelName,
+          },
+        });
+        const aiMessage = await tx.message.create({
+          data: {
+            conversationId: input.conversationId,
+            role: 'assistant',
+            content: aiText,
+            tokenCount: isMock ? null : outputTokens,
+            model: modelName,
+          },
+        });
+        await tx.conversation.update({
+          where: { id: input.conversationId },
+          data: { updatedAt: new Date() },
+        });
+        return { userMsg: userMessage, aiMsg: aiMessage };
       });
 
       // 5. 触发 UsageStat 记录（仅真实调用；mock 跳过）
+      //    事务外：与计费服务解耦，失败不影响对话已成功的事实
       if (!isMock) {
         const cost = calculateCost(modelName, inputTokens, outputTokens, 0);
         await recordUsage({
@@ -150,12 +159,6 @@ export const chatRouter = router({
           kind: 'chat',
         });
       }
-
-      // 6. 更新 conversation.updatedAt
-      await prismaRaw.conversation.update({
-        where: { id: input.conversationId },
-        data: { updatedAt: new Date() },
-      });
 
       return { userMsg, aiMsg, model: modelName, usage: { inputTokens, outputTokens, cost: isMock ? 0 : calculateCost(modelName, inputTokens, outputTokens, 0) } };
     }),
