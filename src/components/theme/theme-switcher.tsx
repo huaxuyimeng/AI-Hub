@@ -179,7 +179,8 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
           <div className="flex-1 space-y-5 overflow-y-auto px-5 py-4">
             {/* 外观：浅色 / 暗色 / 预设颜色 */}
             <section>
-              <div className="mb-2 text-xs font-medium">外观</div>
+              {/* V-14: 显式 text-foreground */}
+              <div className="mb-2 text-xs font-medium text-foreground">外观</div>
               <div className="flex gap-2">
                 <ModeButton
                   active={modeTab === 'light'}
@@ -210,7 +211,8 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
             {/* 预设（仅当 modeTab !== 'preset' 时显示） */}
             {modeTab !== 'preset' && (
               <section>
-                <div className="mb-2 text-xs font-medium">预设</div>
+                {/* V-14: 显式 text-foreground */}
+                <div className="mb-2 text-xs font-medium text-foreground">预设</div>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {PRESET_LIST.map((p) => (
                     <PresetCard
@@ -230,7 +232,8 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
             {modeTab === 'preset' && (
               <section className="space-y-5">
                 <div>
-                  <div className="mb-2 text-xs font-medium">自定义强调色</div>
+                  {/* V-14: 显式 text-foreground */}
+                  <div className="mb-2 text-xs font-medium text-foreground">自定义强调色</div>
                   <AccentPicker />
                 </div>
 
@@ -282,7 +285,8 @@ function ModeButton({
       type="button"
       onClick={onClick}
       className={
-        'flex flex-1 items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition ' +
+        // V-14 修复：显式指定 text-foreground（暗色模式下文字色要跟随前景色）
+        'flex flex-1 items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium text-foreground transition ' +
         (active
           ? 'border-primary bg-primary/10 text-primary'
           : 'hover:bg-accent')
@@ -312,7 +316,8 @@ function PresetCard({
       type="button"
       onClick={onSelect}
       className={
-        'group relative rounded-md border p-2.5 text-left transition ' +
+        // V-14 修复：显式指定 text-foreground（暗色模式文字色翻转）
+        'group relative rounded-md border p-2.5 text-left text-foreground transition ' +
         (active
           ? 'border-primary ring-2 ring-primary ring-offset-2 ring-offset-background'
           : 'hover:border-foreground/20')

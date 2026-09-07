@@ -81,6 +81,12 @@
   * {
     border-color: var(--border);
   }
+  /* V-14 修复：强制 <dialog> 在 .dark 下也用 dark color-scheme，
+     避免 top-layer 元素被浏览器默认 light 样式覆盖 */
+  .dark dialog,
+  .dark dialog * {
+    color-scheme: dark;
+  }
   /* 键盘 focus-visible 焦点环：用 ring token（fallback 颜色兜底） */
   *:focus-visible {
     outline: 2px solid oklch(72% 0.14 65);
