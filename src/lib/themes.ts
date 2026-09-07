@@ -50,7 +50,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(100% 0 0 / 0.6)',
       surfaceElevated: 'oklch(100% 0 0)',
       muted: 'oklch(96% 0.008 90)',
-      mutedForeground: 'oklch(50% 0.015 250)',
+      // V-12 修复：50% L → 40% L（更暗，亮色背景下对比度更高）
+      mutedForeground: 'oklch(40% 0.015 250)',
       border: 'oklch(92% 0.01 90)',
       ring: 'oklch(72% 0.14 65)',
       accent: 'oklch(72% 0.14 65)',
@@ -65,7 +66,9 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(22% 0.012 250 / 0.7)',
       surfaceElevated: 'oklch(24% 0.012 250)',
       muted: 'oklch(26% 0.012 250)',
-      mutedForeground: 'oklch(70% 0.012 250)',
+      // V-12 修复：暗色 muted-foreground 从 70% L 提到 82% L（提升对比度）
+      // 70% L 在 dark 背景下对比度不足 WCAG AA 4.5:1
+      mutedForeground: 'oklch(82% 0.012 250)',
       border: 'oklch(30% 0.015 250)',
       ring: 'oklch(75% 0.16 65)',
       accent: 'oklch(75% 0.16 65)',
@@ -85,7 +88,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(99% 0.005 60 / 0.7)',
       surfaceElevated: 'oklch(99% 0.005 60)',
       muted: 'oklch(94% 0.012 60)',
-      mutedForeground: 'oklch(48% 0.02 50)',
+      // V-12: 48% L → 40% L
+      mutedForeground: 'oklch(40% 0.02 50)',
       border: 'oklch(90% 0.014 60)',
       ring: 'oklch(60% 0.12 45)',
       accent: 'oklch(60% 0.12 45)',
@@ -100,7 +104,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(20% 0.018 50 / 0.7)',
       surfaceElevated: 'oklch(22% 0.018 50)',
       muted: 'oklch(24% 0.018 50)',
-      mutedForeground: 'oklch(70% 0.018 50)',
+      // V-12: 82% L（同 paper preset）
+      mutedForeground: 'oklch(82% 0.018 50)',
       border: 'oklch(28% 0.02 50)',
       ring: 'oklch(70% 0.14 45)',
       accent: 'oklch(70% 0.14 45)',
@@ -120,7 +125,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(100% 0 0 / 0.65)',
       surfaceElevated: 'oklch(100% 0 0)',
       muted: 'oklch(95% 0.018 160)',
-      mutedForeground: 'oklch(50% 0.02 170)',
+      // V-12: 50% → 40%
+      mutedForeground: 'oklch(40% 0.02 170)',
       border: 'oklch(91% 0.018 160)',
       ring: 'oklch(70% 0.16 160)',
       accent: 'oklch(70% 0.16 160)',
@@ -135,7 +141,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(21% 0.02 160 / 0.7)',
       surfaceElevated: 'oklch(23% 0.02 160)',
       muted: 'oklch(25% 0.02 160)',
-      mutedForeground: 'oklch(70% 0.02 160)',
+      // V-12: 82% L
+      mutedForeground: 'oklch(82% 0.02 160)',
       border: 'oklch(29% 0.022 160)',
       ring: 'oklch(72% 0.18 160)',
       accent: 'oklch(72% 0.18 160)',
@@ -155,7 +162,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(100% 0 0 / 0.65)',
       surfaceElevated: 'oklch(100% 0 0)',
       muted: 'oklch(95% 0.02 290)',
-      mutedForeground: 'oklch(50% 0.025 290)',
+      // V-12: 50% → 40%
+      mutedForeground: 'oklch(40% 0.025 290)',
       border: 'oklch(91% 0.022 290)',
       ring: 'oklch(68% 0.18 290)',
       accent: 'oklch(68% 0.18 290)',
@@ -170,7 +178,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(22% 0.025 290 / 0.7)',
       surfaceElevated: 'oklch(24% 0.025 290)',
       muted: 'oklch(26% 0.025 290)',
-      mutedForeground: 'oklch(70% 0.025 290)',
+      // V-12: 82% L
+      mutedForeground: 'oklch(82% 0.025 290)',
       border: 'oklch(30% 0.028 290)',
       ring: 'oklch(72% 0.2 290)',
       accent: 'oklch(72% 0.2 290)',
@@ -190,7 +199,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(99% 0.01 75 / 0.7)',
       surfaceElevated: 'oklch(99% 0.01 75)',
       muted: 'oklch(94% 0.025 75)',
-      mutedForeground: 'oklch(48% 0.03 65)',
+      // V-12: 48% → 40%
+      mutedForeground: 'oklch(40% 0.03 65)',
       border: 'oklch(90% 0.028 75)',
       ring: 'oklch(72% 0.16 65)',
       accent: 'oklch(72% 0.16 65)',
@@ -205,7 +215,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(20% 0.025 65 / 0.7)',
       surfaceElevated: 'oklch(22% 0.025 65)',
       muted: 'oklch(24% 0.025 65)',
-      mutedForeground: 'oklch(70% 0.025 65)',
+      // V-12: 82% L
+      mutedForeground: 'oklch(82% 0.025 65)',
       border: 'oklch(28% 0.028 65)',
       ring: 'oklch(75% 0.18 65)',
       accent: 'oklch(75% 0.18 65)',
@@ -225,7 +236,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(100% 0 0 / 0.65)',
       surfaceElevated: 'oklch(100% 0 0)',
       muted: 'oklch(95% 0.018 220)',
-      mutedForeground: 'oklch(50% 0.025 230)',
+      // V-12: 50% → 40%
+      mutedForeground: 'oklch(40% 0.025 230)',
       border: 'oklch(91% 0.018 220)',
       ring: 'oklch(68% 0.16 230)',
       accent: 'oklch(68% 0.16 230)',
@@ -240,7 +252,8 @@ export const PRESETS: Record<ThemePreset, PresetTokens> = {
       surface: 'oklch(21% 0.025 220 / 0.7)',
       surfaceElevated: 'oklch(23% 0.025 220)',
       muted: 'oklch(25% 0.025 220)',
-      mutedForeground: 'oklch(70% 0.025 220)',
+      // V-12: 82% L
+      mutedForeground: 'oklch(82% 0.025 220)',
       border: 'oklch(29% 0.028 220)',
       ring: 'oklch(72% 0.18 230)',
       accent: 'oklch(72% 0.18 230)',

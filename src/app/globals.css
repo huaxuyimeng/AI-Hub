@@ -23,7 +23,8 @@
   --surface-glass: oklch(100% 0 0 / 0.6);
   --surface-elevated: oklch(100% 0 0);
   --muted: oklch(96% 0.008 90);
-  --muted-foreground: oklch(50% 0.015 250);
+  /* V-12 修复：亮色模式 muted-foreground 从 50% 降到 42%（更暗，对比度更高） */
+  --muted-foreground: oklch(42% 0.015 250);
   --border: oklch(92% 0.01 90);
   --ring: oklch(72% 0.14 65);
   --accent: 65 75% 55%;          /* HSL 三元组（被 hsl(var(--accent)) 包裹） */
@@ -45,7 +46,8 @@
   --surface-glass: oklch(22% 0.012 250 / 0.7); /* 半透明变体 */
   --surface-elevated: oklch(24% 0.012 250);
   --muted: oklch(26% 0.012 250);
-  --muted-foreground: oklch(70% 0.012 250);
+  /* V-12 修复：82% L（与 themes.ts dark preset 保持一致，提升对比度） */
+  --muted-foreground: oklch(82% 0.012 250);
   --border: oklch(30% 0.015 250);
   --ring: oklch(75% 0.16 65);
   --accent: 65 80% 65%;

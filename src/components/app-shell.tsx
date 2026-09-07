@@ -299,7 +299,8 @@ function NavLink({
         'group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition ' +
         (active
           ? 'bg-primary/10 font-medium text-primary'
-          : 'text-foreground/80 hover:bg-accent hover:text-foreground')
+          // V-12 修复：去掉 /80 opacity（非 active 态用 100% 前景色，更清晰）
+          : 'text-foreground hover:bg-accent hover:text-foreground')
       }
     >
       <Icon size={16} className="shrink-0" />
