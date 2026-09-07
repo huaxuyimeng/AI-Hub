@@ -3,7 +3,7 @@
 // 全局 Toast 系统 — 替代内联 error 框
 // 用法：const toast = useToast(); toast.error('xxx'); toast.success('xxx');
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import {
   IconCheck,
   IconX,
@@ -15,7 +15,7 @@ import type { TablerIconType } from '@/lib/icon-type';
 type ToastKind = 'success' | 'error' | 'info' | 'warning';
 
 interface ToastItem {
-  id: number;
+  id: string;
   kind: ToastKind;
   message: string;
 }
@@ -39,19 +39,35 @@ const ICON_MAP: Record<ToastKind, TablerIconType> = {
 const KIND_STYLES: Record<ToastKind, string> = {
   success: 'border-success/40 bg-success/10 text-success',
   error: 'border-destructive/40 bg-destructive/10 text-destructive',
-  info: 'border-blue-400 bg-blue-50/10 text-blue-500 dark:text-blue-300',
+  info: 'border-foreground/20 bg-foreground/5 text-foreground',
   warning: 'border-warning/40 bg-warning/10 text-warning',
 };
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<ToastItem[]>([]);
+  // C-9 修复：用 ref 追踪所有未触发的定时器，Provider 卸载时统一清理，
+  // 避免 callback 在已卸载组件上 setState（"setState on unmounted component"）
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+
+  // Provider 卸载时清理所有未触发的 timer
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((t) => clearTimeout(t));
+      timersRef.current.clear();
+    };
+  }, []);
 
   const push = useCallback((kind: ToastKind, message: string) => {
-    const id = Date.now() + Math.random();
+    // H-31 修复：crypto.randomUUID() 全局唯一，避免 Date.now()+Math.random() 在同一毫秒多次 push 时碰撞
+    const id = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
     setItems((prev) => [...prev, { id, kind, message }]);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      timersRef.current.delete(timer);
       setItems((prev) => prev.filter((i) => i.id !== id));
     }, kind === 'error' ? 5500 : 3500);
+    timersRef.current.add(timer);
   }, []);
 
   const api: ToastApi = {

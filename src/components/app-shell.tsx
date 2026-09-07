@@ -13,6 +13,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import { BriefingToast } from '@/features/daily-briefing/components/BriefingToast';
 import {
   IconHome,
   IconFolders,
@@ -25,6 +26,11 @@ import {
   IconChevronLeft,
   IconChevronRight,
   IconPalette,
+  IconNews,
+  IconTrendingUp,
+  IconMenu2,
+  IconTrash,
+  IconX,
 } from '@tabler/icons-react';
 import type { TablerIconType } from '@/lib/icon-type';
 import { ThemeSwitcher } from './theme/theme-switcher';
@@ -48,7 +54,10 @@ const NAV_PAGES = [
   { href: '/projects', label: '项目', icon: IconFolders },
   { href: '/chat', label: '对话', icon: IconMessages },
   { href: '/usage', label: '用量', icon: IconChartBar },
+  { href: '/news', label: '新闻', icon: IconNews },
+  { href: '/rankings', label: '排行', icon: IconTrendingUp },
   { href: '/plugins', label: '插件', icon: IconPlug },
+  { href: '/cleanup', label: '清理', icon: IconTrash },
   { href: '/settings', label: '设置', icon: IconSettings },
 ];
 
@@ -57,20 +66,61 @@ const COLLAPSE_KEY = 'aihub-sidebar-mode';
 export function AppShell({ user, children }: { user: User; children: React.ReactNode }) {
   const pathname = usePathname() ?? '';
   const [collapsed, toggle] = useLocalCollapse(false);
+  // R-01 + I-14: 移动端 drawer 状态
+  const [mobileOpen, setMobileOpen] = useState(false);
   const toast = useToast();
+
+  // 路由切换时自动关闭 mobile drawer
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
+      {/* R-01 修复：移动端 backdrop（仅在 drawer 打开时显示） */}
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="关闭侧栏"
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden"
+        />
+      )}
+
+      {/* R-01 修复：移动端 hamburger 按钮（fixed 定位，不占布局） */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        aria-label="打开侧栏"
+        className="fixed left-3 top-3 z-20 inline-flex h-9 w-9 items-center justify-center rounded-md border bg-card text-foreground shadow-sm hover:bg-accent md:hidden"
+      >
+        <IconMenu2 size={16} />
+      </button>
+
       <aside
         className={
-          'shrink-0 flex flex-col border-r bg-card transition-[width] duration-200 ' +
-          (collapsed ? 'w-16' : 'w-60')
+          // R-01 修复：移动端用 fixed 抽屉 + translate 切换；桌面端用 w-16/w-60
+          'shrink-0 flex flex-col border-r bg-card transition-[width,transform] duration-200 ' +
+          'fixed inset-y-0 left-0 z-40 w-60 ' +
+          (mobileOpen ? 'translate-x-0 ' : '-translate-x-full ') +
+          'md:relative md:inset-auto md:translate-x-0 ' +
+          (collapsed ? 'md:w-16' : 'md:w-60')
         }
       >
+        {/* 移动端：抽屉内的关闭按钮（仅 mobile 显示） */}
+        <button
+          type="button"
+          onClick={() => setMobileOpen(false)}
+          aria-label="关闭侧栏"
+          className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground md:hidden"
+        >
+          <IconX size={14} />
+        </button>
         {/* Brand */}
         <div className={'flex h-16 items-center gap-2.5 border-b ' + (collapsed ? 'justify-center px-2' : 'px-4')}>
           {user.image ? (
             // C-06: 优先显示用户上传的头像
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={user.image}
               alt={user.name ?? 'avatar'}
@@ -174,8 +224,8 @@ export function AppShell({ user, children }: { user: User; children: React.React
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-1">
-              <ThemeToggle />
+            <div className="flex flex-col items-center gap-2">
+              <ThemeToggle compact />
               <ThemeSwitcher compact />
               <button
                 type="button"
@@ -212,6 +262,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
       </aside>
 
       <main className="flex flex-1 flex-col overflow-hidden">{children}</main>
+      <BriefingToast />
     </div>
   );
 }
@@ -265,6 +316,12 @@ function NavLink({
 // I-03: 双层持久化（localStorage + tRPC preferences.setSidebar）
 // C-05: 注入 R-01 默认折叠逻辑（< 768px 默认 collapsed）
 // R-01: 优先服务端偏好 > localStorage > 当前 viewport
+//
+// BUG-020 修复（2026-09-03）：
+//   1. 初始化改为 lazy initial + 直接读 localStorage（避免 hydration 闪烁与 race）
+//   2. 远端 sync 完全解耦 v 依赖，只看 status/remotePrefs.data，且只 sync 一次
+//      （v 在依赖里会导致每次 toggle 触发 sync，sync 重新把 v 推回去）
+//   3. 移除 StrictMode cleanup 重置 flag（H-19 修复的反效果：让 race 死锁）
 function useLocalCollapse(mobileDefault = true): [boolean, () => void] {
   const { status } = useSession();
   const setSidebarMut = trpc.preferences.setSidebar.useMutation();
@@ -272,41 +329,35 @@ function useLocalCollapse(mobileDefault = true): [boolean, () => void] {
     enabled: status === 'authenticated',
     staleTime: 60_000,
   });
-  const [v, setV] = useState(false); // SSR 一致：默认展开，避免首屏闪烁
-  const hydrated = React.useRef(false);
 
-  // 初次挂载：localStorage > 移动端默认
-  useEffect(() => {
-    const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
-    const stored = (() => {
-      try {
-        return localStorage.getItem(COLLAPSE_KEY);
-      } catch {
-        return null;
-      }
-    })();
-    if (stored === '1') setV(true);
-    else if (stored === '0') setV(false);
-    else if (isMobile && mobileDefault) setV(true);
-    hydrated.current = true;
-  }, [mobileDefault]);
+  // Lazy initial：直接读 localStorage（避免 SSR 不一致）
+  const [v, setV] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      const stored = localStorage.getItem(COLLAPSE_KEY);
+      if (stored === '1') return true;
+      if (stored === '0') return false;
+    } catch {}
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    return isMobile && mobileDefault ? true : false;
+  });
 
-  // 已认证用户：服务端偏好覆盖 localStorage（仅一次）
-  // I-03: preferences.get 已返回 sidebarMode，可以直接读取
+  // 远端 sync：仅在认证用户首次得到 data 时跑一次
+  // 注意：依赖里没有 v——避免 toggle 后 v 变化触发 sync 把 v 推回去
   const hasSyncedRemoteRef = React.useRef(false);
   useEffect(() => {
     if (hasSyncedRemoteRef.current) return;
-    if (status !== 'authenticated' || !remotePrefs.data || !hydrated.current) return;
+    if (status !== 'authenticated' || !remotePrefs.data) return;
     const remote = remotePrefs.data.sidebarMode;
-    const collapsed = remote === 'collapsed';
-    if (collapsed !== v) {
-      setV(collapsed);
+    const remoteCollapsed = remote === 'collapsed';
+    if (remoteCollapsed !== v) {
+      setV(remoteCollapsed);
       try {
-        localStorage.setItem(COLLAPSE_KEY, collapsed ? '1' : '0');
+        localStorage.setItem(COLLAPSE_KEY, remoteCollapsed ? '1' : '0');
       } catch {}
     }
     hasSyncedRemoteRef.current = true;
-  }, [status, remotePrefs.data, hydrated.current, v]);
+  }, [status, remotePrefs.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggle = React.useCallback(() => {
     setV((prev) => {
@@ -314,7 +365,6 @@ function useLocalCollapse(mobileDefault = true): [boolean, () => void] {
       try {
         localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
       } catch {}
-      // 服务端持久化（静默失败也行）
       if (status === 'authenticated') {
         setSidebarMut.mutate(
           { mode: next ? 'collapsed' : 'expanded' },

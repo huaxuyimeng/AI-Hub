@@ -1,0 +1,15 @@
+# pnpm-workspace.yaml
+# ================================
+# pnpm 9+ 自动识别 workspace 配置
+# 完整说明见 docs/refactor/infra/monorepoTopology.md
+
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# === 共享依赖提升（避免每个 package 重复声明） ===
+# 暂不启用，留给未来跨包重构时按需调整
+# public-hoist-pattern:
+#   - '*types*'
+#   - '*eslint*'
+#   - '*prettier*'

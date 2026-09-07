@@ -200,7 +200,24 @@ function LoginForm() {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          继续操作即代表同意 <Link href="#" className="hover:text-foreground underline-offset-4 hover:underline">服务条款</Link> 与 <Link href="#" className="hover:text-foreground underline-offset-4 hover:underline">隐私政策</Link>
+          继续操作即代表同意{' '}
+          <Link
+            href="/terms"
+            className="hover:text-foreground underline-offset-4 hover:underline"
+            target="_blank"
+            rel="noreferrer"
+          >
+            服务条款
+          </Link>{' '}
+          与{' '}
+          <Link
+            href="/privacy"
+            className="hover:text-foreground underline-offset-4 hover:underline"
+            target="_blank"
+            rel="noreferrer"
+          >
+            隐私政策
+          </Link>
         </p>
       </div>
     </div>

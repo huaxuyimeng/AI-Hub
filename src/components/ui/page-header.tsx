@@ -9,10 +9,10 @@ export function PageHeader({
   action?: React.ReactNode;
 }) {
   return (
-    <div className={action ? 'flex items-center justify-between border-b bg-card px-8 py-4' : 'border-b bg-card px-8 py-4'}>
-      <div>
-        <h1 className="text-lg font-semibold tracking-tight">{title}</h1>
-        {subtitle && <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>}
+    <div className={action ? 'flex items-center justify-between gap-4 border-b bg-card px-4 py-4 sm:px-8' : 'border-b bg-card px-4 py-4 sm:px-8'}>
+      <div className="min-w-0">
+        <h1 className="text-xl font-semibold tracking-tight md:text-2xl">{title}</h1>
+        {subtitle && <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>

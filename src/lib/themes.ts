@@ -270,17 +270,18 @@ export function buildTokens(preset: ThemePreset, accent?: AccentHSL | null): {
   }
 
   // 2. 用 accent 覆盖 accent / ring / accentFg
+  //    注意：--accent 与 --accent-fg 必须是 HSL 三元组（"H S% L%"），
+  //    因为 Tailwind 配置里它们被 hsl(var(--accent)) 包裹使用（见 tailwind.config.ts）。
+  //    --ring 直接以 var(--ring) 读取，所以可以保持完整 hsl() 值。
   if (accent) {
-    const lightAccent = hslToCss(accent.h, accent.s, accent.l);
+    const lightAccent = hslToCss(accent.h, accent.s, accent.l);              // 给 --ring 用（var(--ring) 直读，需要完整 hsl()）
     const darkAccent = hslToCss(accent.h, accent.s, Math.max(40, accent.l + 5));
-    const lightFg = hslToCss(accent.h, accent.s, 20);
-    const darkFg = hslToCss(accent.h, accent.s, 15);
-    light['--accent'] = lightAccent;
+    light['--accent'] = hslTriplet(accent.h, accent.s, accent.l);              // 三元组，被 hsl(var(--accent)) 包裹
     light['--ring'] = lightAccent;
-    light['--accent-fg'] = lightFg;
-    dark['--accent'] = darkAccent;
+    light['--accent-fg'] = hslTriplet(accent.h, accent.s, 20);
+    dark['--accent'] = hslTriplet(accent.h, accent.s, Math.max(40, accent.l + 5));
     dark['--ring'] = darkAccent;
-    dark['--accent-fg'] = darkFg;
+    dark['--accent-fg'] = hslTriplet(accent.h, accent.s, 15);
   }
 
   return { light, dark };
@@ -292,6 +293,11 @@ function camelToKebab(s: string): string {
 
 function hslToCss(h: number, s: number, l: number): string {
   return `hsl(${h.toFixed(0)} ${s.toFixed(0)}% ${l.toFixed(0)}%)`;
+}
+
+/** HSL 三元组（不带 hsl() 包装），用于被 hsl(var(--token)) 再次包裹的变量（--accent / --accent-fg） */
+function hslTriplet(h: number, s: number, l: number): string {
+  return `${h.toFixed(0)} ${s.toFixed(0)}% ${l.toFixed(0)}%`;
 }
 
 /** localStorage 兼容：旧值（"light"/"dark"/"system"）映射成新结构 */
@@ -332,7 +338,9 @@ export function readStoredTheme(): StoredTheme {
       if (old === 'light' || old === 'dark') {
         return { ...DEFAULT_THEME, mode: old };
       }
-    } catch {}
+    } catch (err) {
+      console.warn('[theme] readStoredTheme parse error:', err);
+    }
   }
   return DEFAULT_THEME;
 }
@@ -341,5 +349,7 @@ export function writeStoredTheme(t: StoredTheme) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(t));
-  } catch {}
+  } catch (err) {
+    console.warn('[theme] writeStoredTheme failed:', err);
+  }
 }

@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import { TRPCProvider } from '@/lib/trpc-provider';
 import { ThemeProvider } from '@/components/theme-provider';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { ToastProvider } from '@/components/toast';
 import { DEFAULT_THEME } from '@/lib/themes';
 
@@ -20,9 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ToastProvider>
           <ThemeProvider defaultTheme={DEFAULT_THEME}>
             {children}
-            <div className="fixed bottom-4 right-4 z-50">
-              <ThemeToggle />
-            </div>
+            {/* 主题切换器统一在 AppShell footer 渲染，避免双按钮重复 */}
           </ThemeProvider>
         </ToastProvider>
       </TRPCProvider>

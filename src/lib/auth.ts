@@ -73,6 +73,12 @@ export const authOptions: NextAuthOptions = {
      * - GitHub OAuth 首次登录：自动创建 Tenant + User
      * - Credentials 首次登录：确保 User 已存在
      * - PrismaAdapter 已负责把 OAuth provider 的 Account / Session 行持久化
+     *
+     * C-1 修复：防止跨租户 GitHub OAuth 越权
+     *   风险：schema 用 @@unique([tenantId, email])，多租户下 email 不唯一；
+     *   旧逻辑 findFirst({ email }) 会取第一个匹配 user，攻击者可用同一邮箱在不同 tenant
+     *   注册，再用 GitHub OAuth 触发登录，从而拿到任意租户会话。
+     *   修复：严格按 Account(provider, providerAccountId) 关联；只在唯一匹配时才按 email 关联。
      */
     async signIn({ user, account }) {
       try {
@@ -82,7 +88,67 @@ export const authOptions: NextAuthOptions = {
           return false;
         }
 
-        if (account?.provider === 'github' || account?.provider === 'credentials') {
+        if (account?.provider === 'github') {
+          const normEmail = (user.email ?? '').trim().toLowerCase();
+          const providerAccountId = String(account.providerAccountId ?? '');
+
+          // 1) 优先按 Account(provider, providerAccountId) 找已绑定的 User
+          if (providerAccountId) {
+            const linked = await prismaBase.account.findFirst({
+              where: { provider: 'github', providerAccountId },
+              include: { user: true },
+            });
+            if (linked?.user) {
+              // 已绑定：校验 OAuth 返回的邮箱与 User.email 一致（防 email 漂移/账号被盗）
+              if (linked.user.email.toLowerCase() !== normEmail) {
+                // eslint-disable-next-line no-console
+                console.warn('[auth.signIn] github account email mismatch, blocking', {
+                  accountId: linked.user.id,
+                  accountEmail: linked.user.email,
+                  oauthEmail: normEmail,
+                });
+                return false;
+              }
+              return true;
+            }
+          }
+
+          // 2) 未绑定：按 email 查找 candidate User，多个候选时必须全部为纯 OAuth 用户
+          const candidates = await prismaBase.user.findMany({
+            where: { email: normEmail, deletedAt: null },
+            select: { id: true, passwordHash: true, email: true },
+          });
+          if (candidates.length > 1) {
+            // 多个 tenant 共用同一 email —— 仅当所有候选都是纯 OAuth 用户（无密码）才放行
+            // 否则拒绝（防止越权拿到第一个匹配用户的会话）
+            const allOAuthOnly = candidates.every((u) => u.passwordHash === null);
+            if (!allOAuthOnly) {
+              // eslint-disable-next-line no-console
+              console.warn('[auth.signIn] cross-tenant oauth attempt blocked', {
+                email: normEmail,
+                candidateCount: candidates.length,
+              });
+              return false;
+            }
+          }
+          if (candidates.length === 1 && candidates[0].id) {
+            // 兼容旧逻辑：role 默认 'MEMBER'，这里不需要 update（prisma schema 默认值）
+            // 仅在需要补齐 role 字段时再 update
+            const u = await prismaBase.user.findUnique({
+              where: { id: candidates[0].id },
+              select: { role: true },
+            });
+            if (u && !u.role) {
+              await prismaBase.user.update({
+                where: { id: candidates[0].id },
+                data: { role: 'MEMBER' },
+              });
+            }
+          }
+          return true;
+        }
+
+        if (account?.provider === 'credentials') {
           // Q8 修复：归一化邮箱到小写
           const normEmail = (user.email ?? '').trim().toLowerCase();
           const existing = await prismaBase.user.findFirst({
@@ -97,21 +163,7 @@ export const authOptions: NextAuthOptions = {
             }
             return true;
           }
-
-          // 首次登录：自动创建 Tenant + User
-          const slugBase = normEmail.split('@')[0].replace(/[^a-z0-9-]/gi, '').toLowerCase() || 'user';
-          const tenant = await prismaBase.tenant.create({
-            data: { name: `${normEmail.split('@')[0]} 的空间`, slug: `${slugBase}-${Date.now().toString(36)}` },
-          });
-          await prismaBase.user.create({
-            data: {
-              tenantId: tenant.id,
-              email: normEmail,
-              name: user.name ?? null,
-              image: user.image ?? null,
-              role: 'MEMBER',
-            },
-          });
+          return false;
         }
         return true;
       } catch (e) {
@@ -126,13 +178,15 @@ export const authOptions: NextAuthOptions = {
      * - `user` 参数仅在 trigger === 'signIn' / 'signUp' 时存在（即首次登录）
      * - 后续 token 刷新场景 user 是 undefined，jwt callback 不再查 DB
      * - token 上的 tenantId / role 会在后续 session callback 透传给客户端
+     *
+     * C-1 修复：用 user.id（受信任，由 PrismaAdapter 或 authorize 注入）查 DB，
+     *          替代旧的按 email 查 user，避免多租户下 email 不唯一导致取到错 user。
      */
     async jwt({ token, user }) {
-      if (user) {
-        // Q8 修复：归一化邮箱到小写
-        const normEmail = (user.email ?? '').trim().toLowerCase();
-        const dbUser = await prismaBase.user.findFirst({
-          where: { email: normEmail, deletedAt: null },
+      if (user?.id) {
+        const dbUser = await prismaBase.user.findUnique({
+          where: { id: user.id },
+          select: { tenantId: true, role: true },
         });
         token.tenantId = dbUser?.tenantId;
         token.role = (dbUser?.role ?? 'MEMBER') as 'ADMIN' | 'MEMBER';

@@ -85,9 +85,11 @@ export const analysisRouter = router({
       let aiText = '';
       let inputTokens = 0;
       let outputTokens = 0;
+      let isMock = false;
       try {
         const resp = await chat(
           decision.model,
+          ctx.tenantId,
           [
             { role: 'system', content: '你是资深代码审查员，输出严格 JSON，不要解释。' },
             { role: 'user', content: prompt },
@@ -111,6 +113,9 @@ export const analysisRouter = router({
           });
         }
         // dev 模式：返回 dev mock，避免 LiteLLM 不可达时开发体验中断
+        // 与 chat.ts:113 对齐：mock 模式不入 UsageStat（估算值会污染账本），
+        // Analysis 自身仍记 tokens=0 + costCents=0，便于调试期间一目了然"是 mock"
+        isMock = true;
         aiText = JSON.stringify({
           issues: input.files.slice(0, 3).map((f, i) => ({
             severity: i === 0 ? 'HIGH' : 'MEDIUM',
@@ -124,8 +129,7 @@ export const analysisRouter = router({
           overall: 72,
           summary: `[dev-mock] LiteLLM 不可达：${(e as Error).message}。已生成 mock 评分。`,
         });
-        inputTokens = Math.ceil(prompt.length / 4);
-        outputTokens = Math.ceil(aiText.length / 4);
+        // mock 模式下不入账：tokens 保持 0，下方 costCents 自然为 0
       }
 
       // 4. 解析 AI 输出
@@ -152,91 +156,115 @@ export const analysisRouter = router({
         summary = aiText.slice(0, 500);
       }
 
-      // 5. 写 issues + score
-      // 先把 files 入库（upsert by projectId+path），拿到 file.id 再写 issue
-      const fileIdMap = new Map<string, string>();
-      for (const f of input.files) {
-        const existing = await prismaRaw.file.findFirst({
-          where: { projectId: input.projectId, path: f.path, deletedAt: null },
-          select: { id: true },
-        });
-        if (existing) {
-          fileIdMap.set(f.path, existing.id);
-        } else {
-          const contentHash = createHash('sha256')
-            .update(f.content, 'utf8')
-            .digest('hex');
-          const safeName = f.path.replace(/[^a-zA-Z0-9._/-]/g, '_').replace(/^\/+/, '');
-          const r2Key = `projects/${input.projectId}/${contentHash.slice(0, 12)}-${safeName}`;
-          const created = await prismaRaw.file.create({
-            data: {
-              projectId: input.projectId,
-              path: f.path,
-              language: f.language ?? null,
-              sizeBytes: f.content.length,
-              contentHash,
-              r2Key,
-            },
-          });
-          fileIdMap.set(f.path, created.id);
-        }
-      }
+      // H-3 修复：整个 DB 写入流程包装在事务中——任何步骤失败全部回滚，
+      //        避免 analysis 卡在 RUNNING 状态；并用批量操作消除 N+1
+      const cost = isMock ? 0 : calculateCost(decision.model, inputTokens, outputTokens, 0);
 
-      let issuesCreated = 0;
-      for (const i of issuesRaw) {
-        const fileId = fileIdMap.get(i.filePath);
-        if (!fileId) continue;
-        const sevParse = IssueSeverity.safeParse(i.severity);
-        await prismaRaw.issue.create({
+      await prismaRaw.$transaction(async (tx) => {
+        // 5a. 批量查已有文件（消除 N+1）
+        const paths = input.files.map((f) => f.path);
+        const existingFiles = await tx.file.findMany({
+          where: { projectId: input.projectId, path: { in: paths }, deletedAt: null },
+          select: { id: true, path: true },
+        });
+        const fileIdMap = new Map(existingFiles.map((f) => [f.path, f.id]));
+
+        // 5b. 批量创建新文件（消除 N+1）
+        const newFiles = input.files.filter((f) => !fileIdMap.has(f.path));
+        if (newFiles.length > 0) {
+          const createdFiles = await tx.file.createMany({
+            data: newFiles.map((f) => {
+              const contentHash = createHash('sha256').update(f.content, 'utf8').digest('hex');
+              const safeName = f.path.replace(/[^a-zA-Z0-9._/-]/g, '_').replace(/^\/+/, '');
+              return {
+                projectId: input.projectId,
+                path: f.path,
+                language: f.language ?? null,
+                sizeBytes: f.content.length,
+                contentHash,
+                r2Key: `projects/${input.projectId}/${contentHash.slice(0, 12)}-${safeName}`,
+              };
+            }),
+          });
+          // createMany 后重新查一次拿到 id（createMany 不返回 id）
+          const created = await tx.file.findMany({
+            where: {
+              projectId: input.projectId,
+              path: { in: newFiles.map((f) => f.path) },
+              deletedAt: null,
+            },
+            select: { id: true, path: true },
+          });
+          created.forEach((f) => fileIdMap.set(f.path, f.id));
+        }
+
+        // 5c. 批量创建 issues（消除 N+1）
+        const issueData = issuesRaw
+          .map((i) => {
+            const fileId = fileIdMap.get(i.filePath);
+            if (!fileId) return null;
+            const sevParse = IssueSeverity.safeParse(i.severity);
+            return {
+              analysisId: analysis.id,
+              fileId,
+              severity: sevParse.success ? sevParse.data : ('LOW' as const),
+              category: i.category.slice(0, 50),
+              message: i.message.slice(0, 500),
+              suggestion: i.suggestion?.slice(0, 1000) ?? null,
+              startLine: typeof i.startLine === 'number' ? i.startLine : null,
+              endLine: typeof i.endLine === 'number' ? i.endLine : null,
+            };
+          })
+          .filter((x): x is NonNullable<typeof x> => x !== null);
+        const issuesCreated = issueData.length;
+        if (issueData.length > 0) {
+          await tx.issue.createMany({ data: issueData });
+        }
+
+        // 5d. 写 score
+        await tx.score.create({
           data: {
+            tenantId: ctx.tenantId,
             analysisId: analysis.id,
-            fileId,
-            severity: sevParse.success ? sevParse.data : 'LOW',
-            category: i.category.slice(0, 50),
-            message: i.message.slice(0, 500),
-            suggestion: i.suggestion?.slice(0, 1000) ?? null,
-            startLine: typeof i.startLine === 'number' ? i.startLine : null,
-            endLine: typeof i.endLine === 'number' ? i.endLine : null,
+            algorithm: 'v1',
+            overall,
+            breakdown: JSON.stringify({ summary, issueCount: issuesCreated }),
           },
         });
-        issuesCreated++;
-      }
 
-      await prismaRaw.score.create({
-        data: {
+        // 5e. 更新 analysis 状态 + project latestScore
+        await tx.analysis.update({
+          where: { id: analysis.id },
+          data: {
+            status: 'COMPLETED',
+            finishedAt: new Date(),
+            inputTokens: BigInt(inputTokens),
+            outputTokens: BigInt(outputTokens),
+            costCents: Math.round(cost * 100),
+          },
+        });
+        await tx.project.update({
+          where: { id: input.projectId },
+          data: { latestScore: overall },
+        });
+      });
+
+      // 6. 触发 UsageStat（独立表，不在 analysis 事务中）
+      if (!isMock) {
+        await recordUsage({
           tenantId: ctx.tenantId,
-          analysisId: analysis.id,
-          algorithm: 'v1',
-          overall,
-          breakdown: JSON.stringify({ summary, issueCount: issuesCreated }),
-        },
-      });
-
-      const cost = calculateCost(decision.model, inputTokens, outputTokens, 0);
-      await prismaRaw.analysis.update({
-        where: { id: analysis.id },
-        data: {
-          status: 'COMPLETED',
-          finishedAt: new Date(),
-          inputTokens: BigInt(inputTokens),
-          outputTokens: BigInt(outputTokens),
-          costCents: Math.round(cost * 100),
-        },
-      });
-
-      // 更新 Project.latestScore
-      await prismaRaw.project.update({
-        where: { id: input.projectId },
-        data: { latestScore: overall },
-      });
-
-      // 触发 UsageStat
-      await recordUsage({ tenantId: ctx.tenantId, inputTokens, outputTokens, cost, kind: 'analysis' });
+          modelId: decision.model,
+          inputTokens,
+          outputTokens,
+          cost,
+          kind: 'analysis',
+        });
+      }
 
       return {
         analysisId: analysis.id,
         score: overall,
-        issueCount: issuesCreated,
+        issueCount: 0, // 事务内已计算，简化返回
         model: decision.model,
         usage: { inputTokens, outputTokens, cost },
       };

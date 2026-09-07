@@ -4,7 +4,7 @@
 // 工作台首页：欢迎区 + 4 快捷入口 + 4 数据卡 + 最近项目 + 工具区
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   IconFolders,
   IconMessages,
@@ -23,27 +23,37 @@ import { useSession } from 'next-auth/react';
 import { trpc } from '@/lib/trpc';
 import { centsToCNY } from '@/lib/currency';
 import { ErrorState } from '@/components/ui/error-state';
+import { DiscoveryPanel } from '@/components/discovery/discovery-panel';
+import { useRouter } from 'next/navigation';
 
 export default function WorkbenchHome() {
   const projects = trpc.project.list.useQuery({ take: 8 });
   const conversations = trpc.chat.list.useQuery({ take: 5 });
   const usage = trpc.usage.recent.useQuery({ days: 30 });
   const { data: session } = useSession();
+  const router = useRouter();
 
   const firstName = session?.user?.name?.split(' ')[0] ?? session?.user?.email?.split('@')[0] ?? '朋友';
 
-  // 根据小时决定问候语
-  const hour = new Date().getHours();
-  const greeting = hour < 6 ? '夜深了' : hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
+  // H-16 修复：hour 在组件顶层调用，在 SSR/CSR 边界会产生 hydration mismatch。
+  // 修复：用 useState 预设一个"中午好"默认值（SSR/CSR 一致），在 useEffect 中补全实际时间。
+  const [greeting, setGreeting] = useState('下午好');
+
+  useEffect(() => {
+    const h = new Date().getHours();
+    setGreeting(h < 6 ? '夜深了' : h < 12 ? '早上好' : h < 18 ? '下午好' : '晚上好');
+  }, []);
+
+  const [discoveryIntent, setDiscoveryIntent] = useState<string>('');
 
   return (
     <div className="flex-1 overflow-y-auto page-enter">
       <div className="mx-auto max-w-6xl px-8 py-10">
         {/* 欢迎区 */}
-        <header className="mb-10 flex items-end justify-between gap-4">
+        <header className="mb-8 flex items-center justify-between gap-4">
           <div className="min-w-0 flex-1">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Workbench</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight">
               {greeting}，<span className="text-primary">{firstName}</span>
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -59,6 +69,32 @@ export default function WorkbenchHome() {
             <IconArrowRight size={14} />
           </Link>
         </header>
+
+        {/* 需求探索向导（用户约定 2026-08-30：默认追问模式） */}
+        <section className="mb-10">
+          <DiscoveryPanel
+            scope="workbench"
+            defaultIntent={discoveryIntent}
+            onOpenChat={(prompt) => {
+              setDiscoveryIntent('');
+              router.push(`/chat?prefill=${encodeURIComponent(prompt)}`);
+            }}
+            onStartTask={(prompt, brief) => {
+              setDiscoveryIntent('');
+              if (brief.domain === 'project' || brief.scenario === 'create') {
+                // 跳转到新建项目，预填 intent
+                sessionStorage.setItem('aihub-prefill-project', JSON.stringify({ name: prompt.split('\n')[0]?.slice(0, 50) ?? '', brief }));
+                router.push('/projects/new');
+              } else if (brief.domain === 'analysis') {
+                router.push('/projects');
+              } else if (brief.domain === 'research') {
+                router.push('/news');
+              } else {
+                router.push(`/chat?prefill=${encodeURIComponent(prompt)}`);
+              }
+            }}
+          />
+        </section>
 
         {/* 4 快捷入口（skill §5.2） */}
         <section className="mb-12 grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -279,22 +315,11 @@ export default function WorkbenchHome() {
   );
 }
 
-/** AI 新闻入口卡：探测本地新闻服务（127.0.0.1:8787）健康状态 */
+/** AI 新闻入口卡：通过 tRPC 读取实时统计（不再探测独立的本地 Node 服务） */
 function NewsEntryCard() {
-  const [status, setStatus] = useState<'checking' | 'up' | 'down'>('checking');
-  const [total, setTotal] = useState<number | null>(null);
-
-  useEffect(() => {
-    const ctl = new AbortController();
-    fetch('http://127.0.0.1:8787/api/stats', { signal: ctl.signal })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((d) => {
-        setStatus('up');
-        setTotal(d?.today?.total ?? null);
-      })
-      .catch(() => setStatus('down'));
-    return () => ctl.abort();
-  }, []);
+  const statsQ = trpc.news.stats.useQuery(undefined, { staleTime: 60_000 });
+  const status = statsQ.isLoading ? 'checking' : statsQ.error ? 'down' : 'up';
+  const total = statsQ.data?.today ?? null;
 
   return (
     <Link
@@ -319,10 +344,10 @@ function NewsEntryCard() {
           }
         >
           {status === 'up'
-            ? `服务运行中${total != null ? ` · 今日 ${total} 条` : ''}`
+            ? `今日 ${total ?? 0} 条`
             : status === 'down'
-            ? '未启动 · npm run serve'
-            : '检测中…'}
+            ? '数据暂不可用'
+            : '加载中…'}
         </span>
       </div>
       <div className="text-xs text-muted-foreground">

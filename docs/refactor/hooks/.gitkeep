@@ -1,0 +1,7 @@
+# 占位目录 —— 7 个新 hook 设计归位
+#
+# 预计 hook 清单：
+#   preCommit.md          提交前 lint + typecheck
+#   postCheckout.md       切换分支后重装依赖
+#   archiveCheck.md       文档过期检查
+#   monorepoBoundary.md   跨包导入边界检查

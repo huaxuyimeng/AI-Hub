@@ -56,7 +56,7 @@ export default function ProjectsPage() {
       list = list.filter(
         (p) =>
           p.name.toLowerCase().includes(k) ||
-          p.slug.toLowerCase().includes(k) ||
+          (p.slug?.toLowerCase().includes(k) ?? false) ||
           p.description?.toLowerCase().includes(k)
       );
     }
@@ -147,8 +147,8 @@ export default function ProjectsPage() {
         </div>
 
         {/* 表格 */}
-        <div className="overflow-hidden rounded-lg border bg-card">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-lg border bg-card">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="border-b bg-muted/30 text-[11px] uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="px-4 py-2 text-left font-medium">名称</th>

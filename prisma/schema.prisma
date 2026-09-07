@@ -1,5 +1,3 @@
-// Prisma schema (SQLite dev version). Production schema is the same logic but with postgres / enums / @map.
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,42 +8,40 @@ datasource db {
 }
 
 model Tenant {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  plan      String   @default("FREE")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users            User[]
-  projects         Project[]
+  id               String            @id @default(uuid())
+  name             String
+  slug             String            @unique
+  plan             String            @default("FREE")
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   apiKeys          ApiKey[]
   conversations    Conversation[]
   installedPlugins InstalledPlugin[]
   pluginAuditLogs  PluginAuditLog[]
-  usageStats       UsageStat[]
+  projects         Project[]
   scores           Score[]
+  usageStats       UsageStat[]
+  users            User[]
   preferences      UserPreferences[]
 }
 
 model User {
-  id            String    @id @default(uuid())
+  id            String             @id @default(uuid())
   tenantId      String
   email         String
   name          String?
   image         String?
-  passwordHash  String?
   emailVerified DateTime?
-  role          String    @default("MEMBER")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  role          String             @default("MEMBER")
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
   deletedAt     DateTime?
-
-  accounts Account[]
-  sessions Session[]
-  preferences UserPreferences?
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  passwordHash  String?
+  accounts      Account[]
+  sessions      Session[]
+  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  preferences   UserPreferences?
+  wallpapers    WallpaperHistory[]
 
   @@unique([tenantId, email])
   @@index([tenantId, email])
@@ -66,8 +62,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -77,8 +72,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -90,21 +84,19 @@ model VerificationToken {
 }
 
 model Project {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
   tenantId    String
   name        String
   slug        String
   description String?
-  visibility  String   @default("PRIVATE")
+  visibility  String     @default("PRIVATE")
   latestScore Float?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   deletedAt   DateTime?
-
-  files    File[]
-  analyses Analysis[]
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  analyses    Analysis[]
+  files       File[]
+  tenant      Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, slug])
   @@index([tenantId, createdAt])
@@ -113,18 +105,17 @@ model Project {
 }
 
 model File {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   projectId   String
   path        String
   language    String?
   sizeBytes   Int
   contentHash String
   r2Key       String
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
   deletedAt   DateTime?
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  issues  Issue[]
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues      Issue[]
 
   @@index([projectId, path])
   @@index([projectId, language])
@@ -143,85 +134,81 @@ model Analysis {
   finishedAt   DateTime?
   errorMessage String?
   deletedAt    DateTime?
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  score   Score?
-  issues  Issue[]
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues       Issue[]
+  score        Score?
 
   @@index([projectId, status])
   @@index([deletedAt])
 }
 
 model Score {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   tenantId   String
-  analysisId String   @unique
-  algorithm  String   @default("v1")
+  analysisId String    @unique
+  algorithm  String    @default("v1")
   overall    Float
   breakdown  String
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
   deletedAt  DateTime?
-
-  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  analysis   Analysis  @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, analysisId])
   @@index([deletedAt])
 }
 
 model ApiKey {
-  id         String    @id @default(uuid())
-  tenantId   String
-  provider   String
-  keyHash    String
-  keyLast4   String
-  label      String?
-  createdAt  DateTime  @default(now())
-  lastUsedAt DateTime?
-  deletedAt  DateTime?
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid())
+  tenantId     String
+  provider     String
+  keyHash      String
+  keyLast4     String
+  label        String?
+  // AES-256-GCM 加密后的明文 key，用 APP_SECRET 解密；keyHash 只用于验重
+  // 添加于 2026-09-04（BUG-01 修复）：旧记录为 null，resolver 会自动 fallback 到 env
+  encryptedKey String?
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+  deletedAt    DateTime?
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, provider])
   @@index([deletedAt])
 }
 
 model Conversation {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   tenantId  String
   userId    String
   title     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
-
-  messages Message[]
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messages  Message[]
 
   @@index([tenantId, userId])
   @@index([deletedAt])
 }
 
 model Message {
-  id             String   @id @default(uuid())
+  id             String       @id @default(uuid())
   conversationId String
   role           String
   content        String
   tokenCount     Int?
-  model          String?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime     @default(now())
   deletedAt      DateTime?
-
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  model          String?
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
   @@index([deletedAt])
 }
 
 model Issue {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   analysisId String
   fileId     String
   severity   String
@@ -231,9 +218,8 @@ model Issue {
   startLine  Int?
   endLine    Int?
   deletedAt  DateTime?
-
-  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
-  file     File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  file       File      @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  analysis   Analysis  @relation(fields: [analysisId], references: [id], onDelete: Cascade)
 
   @@index([analysisId, severity])
   @@index([fileId])
@@ -241,21 +227,20 @@ model Issue {
 }
 
 model Plugin {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  displayName String
-  description String?
-  author      String?
-  homepage    String?
-  tags        String   @default("")
-  iconUrl     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  versions      PluginVersion[]
+  id            String            @id @default(uuid())
+  name          String            @unique
+  displayName   String
+  description   String?
+  author        String?
+  homepage      String?
+  tags          String            @default("")
+  iconUrl       String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   installedBy   InstalledPlugin[]
-  auditLogs     PluginAuditLog[]
   modelRankings ModelRanking[]
+  auditLogs     PluginAuditLog[]
+  versions      PluginVersion[]
 }
 
 model PluginVersion {
@@ -268,42 +253,39 @@ model PluginVersion {
   isPublished Boolean   @default(false)
   publishedAt DateTime?
   createdAt   DateTime  @default(now())
-
-  plugin Plugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+  plugin      Plugin    @relation(fields: [pluginId], references: [id], onDelete: Cascade)
 
   @@unique([pluginId, version])
   @@index([pluginId, isPublished])
 }
 
 model InstalledPlugin {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   tenantId  String
   pluginId  String
-  enabled   Boolean  @default(true)
+  enabled   Boolean   @default(true)
   config    String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   deletedAt DateTime?
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  plugin Plugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+  plugin    Plugin    @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, pluginId])
   @@index([deletedAt])
 }
 
 model PluginAuditLog {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   tenantId  String
   pluginId  String
   action    String
   payload   String?
   result    String?
   duration  Int?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   deletedAt DateTime?
-
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  plugin Plugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+  plugin    Plugin    @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, createdAt])
   @@index([pluginId, action])
@@ -317,53 +299,533 @@ model ModelRanking {
   avgScore  Float
   testCount Int      @default(0)
   updatedAt DateTime @updatedAt
-
-  plugin Plugin @relation(fields: [pluginId], references: [id], onDelete: Cascade)
+  plugin    Plugin   @relation(fields: [pluginId], references: [id], onDelete: Cascade)
 
   @@unique([pluginId, modelName])
   @@index([pluginId])
 }
 
 model UsageStat {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   date          DateTime
-  analysisCount Int      @default(0)
-  messageCount  Int      @default(0)
-  inputTokens   BigInt   @default(0)
-  outputTokens  BigInt   @default(0)
-  costCents     Int      @default(0)
+  analysisCount Int       @default(0)
+  messageCount  Int       @default(0)
+  inputTokens   BigInt    @default(0)
+  outputTokens  BigInt    @default(0)
+  costCents     Int       @default(0)
   deletedAt     DateTime?
+  /// 标准化模型 ID（与 Model.externalId 对齐），null 表示历史/未识别模型
+  modelId       String?
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  // Q5 修复：加唯一约束，防止并发重复行（并发写入时 P2002 重试才真正生效）
-  @@unique([tenantId, date])
+  @@unique([tenantId, date, modelId])
   @@index([tenantId, date])
+  @@index([tenantId, modelId, date])
   @@index([deletedAt])
 }
 
 /// 用户偏好（每用户一条）
 /// 来源：.cursor/skills/workbench-ui-designer §6.4 — 主题 / 强调色 / 背景图持久化
 model UserPreferences {
-  id        String   @id @default(uuid())
-  userId    String   @unique
-  tenantId  String
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  tenantId            String
   /// paper | ink | mint | lavender | amber | ocean
-  themePreset     String   @default("paper")
+  themePreset         String   @default("paper")
   /// light | dark | system
-  themeMode       String   @default("system")
+  themeMode           String   @default("system")
   /// DIY HSL 三元组，例如 "65 75% 55%"。null = 跟随预设
-  accentHsl       String?
+  accentHsl           String?
   /// R2 背景图 URL（R2 public endpoint 或 /files/xxx）
-  bgImageUrl      String?
+  bgImageUrl          String?
   /// 客户端侧栏折叠状态: "expanded" | "collapsed"
-  sidebarMode     String   @default("expanded")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sidebarMode         String   @default("expanded")
+  /// 新闻自动刷新频率（小时）：1/3/6/12/24
+  newsRefreshInterval Int      @default(3)
+  /// 关注的新闻分类：AI Coding / 具身智能 / AI政策
+  newsCategories      String   @default("")
+  /// 关注的新闻源 ID（逗号分隔）
+  newsSources         String   @default("")
+  /// 关注的模型 externalId（逗号分隔）
+  followedModels      String   @default("")
+  /// 价格变动预警阈值（百分比，如 10 表示变动 10% 提醒）
+  priceAlertThreshold Float?
+  /// AI 早报状态提示（右上角弹窗），默认开启
+  briefingToast       Boolean  @default(true)
+  /// AI 早报时间窗口分割小时（北京时间），默认 8（即 08:00 前为"晨报"，之后为"晚报"）
+  briefingWindowHour  Int      @default(8)
+  /// AI 对话预设风格: rigorous | humorous | friendly | concise | literary（默认 friendly）
+  chatPresetStyle     String   @default("friendly")
+  /// 自定义开场白（AI 每次打招呼怎么说）。null = 不用开场白
+  chatOpeningLine     String?
+  /// 角色设定（例：你是 10 年经验的产品经理）
+  chatPersonaRole     String?
+  /// 用户自定义规则（每行一条，例：不要用 emoji；回答必带引用）
+  chatCustomRules     String   @default("")
+  /// 回复语言: zh | en | auto（默认 auto）
+  chatResponseLang    String   @default("auto")
+  /// 思考深度: normal | detailed | none（默认 normal）
+  chatReasoningDepth  String   @default("normal")
+  /// AI 对话风格首次引导浮窗是否已展示（跨设备同步，替代 localStorage）
+  chatStyleOnboarded  Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  tenant              Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
+}
+
+/// AI 早报（PPT 日报）：一天一份，结构化内容永久保存，下载时即时生成 .pptx
+model DailyReport {
+  id          String    @id @default(uuid())
+  /// 北京日期，如 "2026-08-31"（全局唯一）
+  date        String    @unique
+  /// generating | ready | failed
+  status      String    @default("generating")
+  /// 结构化内容 JSON（DailyReportContent）
+  content     String?
+  /// 主题：paper | ink | mint | lavender | amber | ocean
+  theme       String    @default("paper")
+  /// LLM 失败时的降级版本（无 AI 文案）
+  degraded    Boolean   @default(false)
+  /// 失败原因
+  error       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  /// 当前阶段（仅 generating 时有意义，供前端细粒度展示）：
+  /// collect | select | write | persist | done
+  phase       String?
+  /// 当前主题对应 .pptx 的 base64 缓存（懒构建、命中即返）
+  pptxBase64  String?
+  /// 缓存生成时间（便于排查与失效判断）
+  pptxBuiltAt DateTime?
+  /// 用户手动锁定：true = 永不清理 pptxBase64 缓存（用户必须主动解锁）
+  locked      Boolean   @default(false)
+
+  @@index([date])
+}
+
+/// 用户壁纸历史（每用户多条）
+/// 来源：用户上传过的所有背景图，支持历史切换 / 删除。
+model WallpaperHistory {
+  id          String   @id @default(uuid())
+  userId      String
+  tenantId    String
+  /// R2 对象 key
+  r2Key       String
+  /// 可访问的 URL（R2 public 或 /files/xxx）
+  url         String
+  /// 可选：用户给壁纸起的标签（默认空字符串）
+  label       String   @default("")
+  /// 是否仍为用户当前激活的壁纸（每次切换同步更新）
+  isActive    Boolean  @default(false)
+  /// 字节数（用于 UI 展示）
+  sizeBytes   Int      @default(0)
+  /// MIME 类型
+  contentType String   @default("image/jpeg")
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([userId, isActive])
+}
+
+/// 新闻数据源配置
+/// 来源：design/总览.md §三 AI 新闻聚合
+model NewsSource {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  url         String
+  /// rss | html | api
+  type        String
+  enabled     Boolean    @default(true)
+  /// HTML / 正则源：失败记 warning，不阻断整批
+  fragile     Boolean    @default(false)
+  /// 优先级（数字越大越优先）
+  priority    Int        @default(1)
+  lastFetchAt DateTime?
+  lastOkAt    DateTime?
+  lastCount   Int        @default(0)
+  lastMs      Int?
+  lastError   String?
+  okStreak    Int        @default(0)
+  emptyStreak Int        @default(0)
+  failStreak  Int        @default(0)
+  failCount   Int        @default(0)
+  unhealthy   Boolean    @default(false)
+  notes       String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  items       NewsItem[]
+
+  @@index([enabled, priority])
+  @@index([unhealthy])
+}
+
+/// AI 领域术语词典（AI 自动维护 + 人工审核）
+/// 来源：D-2 AI 驱动关键词系统（docs/26-Phase2差异化功能实施计划.md §二）
+/// 关键约束：verified=false 的词不参与搜索展开
+model TermDictionary {
+  id           String   @id @default(uuid())
+  /// 标准化名称（lowercase, kebab-case，如 'gpt-4o'）
+  canonical    String   @unique
+  /// 显示名称（如 'GPT-4o'）
+  displayName  String
+  /// 类型：model | concept | company | person
+  type         String
+  /// 同义词列表（JSON: ["gpt4o", "chatgpt-4o", "openai-gpt-4o"]）
+  aliases      Json     @default("[]")
+  /// 权重（0-100，用户反馈调整；初始 50）
+  weight       Int      @default(50)
+  /// 来源：auto | manual | user
+  source       String   @default("auto")
+  /// AI 分类（AI Coding / 具身智能 / AI 政策 / null）
+  category     String?
+  /// 首次发现时间
+  firstSeen    DateTime @default(now())
+  /// 最后验证时间
+  lastVerified DateTime @default(now())
+  /// 是否已审核（false = 仅在字典里，不参与搜索）
+  verified     Boolean  @default(false)
+  /// 审核备注
+  notes        String?
+
+  @@index([type, verified])
+  @@index([weight])
+}
+
+/// 术语评估记录（每周一次批处理）
+/// 来源：D-2 §二 Day 3 evaluate-terms
+model TermEvaluation {
+  id          String   @id @default(uuid())
+  canonical   String
+  /// 评估批次（YYYY-WW，如 '2026-W35'）
+  batch       String
+  /// 准确性：true_positive | false_positive | uncertain
+  label       String
+  /// 出现次数（最近窗口命中新闻数）
+  frequency   Int
+  /// 评估时间
+  evaluatedAt DateTime @default(now())
+
+  @@index([batch])
+  @@index([canonical])
+}
+
+/// 新闻条目
+/// 来源：整合 plan §2.1 多源验证 + 模型关联
+model NewsItem {
+  id               String     @id @default(uuid())
+  title            String
+  url              String     @unique
+  sourceId         String
+  summary          String?
+  content          String?
+  publishedAt      DateTime?
+  /// * 发布时间精度：'exact' | 'date' | null
+  publishPrecision String?
+  /// * 爬取时间
+  crawledAt        DateTime   @default(now())
+  /// AI Coding / 具身智能 / AI政策
+  category         String?
+  tags             String     @default("")
+  /// 封面图 URL（2026-08-30 新增：从 RSS enclosure 或 og:image 提取）
+  coverUrl         String?
+  /// 多源报道的其他源名称（逗号分隔），用于展示"X 源共同报道"
+  crossSources     String     @default("")
+  /// 自动提取的关联模型 externalId（逗号分隔）
+  relatedModels    String     @default("")
+  /// AI 厂家标签（OpenAI、DeepSeek 等，逗号分隔）（2026-08-30 新增）
+  companyTags      String     @default("")
+  /// A / B / C / D 置信度评级
+  confidence       String     @default("B")
+  createdAt        DateTime   @default(now())
+  deletedAt        DateTime?
+  /// 多媒体引用（视频/音频/图片），2026-08-31 D-1 新增
+  /// 结构：[{kind: 'video', bvid, url, author, method, articleUrl, thumbnailUrl?, durationSec?}]
+  media            Json?
+  source           NewsSource @relation(fields: [sourceId], references: [id])
+
+  @@index([sourceId, publishedAt(sort: Desc)])
+  @@index([publishedAt(sort: Desc)])
+  @@index([category])
+  @@index([relatedModels])
+  @@index([companyTags])
+  @@index([deletedAt])
+  @@index([deletedAt, publishedAt(sort: Desc)])
+  @@index([category, publishedAt(sort: Desc)])
+}
+
+/// B 站 UP 主视频抓取缓存
+/// 来源：迁移自 ai-news-daily 的 bilibili-news.json
+/// 写入策略：风控时按 UP 主粒度回退到历史缓存（详见 src/lib/bilibili/storage.ts）
+model BilibiliCache {
+  id           String   @id @default(uuid())
+  /// 上次成功抓取时间
+  fetchedAt    DateTime
+  /// 哪些 UP 主是历史缓存（写入保护时填充），格式 "橘鸦Juya, 黑鸦Heya"
+  note         String?
+  /// {ups: [{uid, name, tag, videos: [{bvid, title, description, url, uploadDate, method, articleUrl, news: [{title, summary, category}]}]}]}
+  ups          Json
+  /// {uid: {ok, count, ms, error}}
+  sourceHealth Json?
+  createdAt    DateTime @default(now())
+
+  @@index([fetchedAt(sort: Desc)])
+}
+
+/// AI 模型主表
+/// 来源：整合 plan §2.2 混合采集策略（官网 + AA + 手动兜底）
+model Model {
+  id            String          @id @default(uuid())
+  /// 标准化 ID（lowercase，kebab-case），如 'gpt-4o', 'claude-fable-5'
+  externalId    String          @unique
+  name          String
+  provider      String
+  family        String?
+  officialUrl   String?
+  docsUrl       String?
+  apiKeyUrl     String?
+  /// 输入价格 (USD/M tokens)
+  priceInput    Float           @default(0)
+  /// 输出价格 (USD/M tokens)
+  priceOutput   Float           @default(0)
+  priceCurrency String          @default("USD")
+  /// 能力分 (0-100)，来自 Artificial Analysis
+  intelligence  Float?
+  /// 相对速度
+  speed         Float?
+  /// AA-LIVE | AA-SNAPSHOT | MANUAL
+  scoreSource   String?
+  description   String?
+  /// 是否启用（true = 出现在排行榜）
+  isActive      Boolean         @default(true)
+  /// 待验证标记（爬虫无法获取数据时为 true）
+  isPending     Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  deletedAt     DateTime?
+  snapshots     ModelSnapshot[]
+
+  @@index([provider])
+  @@index([isActive, isPending])
+  @@index([deletedAt])
+}
+
+/// 模型价格/能力快照（用于价格走势 + 历史追踪）
+model ModelSnapshot {
+  id           String   @id @default(uuid())
+  modelId      String
+  intelligence Float?
+  speed        Float?
+  priceInput   Float    @default(0)
+  priceOutput  Float    @default(0)
+  /// OFFICIAL | AA | MANUAL | NEWS-DISCOVERED
+  source       String
+  note         String?
+  snapshotAt   DateTime @default(now())
+  model        Model    @relation(fields: [modelId], references: [id])
+
+  @@index([modelId, snapshotAt(sort: Desc)])
+}
+
+/// 本地工作空间目录（一个项目可挂一个或多个）
+/// 来源：设计文档 §工作空间
+model WorkspaceFolder {
+  id              String    @id @default(uuid())
+  projectId       String
+  /// 客户端展示用名称，如「前端代码」「后端 API」
+  label           String
+  /// 绝对路径或用户选择的根目录标识
+  path            String
+  /// 是否为默认根（用于代码分析）
+  isPrimary       Boolean   @default(false)
+  /// 是否在文件树中排除 .git / node_modules 等
+  includePatterns String    @default("")
+  excludePatterns String    @default("node_modules,.git,dist,build,.next,.cache,coverage")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  @@index([projectId, deletedAt])
+}
+
+/// 项目级插件挂载（叠加在 InstalledPlugin 上：作用域是「这个项目」）
+/// 来源：设计文档 §插件选择
+model ProjectPlugin {
+  id                String    @id @default(uuid())
+  projectId         String
+  /// InstalledPlugin.id（租户级安装）—— 选择插件前用户必须已安装
+  installedPluginId String
+  /// 作用范围：code-analysis | chat-system-prompt | file-watcher | webhook | ...
+  scope             String    @default("code-analysis")
+  /// 是否启用
+  enabled           Boolean   @default(true)
+  /// 项目级配置覆盖（JSON 字符串）
+  config            String    @default("")
+  createdAt         DateTime  @default(now())
+  deletedAt         DateTime?
+
+  @@unique([projectId, installedPluginId, scope])
+  @@index([projectId, deletedAt])
+}
+
+/// 提示词模板库（系统级 + 项目级）
+/// 来源：设计文档 §提示词选定
+model PromptTemplate {
+  id           String          @id @default(uuid())
+  /// system（全局预置） | project（项目自定义）
+  kind         String          @default("system")
+  name         String
+  /// 简短说明，用于 UI 列表展示
+  description  String?
+  /// 分类：code-review | testing | refactor | doc | security | general
+  category     String          @default("general")
+  /// 实际提示词内容（支持 {{var}} 模板变量）
+  content      String
+  /// JSON：{ varName: description, ... }
+  variables    String          @default("")
+  /// 创建者 userId（系统预置时为 null）
+  authorId     String?
+  /// 是否预置（用户不可编辑）
+  isBuiltIn    Boolean         @default(false)
+  /// 使用次数（统计）
+  useCount     Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  deletedAt    DateTime?
+  projectLinks ProjectPrompt[]
+
+  @@unique([kind, name])
+  @@index([category])
+  @@index([kind, deletedAt])
+}
+
+/// 项目挂载的提示词
+model ProjectPrompt {
+  id         String         @id @default(uuid())
+  projectId  String
+  templateId String
+  /// 角色：system（注入对话） | on-demand（手动选用） | hook:commit（钩子触发）
+  role       String         @default("on-demand")
+  /// 模板变量的项目级覆盖（JSON）
+  variables  String         @default("")
+  enabled    Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  deletedAt  DateTime?
+  template   PromptTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, templateId, role])
+  @@index([projectId, deletedAt])
+}
+
+/// 自动化任务
+/// 来源：设计文档 §自动化任务
+model Automation {
+  id          String    @id @default(uuid())
+  projectId   String
+  name        String
+  /// 简短说明
+  description String?
+  /// trigger: schedule | file-change | analysis-complete | manual
+  trigger     String    @default("manual")
+  /// cron 表达式（trigger=schedule 时使用）
+  cron        String?
+  /// watch path（trigger=file-change 时使用）
+  watchPath   String?
+  /// 执行步骤（JSON 数组，step.type ∈ prompt / plugin / notify）
+  steps       String    @default("[]")
+  enabled     Boolean   @default(true)
+  /// 上次执行时间
+  lastRunAt   DateTime?
+  /// 上次执行结果
+  lastResult  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@index([projectId, deletedAt])
+  @@index([projectId, trigger])
+}
+
+/// 连接器（外部系统集成：GitHub / Slack / Linear / Webhook / ...）
+/// 来源：设计文档 §连接器
+model Connector {
+  id          String    @id @default(uuid())
+  projectId   String
+  /// 类型：github | gitlab | slack | linear | notion | webhook | jira | s3
+  type        String
+  /// 展示名
+  label       String
+  /// 配置（JSON 字符串，密文存 ApiKey / webhookUrl 等）
+  config      String    @default("{}")
+  /// OAuth token 或 API Key（加密后存储，运行时解密）
+  secret      String?
+  enabled     Boolean   @default(true)
+  /// 上次健康检查时间
+  lastCheckAt DateTime?
+  /// 上次健康检查结果：ok | failed
+  lastStatus  String?
+  /// 上次错误信息
+  lastError   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  @@unique([projectId, type, label])
+  @@index([projectId, deletedAt])
+  @@index([type])
+}
+
+/// 专家 Agent（写好提示词的预置角色）
+/// 来源：设计文档 §专家（代码审查 / 安全 / 隐患 / Bug 预判）
+model ExpertAgent {
+  id               String          @id @default(uuid())
+  /// 唯一 slug，如 code-review / security-audit / bug-prediction
+  slug             String          @unique
+  name             String
+  /// 角色描述（用于卡片展示）
+  description      String
+  /// emoji-free 图标（Tabler name，如 IconShield / IconBug）
+  icon             String          @default("IconSparkles")
+  /// 系统提示词
+  systemPrompt     String
+  /// 推荐模型（externalId）；null = 用户选择
+  recommendedModel String?
+  /// 触发关键词（用于聊天页「@专家」自动联想）
+  triggers         String          @default("")
+  /// 标签：code-review / security / bug-prediction / refactor / test / doc
+  tags             String          @default("")
+  /// 是否预置
+  isBuiltIn        Boolean         @default(true)
+  /// 排序
+  sortOrder        Int             @default(100)
+  /// 使用次数
+  useCount         Int             @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  deletedAt        DateTime?
+  projectLinks     ProjectExpert[]
+
+  @@index([deletedAt])
+}
+
+/// 项目挂载的专家 Agent（用于「分析时调用」或「对话时可用」）
+model ProjectExpert {
+  id             String      @id @default(uuid())
+  projectId      String
+  agentId        String
+  /// scope: analysis（自动调用） | chat（对话可选）
+  scope          String      @default("analysis")
+  enabled        Boolean     @default(true)
+  /// 项目级提示词覆盖
+  overridePrompt String?
+  createdAt      DateTime    @default(now())
+  deletedAt      DateTime?
+  agent          ExpertAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, agentId, scope])
+  @@index([projectId, deletedAt])
 }

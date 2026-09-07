@@ -6,6 +6,8 @@ import type { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import { getServerSession } from 'next-auth';
 import superjson from 'superjson';
 import { authOptions } from '@/lib/auth';
+import { logger } from '@/lib/observability/logger';
+import { prismaRaw } from '@/lib/db';
 
 export async function createContext(opts: FetchCreateContextFnOptions) {
   // ✅ v3.3.1 修复：getServerSession 必须传 authOptions，否则 session 永远 null
@@ -55,3 +57,47 @@ export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
     },
   });
 });
+
+/**
+ * ADMIN 门禁：实时查库校验角色（修复 BUG-10 部分 + BUG-05 部分）
+ *
+ * 为什么不能用 ctx.session.user.role：
+ *   1. JWT 快照在 token 有效期内不会刷新（典型 7 天），降权后旧 token 仍带 ADMIN
+ *   2. 安全敏感操作（refresh / hardDelete）必须用"现在"的角色，而非"登录时"的角色
+ *
+ * 用法：
+ *   const adminProcedure = protectedProcedure.use(requireAdmin);
+ *   refresh: adminProcedure.mutation(...)
+ */
+export const requireAdmin = t.middleware(async ({ ctx, next, path }) => {
+  if (!ctx.session?.user?.id) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+  // 实时查库（避免 JWT 快照带来的越权窗口）
+  const user = await prismaRaw.user.findUnique({
+    where: { id: ctx.session.user.id },
+    select: { role: true, deletedAt: true },
+  });
+  if (!user || user.deletedAt !== null) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'User no longer valid' });
+  }
+  if (user.role !== 'ADMIN') {
+    logger.warn('[requireAdmin] forbidden access attempt', {
+      userId: ctx.session.user.id,
+      path,
+      actualRole: user.role,
+    });
+    throw new TRPCError({ code: 'FORBIDDEN', message: 'Admin role required' });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      session: ctx.session,
+      tenantId: ctx.tenantId,
+      isAdmin: true as const,
+    },
+  });
+});
+
+/** 受保护 + ADMIN 校验的 procedure（修复 BUG-05） */
+export const adminProcedure = protectedProcedure.use(requireAdmin);

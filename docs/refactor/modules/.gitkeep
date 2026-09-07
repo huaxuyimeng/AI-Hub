@@ -1,0 +1,9 @@
+# 占位目录 —— 14 个业务模块的设计文档归位
+#
+# 目录命名：驼峰（camelCase）按用户约定
+# 文件命名：camelCase.md（无中划线、无下划线、无空格、无编号前缀也可带）
+#
+# 14 个模块（按 docs/refactor/00-总体迁移设计.md §3 模块清单）：
+#   auth / chat / projects / usage / aiCore / news /
+#   rankings / bilibili / dailyBriefing / slideEngine /
+#   theme / settings / discovery / cleanup

@@ -90,6 +90,12 @@
   .dark *:focus-visible {
     outline-color: oklch(75% 0.16 65);
   }
+  /* 全局 input / textarea / select hover 反馈：边框加深一档（语义同 Vercel/GitHub） */
+  input:hover:not(:focus):not(:disabled):not([type='range']):not([type='color']),
+  textarea:hover:not(:focus):not(:disabled),
+  select:hover:not(:focus):not(:disabled) {
+    border-color: color-mix(in oklab, var(--foreground) 30%, var(--border));
+  }
   html {
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
@@ -152,19 +158,46 @@
     }
   }
 
-  /* slide-in（toast 用） */
+  /* slide-in（toast 用）：从右上角双轴入场 */
   .animate-slide-in {
     animation: slide-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
   }
   @keyframes slide-in {
     from {
       opacity: 0;
-      transform: translateX(20px);
+      transform: translateX(-12px) translateY(-8px);
     }
     to {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateX(0) translateY(0);
     }
+  }
+
+  /* C-16 修复：NewsAnalyticsModal 用的动画 keyframes，统一在此声明
+     （原本在 6 个独立 <style> 标签中重复注入，关闭后不卸载，污染 DOM） */
+  @keyframes analytics-fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes analytics-modalIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes analytics-barGrow {
+    from { width: 0%; }
+    to   { width: var(--bar-w); }
+  }
+  @keyframes analytics-drawLine {
+    from { stroke-dashoffset: var(--path-l); }
+    to   { stroke-dashoffset: 0; }
+  }
+  @keyframes analytics-dashGrow {
+    from { stroke-dashoffset: var(--path-l); }
+    to   { stroke-dashoffset: 0; }
+  }
+  @keyframes analytics-kpiIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   /* 输入框 focus 时的柔和过渡 */
@@ -182,6 +215,65 @@
       transition-duration: 0.01ms !important;
     }
   }
+}
+
+/* =========================================================================
+ * DIY 强调色滑块（accent-picker）— 自定义 thumb 让其可见可拖
+ * ========================================================================= */
+.accent-picker-range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  outline: none;
+}
+.accent-picker-range::-webkit-slider-runnable-track {
+  height: 100%;
+  background: transparent;
+}
+.accent-picker-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface-elevated);
+  border: 2px solid var(--ring);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  cursor: grab;
+  margin-top: 0; /* 居中 */
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.accent-picker-range::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.accent-picker-range::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.25);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--ring) 25%, transparent);
+}
+.accent-picker-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--surface-elevated);
+  border: 2px solid var(--ring);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  cursor: grab;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.accent-picker-range::-moz-range-thumb:hover {
+  transform: scale(1.15);
+}
+.accent-picker-range::-moz-range-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.25);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--ring) 25%, transparent);
+}
+.accent-picker-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
+}
+.accent-picker-range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
 }
 
 /* =========================================================================
@@ -233,4 +325,87 @@
     position: relative;
     z-index: 1;
   }
+}
+
+/* =========================================================================
+ * PageGradient — 鼠标跟随的柔光 blob（div + CSS）
+ *
+ * 设计：
+ * - 单个 div（380×380），CSS filter: blur(40px) 把硬圆边柔化成有机"一团"
+ * - 鼠标位置 = 强调色（accent）；向外过渡到调色板的其它色相
+ * - CSS transform 跟随鼠标（700ms cubic-bezier 平滑插值）
+ * - 颜色通过 @property 注册，浏览器原生插值
+ * - 不再做 SVG filter 形态位移、不做 mix-blend-mode 叠加
+ *   （上一版 SVG 用了 0.55-0.85 透明度 + plus-lighter 混合，颜色变得太深）
+ *
+ * 透明度档位（与 v3 径向渐变背景一致）：
+ *   浅色： 0.04-0.13（柔和，不抢戏）
+ *   暗色： 0.07-0.20（稍亮，适配深底）
+ * ========================================================================= */
+
+@property --pg-c1 { syntax: '<color>'; inherits: false; initial-value: oklch(70% 0.16 220 / 0.13); }
+@property --pg-c2 { syntax: '<color>'; inherits: false; initial-value: oklch(72% 0.15 290 / 0.10); }
+@property --pg-c3 { syntax: '<color>'; inherits: false; initial-value: oklch(76% 0.12 180 / 0.07); }
+@property --pg-c1d { syntax: '<color>'; inherits: false; initial-value: oklch(72% 0.18 220 / 0.20); }
+@property --pg-c2d { syntax: '<color>'; inherits: false; initial-value: oklch(70% 0.20 290 / 0.15); }
+@property --pg-c3d { syntax: '<color>'; inherits: false; initial-value: oklch(74% 0.15 180 / 0.10); }
+@property --pg-acc { syntax: '<color>'; inherits: false; initial-value: oklch(65% 0.18 65 / 0.45); }
+@property --pg-accd { syntax: '<color>'; inherits: false; initial-value: oklch(65% 0.18 65 / 0.45); }
+
+/* 浅色默认值 */
+.page-gradient {
+  --pg-c1: oklch(70% 0.16 220 / 0.13);
+  --pg-c2: oklch(72% 0.15 290 / 0.10);
+  --pg-c3: oklch(76% 0.12 180 / 0.07);
+  --pg-acc: oklch(65% 0.18 65 / 0.45);
+
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  /* 默认显示；首次进入页面时不会有突兀出现 */
+  opacity: 1;
+}
+
+/* 暗色重写 */
+.dark .page-gradient {
+  --pg-c1: var(--pg-c1d);
+  --pg-c2: var(--pg-c2d);
+  --pg-c3: var(--pg-c3d);
+  --pg-acc: var(--pg-accd);
+}
+
+/* 主光晕 blob —— 圆+重模糊=有机一团 */
+.page-gradient-blob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 380px;
+  height: 380px;
+  margin-left: -190px;
+  margin-top: -190px;
+  border-radius: 50%;
+  filter: blur(40px);
+  transform: translate(50vw, 50vh);
+  transition:
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1),
+    --pg-c1 2400ms cubic-bezier(0.45, 0.05, 0.55, 0.95),
+    --pg-c2 2400ms cubic-bezier(0.45, 0.05, 0.55, 0.95),
+    --pg-c3 2400ms cubic-bezier(0.45, 0.05, 0.55, 0.95),
+    --pg-acc 800ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+
+  /* 中心强调色 → 调色板色 → 透明
+     - 0% 中心：accent（强调色）
+     - 30% 近距：调色板色 1（饱和）
+     - 60% 中距：调色板色 2（柔和）
+     - 88% 远距：完全透明（自然消失） */
+  background: radial-gradient(
+    circle,
+    var(--pg-acc) 0%,
+    var(--pg-c1) 30%,
+    var(--pg-c2) 60%,
+    transparent 88%
+  );
 }

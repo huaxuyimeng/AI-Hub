@@ -120,4 +120,150 @@ export const preferencesRouter = router({
       });
       return { ok: true };
     }),
+
+  /**
+   * 更新新闻/排行设置
+   * 来源：整合 plan §3.4 设置页扩展
+   */
+  updateNewsSettings: protectedProcedure
+    .input(z.object({
+      newsRefreshInterval: z.number().int().min(1).max(24).optional(),
+      newsCategories: z.array(z.string()).optional(),
+      newsSources: z.array(z.string()).optional(),
+      followedModels: z.array(z.string()).optional(),
+      priceAlertThreshold: z.number().min(0).max(100).nullable().optional(),
+      briefingToast: z.boolean().optional(),
+      briefingWindowHour: z.number().int().min(0).max(23).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const data: Record<string, unknown> = {};
+      if (input.newsRefreshInterval !== undefined) data.newsRefreshInterval = input.newsRefreshInterval;
+      if (input.newsCategories !== undefined) data.newsCategories = input.newsCategories.join(',');
+      if (input.newsSources !== undefined) data.newsSources = input.newsSources.join(',');
+      if (input.followedModels !== undefined) data.followedModels = input.followedModels.join(',');
+      if (input.priceAlertThreshold !== undefined) data.priceAlertThreshold = input.priceAlertThreshold;
+      if (input.briefingToast !== undefined) data.briefingToast = input.briefingToast;
+      if (input.briefingWindowHour !== undefined) data.briefingWindowHour = input.briefingWindowHour;
+
+      await prismaBase.userPreferences.upsert({
+        where: { userId: ctx.session.user.id },
+        update: data,
+        create: {
+          userId: ctx.session.user.id,
+          tenantId: ctx.tenantId!,
+          newsRefreshInterval: input.newsRefreshInterval ?? 3,
+          newsCategories: input.newsCategories?.join(',') ?? '',
+          newsSources: input.newsSources?.join(',') ?? '',
+          followedModels: input.followedModels?.join(',') ?? '',
+          priceAlertThreshold: input.priceAlertThreshold,
+          briefingToast: input.briefingToast ?? true,
+          briefingWindowHour: input.briefingWindowHour ?? 8,
+        },
+      });
+
+      return { ok: true };
+    }),
+
+  /**
+   * 获取新闻/排行设置
+   */
+  getNewsSettings: protectedProcedure.query(async ({ ctx }) => {
+    const row = await prismaBase.userPreferences.findUnique({
+      where: { userId: ctx.session.user.id },
+      select: {
+        newsRefreshInterval: true,
+        newsCategories: true,
+        newsSources: true,
+        followedModels: true,
+        priceAlertThreshold: true,
+        briefingToast: true,
+        briefingWindowHour: true,
+      },
+    });
+
+    return {
+      newsRefreshInterval: row?.newsRefreshInterval ?? 3,
+      newsCategories: row?.newsCategories ? row.newsCategories.split(',').filter(Boolean) : [],
+      newsSources: row?.newsSources ? row.newsSources.split(',').filter(Boolean) : [],
+      followedModels: row?.followedModels ? row.followedModels.split(',').filter(Boolean) : [],
+      priceAlertThreshold: row?.priceAlertThreshold ?? null,
+      briefingToast: row?.briefingToast ?? true,
+      briefingWindowHour: row?.briefingWindowHour ?? 8,
+    };
+  }),
+
+  // ── AI 对话风格 ────────────────────────────────────────────────────────
+
+  /** 获取聊天风格（用于 chat.ts 注入 + 设置页展示） */
+  getChatStyle: protectedProcedure.query(async ({ ctx }) => {
+    const row = await prismaBase.userPreferences.findUnique({
+      where: { userId: ctx.session.user.id },
+      select: {
+        chatPresetStyle: true,
+        chatOpeningLine: true,
+        chatPersonaRole: true,
+        chatCustomRules: true,
+        chatResponseLang: true,
+        chatReasoningDepth: true,
+        chatStyleOnboarded: true,
+      },
+    });
+    return {
+      chatPresetStyle: row?.chatPresetStyle ?? 'friendly',
+      chatOpeningLine: row?.chatOpeningLine ?? null,
+      chatPersonaRole: row?.chatPersonaRole ?? null,
+      chatCustomRules: row?.chatCustomRules ?? '',
+      chatResponseLang: row?.chatResponseLang ?? 'auto',
+      chatReasoningDepth: row?.chatReasoningDepth ?? 'normal',
+      chatStyleOnboarded: row?.chatStyleOnboarded ?? false,
+    };
+  }),
+
+  /** 更新聊天风格（sanitize 后 upsert） */
+  updateChatStyle: protectedProcedure
+    .input(z.object({
+      chatPresetStyle: z.enum(['rigorous', 'humorous', 'friendly', 'concise', 'literary']).optional(),
+      chatOpeningLine: z.string().max(500).nullable().optional(),
+      chatPersonaRole: z.string().max(500).nullable().optional(),
+      chatCustomRules: z.string().max(2000).optional(),
+      chatResponseLang: z.enum(['zh', 'en', 'auto']).optional(),
+      chatReasoningDepth: z.enum(['normal', 'detailed', 'none']).optional(),
+      chatStyleOnboarded: z.boolean().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const data: Record<string, unknown> = {};
+      if (input.chatPresetStyle !== undefined) data.chatPresetStyle = input.chatPresetStyle;
+      if (input.chatOpeningLine !== undefined) data.chatOpeningLine = input.chatOpeningLine ?? null;
+      if (input.chatPersonaRole !== undefined) data.chatPersonaRole = input.chatPersonaRole ?? null;
+      if (input.chatCustomRules !== undefined) data.chatCustomRules = input.chatCustomRules;
+      if (input.chatResponseLang !== undefined) data.chatResponseLang = input.chatResponseLang;
+      if (input.chatReasoningDepth !== undefined) data.chatReasoningDepth = input.chatReasoningDepth;
+      if (input.chatStyleOnboarded !== undefined) data.chatStyleOnboarded = input.chatStyleOnboarded;
+
+      const row = await prismaBase.userPreferences.upsert({
+        where: { userId: ctx.session.user.id },
+        update: data,
+        create: {
+          userId: ctx.session.user.id,
+          tenantId: ctx.tenantId!,
+          chatPresetStyle: (input.chatPresetStyle ?? 'friendly') as string,
+          chatOpeningLine: input.chatOpeningLine ?? null,
+          chatPersonaRole: input.chatPersonaRole ?? null,
+          chatCustomRules: (input.chatCustomRules ?? '') as string,
+          chatResponseLang: (input.chatResponseLang ?? 'auto') as string,
+          chatReasoningDepth: (input.chatReasoningDepth ?? 'normal') as string,
+          chatStyleOnboarded: (input.chatStyleOnboarded ?? false) as boolean,
+        },
+      });
+
+      return {
+        chatPresetStyle: row.chatPresetStyle,
+        chatOpeningLine: row.chatOpeningLine,
+        chatPersonaRole: row.chatPersonaRole,
+        chatCustomRules: row.chatCustomRules,
+        chatResponseLang: row.chatResponseLang,
+        chatReasoningDepth: row.chatReasoningDepth,
+        chatStyleOnboarded: row.chatStyleOnboarded,
+      };
+    }),
 });

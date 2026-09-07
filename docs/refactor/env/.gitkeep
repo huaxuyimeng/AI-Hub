@@ -1,0 +1,10 @@
+# 占位目录 —— 环境分层目录结构示例
+#
+# 真实运行时的 .env 文件位置：
+#   .env.base            公共默认值（git tracked）
+#   .env.secret          私密变量（git ignored，含真实 key）
+#   .env.local           本地覆盖（git ignored）
+#   .env.production      生产覆盖（git ignored）
+#   .env.development     开发覆盖（git tracked，公共 dev 配置）
+#
+# 本目录存放 *.example 模板和分层策略文档

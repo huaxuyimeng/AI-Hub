@@ -4,7 +4,7 @@ import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 import { env } from '@/lib/env';
 import { Providers } from '@/components/providers';
-import { NO_FOUC_SCRIPT } from '@/components/theme-provider';
+import { PREPAINT_SCRIPT } from '@/lib/bootstrap-script';
 
 // C29：从 env.ts 取校验过的 NEXTAUTH_URL；缺失时 fallback 并打 warn
 function resolveMetadataBase(): URL {
@@ -51,8 +51,8 @@ export default function RootLayout({
     // C31：suppressHydrationWarning 避免 theme class 在 hydration 时报警告
     <html lang="zh-CN" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <head>
-        {/* FOUC 屏蔽：避免 hydration 之前主题错位闪烁 */}
-        <script dangerouslySetInnerHTML={{ __html: NO_FOUC_SCRIPT }} />
+        {/* FOUC 屏蔽：避免 hydration 之前主题错位闪烁 + 写入渐变光晕调色板 */}
+        <script dangerouslySetInnerHTML={{ __html: PREPAINT_SCRIPT }} />
         {/* R2 配置 flag（仅 boolean，无凭据） */}
         <script dangerouslySetInnerHTML={{ __html: R2_BOOTSTRAP_SCRIPT }} />
       </head>

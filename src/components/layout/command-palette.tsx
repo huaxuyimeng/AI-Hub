@@ -4,7 +4,7 @@
 // 全局命令面板 (Cmd+K / Ctrl+K / Esc)，仿 Trae 风
 // S-02: description 只接收字符串（React 默认 escape），如未来要支持 i18n HTML，务必用 createElement 渲染，不要 dangerouslySetInnerHTML
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   IconHome,
@@ -43,6 +43,8 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedIdx, setSelectedIdx] = useState(0);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
 
   // Cmd+K / Ctrl+K 打开，Esc 关闭（打开时也支持，承诺在 chat placeholder 中）
   useEffect(() => {
@@ -56,6 +58,8 @@ export function CommandPalette() {
         if (active && (active.tagName === 'TEXTAREA' || active.isContentEditable)) {
           active.blur();
         }
+        // A-01 修复：打开前记录当前焦点，关闭后还原
+        returnFocusRef.current = (document.activeElement as HTMLElement | null) ?? null;
         setOpen((v) => !v);
       } else if (e.key === 'Escape' && open) {
         e.preventDefault();
@@ -64,6 +68,51 @@ export function CommandPalette() {
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  // A-01 修复：focus trap + 关闭后还原焦点
+  useEffect(() => {
+    if (!open) return;
+    // 等下一帧让 input autoFocus 完，再接管 trap
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    function getFocusable(): HTMLElement[] {
+      const root = dialogRef.current;
+      if (!root) return [];
+      return Array.from(root.querySelectorAll<HTMLElement>(focusableSelector)).filter(
+        (el) => !el.hasAttribute('disabled') && el.offsetParent !== null
+      );
+    }
+    function handleTab(e: KeyboardEvent) {
+      if (e.key !== 'Tab') return;
+      const items = getFocusable();
+      if (items.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !dialogRef.current?.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (active === last || !dialogRef.current?.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+    document.addEventListener('keydown', handleTab);
+    return () => {
+      document.removeEventListener('keydown', handleTab);
+      // 关闭后还原焦点到打开前的元素
+      if (returnFocusRef.current && document.body.contains(returnFocusRef.current)) {
+        returnFocusRef.current.focus();
+      }
+    };
   }, [open]);
 
   const filtered = NAV_COMMANDS.filter((c) => {
@@ -88,7 +137,8 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-start justify-center bg-black/40 backdrop-blur-sm pt-[14vh] animate-fade-in"
+      ref={dialogRef}
+      className="fixed inset-0 z-[90] flex items-start justify-center bg-black/25 pt-[14vh] animate-fade-in"
       onClick={() => setOpen(false)}
       role="dialog"
       aria-modal="true"
@@ -105,6 +155,9 @@ export function CommandPalette() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
+              // C-13 修复：CJK 输入法组合态期间跳过方向键/Enter，避免吞掉 IME 选词
+              const ne = e.nativeEvent as KeyboardEvent;
+              if (ne.isComposing || ne.keyCode === 229) return;
               if (e.key === 'ArrowDown') {
                 e.preventDefault();
                 setSelectedIdx((i) => Math.min(i + 1, filtered.length - 1));

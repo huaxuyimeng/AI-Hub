@@ -1,0 +1,9 @@
+# 占位目录 —— 基础设施层设计文档归位
+#
+# 预计内容：
+#   envLayering.md        环境分层（base / secret / local / override）
+#   monorepoTopology.md   pnpm workspace 顶层拓扑（apps/ + packages/）
+#   packageContract.md    包契约规范（exports 字段 + ESLint 边界）
+#   depCruiser.md         dependency-cruiser 规则
+#   riskRegister.md       风险登记表
+#   observability.md      日志/告警/锁统一规范

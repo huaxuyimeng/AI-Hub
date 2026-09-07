@@ -4,6 +4,7 @@
 // Chat 重写：左侧对话列表（时间分组 + 搜索 + 折叠） + 主区对话流 + 输入框 + 模型选择
 
 import { useState, useEffect, useRef, useMemo } from 'react';
+import * as React from 'react';
 import {
   IconPlus,
   IconSend,
@@ -13,6 +14,7 @@ import {
   IconSearch,
   IconChevronDown,
   IconChevronRight,
+  IconChevronLeft,
   IconSettings,
   IconLoader2,
 } from '@tabler/icons-react';
@@ -79,14 +81,41 @@ export default function ChatPage() {
     onError: (e) => toast.error(formatError(e)),
   });
 
-  const firstConvId = listQ.data?.items[0]?.id ?? null;
+  // I-05 修复：用 ref 记录是否已设置过初始 activeId，避免 listQ.data 引用变化导致无限循环
+  const hasSetInitialRef = useRef(false);
+  // 拆出变量（lint：避免 useEffect 依赖项里写复杂表达式）
+  const firstConvId = listQ.data?.items[0]?.id;
+  const convItems = listQ.data?.items;
   useEffect(() => {
-    if (!activeId && firstConvId) setActiveId(firstConvId);
-  }, [activeId, firstConvId]);
+    if (hasSetInitialRef.current) return;
+    if (!activeId && firstConvId) {
+      setActiveId(firstConvId);
+      hasSetInitialRef.current = true;
+    }
+  }, [activeId, firstConvId, convItems]);
 
+  // H-12+H-13 修复：追踪用户是否主动滚到上方读旧消息，避免新消息打断阅读
+  const userScrolledUpRef = useRef(false);
+  const BOTTOM_THRESHOLD_PX = 120; // 距底部超过此值视为"在读旧消息"
+
+  // 监听用户手动滚动
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    userScrolledUpRef.current = distFromBottom > BOTTOM_THRESHOLD_PX;
+  };
+
+  // 新消息到达时自动滚到底（仅当用户当前在底部区域时）
+  // H-12 修复：只在有 activeId + 有消息时触发，避免空状态滚动到 top
+  // H-13 修复：检测用户是否在读旧消息，尊重阅读位置
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [convQ.data?.messages.length]);
+    if (!activeId || (convQ.data?.messages.length ?? 0) === 0) return;
+    if (userScrolledUpRef.current) return; // 用户在看旧消息，不打断
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+  }, [convQ.data?.messages.length, activeId]);
 
   // 对话列表按时间分组
   const grouped = useMemo(() => {
@@ -113,6 +142,16 @@ export default function ChatPage() {
     return groups;
   }, [listQ.data, searchQ]);
 
+  // P0 修复：移动端双视图状态管理
+  const [mobileView, setMobileView] = React.useState<'list' | 'chat'>('list');
+
+  // 移动端：选择对话后自动切换到聊天视图
+  React.useEffect(() => {
+    if (activeId && window.innerWidth < 768) {
+      setMobileView('chat');
+    }
+  }, [activeId]);
+
   // 当前选中的模型 meta
   const currentModel = FALLBACK_MODELS.find((m) => m.name === model) ?? FALLBACK_MODELS[0];
 
@@ -123,6 +162,7 @@ export default function ChatPage() {
   function handleSend() {
     const text = input.trim();
     if (!text || !activeId || send.isPending) return;
+    userScrolledUpRef.current = false; // 发消息后重置"已读"状态，下次自动滚到底
     setInput('');
     send.mutate({
       conversationId: activeId,
@@ -135,13 +175,12 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-full">
-      {/* R-04: mobile: sidebar absolute + active 时占满 */}
+      {/* 移动端：条件渲染侧栏或主区；桌面端：始终显示双栏 */}
       <aside
         className={
           'flex w-72 shrink-0 flex-col border-r bg-card transition-transform ' +
-          (activeId
-            ? 'max-md:absolute max-md:inset-y-0 max-md:left-0 max-md:z-10 max-md:w-full'
-            : 'max-md:w-full')
+          'md:flex ' +
+          (mobileView === 'list' ? 'flex' : 'hidden')
         }
       >
         <div className="flex h-14 items-center justify-between gap-2 border-b px-3">
@@ -220,12 +259,21 @@ export default function ChatPage() {
       </aside>
 
       {/* Active conversation */}
-      <div className="flex flex-1 flex-col bg-background">
+      <div className={'flex flex-1 flex-col bg-background ' + (mobileView === 'chat' ? 'flex' : 'hidden md:flex')}>
         {activeId ? (
           <>
-            {/* Top bar with model selector */}
+            {/* Top bar with model selector + 移动端返回按钮 */}
             <div className="flex h-14 items-center justify-between border-b bg-card px-4">
               <div className="flex min-w-0 items-center gap-2">
+                {/* 移动端返回按钮 */}
+                <button
+                  type="button"
+                  onClick={() => setMobileView('list')}
+                  className="md:hidden rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                  aria-label="返回对话列表"
+                >
+                  <IconChevronLeft size={16} />
+                </button>
                 <button
                   type="button"
                   onClick={() => setControlsOpen(!controlsOpen)}
@@ -276,7 +324,7 @@ export default function ChatPage() {
               </div>
             )}
 
-            <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-6">
+            <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-6 py-6">
               <div className="mx-auto max-w-3xl">
                 {!convQ.data && <div className="text-sm text-muted-foreground">加载中…</div>}
                 {convQ.data?.messages.length === 0 && (
@@ -410,12 +458,22 @@ function ConvItem({
   onSelect: () => void;
   onDelete: () => void;
 }) {
+  // P0-修复：外层不能是 <button>（嵌套 button 触发 hydration error），
+  // 改为 div + role="button" + 键盘事件，保持可访问性。
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect();
+    }
+  }
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onSelect}
+      onKeyDown={handleKeyDown}
       className={
-        'group flex w-full cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs transition ' +
+        'group flex w-full cursor-pointer items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs transition focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 ' +
         (active
           ? 'bg-primary/10 font-medium text-primary'
           : 'text-foreground/80 hover:bg-accent')
@@ -428,12 +486,13 @@ function ConvItem({
           e.stopPropagation();
           onDelete();
         }}
-        className="ml-1 rounded p-1 text-muted-foreground opacity-0 transition group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive"
+        className="ml-1 rounded p-1 text-muted-foreground opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100 hover:bg-destructive/10 hover:text-destructive"
         title="删除"
+        aria-label={`删除对话 ${conv.title ?? '未命名'}`}
       >
         <IconTrash size={11} />
       </button>
-    </button>
+    </div>
   );
 }
 

@@ -1,0 +1,10 @@
+# 占位目录 —— 7 个新 skill 设计归位
+#
+# 预计 skill 清单（与 hooks 平级）：
+#   addProvider.md        新增 AI Provider（OpenAI/Anthropic/Gemini/...）
+#   addParser.md          新增新闻解析器
+#   addCron.md            新增定时任务
+#   fixBug.md             标准 Bug 修复六步流程
+#   addModule.md          新增业务模块
+#   updateSnapshot.md     更新 slide-engine 快照
+#   reviewTerms.md        术语审核运营

@@ -88,11 +88,11 @@ export function ThemeProvider({
   });
   const updateThemeMut = trpc.preferences.updateTheme.useMutation();
 
-  // 1. hydrate localStorage
+  // C-17 修复：去掉 Effect #1 的 applyThemeVars(stored)，让唯一的 applyThemeVars
+  //        始终由 Effect #2（监听 theme state 变化）驱动，避免 mount 时双重写入
   React.useEffect(() => {
     const stored = readStoredTheme();
     setThemeState(stored);
-    applyThemeVars(stored);
   }, []);
 
   // 2. apply theme whenever state changes
@@ -176,6 +176,11 @@ export function ThemeProvider({
     [writeRemote]
   );
 
+  // C-18 回退：之前用 themeRef 冻结 ctx.theme 的方案会把 ctx.theme 永远停在
+  // 初始值，导致 6 个消费方（theme-switcher / accent-picker / theme-toggle /
+  // PageGradient / theme-settings-panel）看不到状态变化、高亮错位。
+  // 正确做法：让 ctx 随 theme 一起重建——消费方本就需要 re-render 来显示新状态。
+  // 当前消费方只有 ~6 个，re-render 成本可忽略，无需为这个量级拆分双 Context。
   const ctx = React.useMemo<ThemeContextValue>(
     () => ({
       theme,
@@ -198,7 +203,7 @@ export function ThemeProvider({
         return url;
       },
     }),
-    [theme, update, utils]
+    [update, utils, theme]
   );
 
   return <ThemeContext.Provider value={ctx}>{children}</ThemeContext.Provider>;
@@ -209,20 +214,6 @@ export function useTheme(): ThemeContextValue {
   return ctx ?? STUB;
 }
 
-/** 注入到 <head> 的 FOUC 屏蔽脚本（在 layout.tsx 内联）。 */
-export const NO_FOUC_SCRIPT = `
-(function() {
-  try {
-    var raw = localStorage.getItem('aihub-theme-v2');
-    var t;
-    if (raw) { t = JSON.parse(raw); }
-    else {
-      var old = localStorage.getItem('aihub-theme');
-      if (old === 'light' || old === 'dark') {
-        t = { mode: old, preset: 'paper', accent: null, bgUrl: null };
-      }
-    }
-    if (t && t.mode === 'dark') document.documentElement.classList.add('dark');
-  } catch (e) {}
-})();
-`;
+// 旧的 NO_FOUC_SCRIPT 已迁移到 @/lib/bootstrap-script（合并为 PREPAINT_SCRIPT）。
+// 保留 alias 仅供向后兼容；新代码请直接 import { PREPAINT_SCRIPT }。
+export { PREPAINT_SCRIPT as NO_FOUC_SCRIPT } from '@/lib/bootstrap-script';

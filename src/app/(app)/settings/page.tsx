@@ -17,68 +17,161 @@ import {
   IconCopy,
   IconRefresh,
   IconCheck,
+  IconNews,
+  IconChartBar,
+  IconRobot,
+  IconLock,
 } from '@tabler/icons-react';
 import { ThemeSettingsPanel } from '@/components/theme-settings-panel';
 import { useToast } from '@/components/toast';
 import { useConfirm } from '@/components/confirm-dialog';
+import { ChatStylePanel } from '@/components/settings/ChatStylePanel';
+import { AiKeysPanel } from '@/components/settings/AiKeysPanel';
 import type { TablerIconType } from '@/lib/icon-type';
 
-type SectionId = 'account' | 'appearance' | 'notifications' | 'team' | 'billing' | 'api';
+type SectionId =
+  | 'account'
+  | 'appearance'
+  | 'notifications'
+  | 'ai-style'
+  | 'news'
+  | 'rankings'
+  | 'team'
+  | 'billing'
+  | 'ai-keys'
+  | 'rest-api'
+  | 'data-cache';
 
 const SECTIONS: { id: SectionId; label: string; icon: TablerIconType }[] = [
   { id: 'account', label: '账号', icon: IconUser },
   { id: 'appearance', label: '外观', icon: IconPalette },
   { id: 'notifications', label: '通知', icon: IconBell },
+  { id: 'ai-style', label: 'AI 对话风格', icon: IconRobot },
+  { id: 'news', label: '新闻', icon: IconNews },
+  { id: 'rankings', label: '排行', icon: IconChartBar },
   { id: 'team', label: '团队', icon: IconUsers },
   { id: 'billing', label: '计费', icon: IconCreditCard },
-  { id: 'api', label: 'API Key', icon: IconKey },
+  { id: 'ai-keys', label: 'AI 模型 Key', icon: IconKey },
+  { id: 'rest-api', label: 'REST API Key', icon: IconCopy },
+  { id: 'data-cache', label: '数据与缓存', icon: IconLock },
 ];
 
 export default function SettingsPage() {
   const [section, setSection] = useState<SectionId>('account');
 
   return (
-    <div className="flex-1 overflow-y-auto page-enter">
-      {/* Top header */}
-      <div className="border-b bg-card px-8 py-4">
+    <div className="flex flex-col h-screen overflow-hidden">
+      {/* Top header（固定高度，不参与 flex-grow） */}
+      <div className="shrink-0 border-b bg-card px-8 py-4">
         <h1 className="text-lg font-semibold tracking-tight">设置</h1>
         <p className="mt-0.5 text-xs text-muted-foreground">账号 / 外观 / 团队 / 计费 / API</p>
       </div>
 
-      <div className="mx-auto flex max-w-5xl gap-6 px-8 py-6">
-        {/* Section nav */}
-        <aside className="w-48 shrink-0">
-          <nav className="space-y-0.5">
+      {/* 整个 tab 栏固定在页面最顶端（fixed），无论 header 多高 */}
+      {/* 移动端：select 替代 */}
+      <div className="sticky top-0 z-50 shrink-0 border-b bg-background/95 backdrop-blur-sm md:hidden">
+        <div className="px-4 py-2">
+          <select
+            id="settings-section"
+            value={section}
+            onChange={(e) => setSection(e.target.value as SectionId)}
+            className="w-full rounded-md border bg-card px-3 py-1.5 text-sm"
+          >
+            {SECTIONS.map(({ id, label }) => (
+              <option key={id} value={id}>{label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Desktop: 顶部水平 tab 固定在页面最顶端 */}
+      <div className="sticky top-0 z-50 shrink-0 border-b bg-background/95 backdrop-blur-sm hidden md:block">
+        <div className="mx-auto max-w-5xl px-8">
+          <nav className="-mb-px flex gap-1 overflow-x-auto scrollbar-thin" aria-label="设置分类">
             {SECTIONS.map(({ id, label, icon: Icon }) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setSection(id)}
                 className={
-                  'flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-left text-xs transition ' +
+                  'group inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm transition ' +
                   (section === id
-                    ? 'bg-primary/10 font-medium text-primary'
-                    : 'text-foreground/80 hover:bg-accent hover:text-foreground')
+                    ? 'border-primary font-medium text-primary'
+                    : 'border-transparent text-foreground/70 hover:border-foreground/30 hover:text-foreground')
                 }
               >
-                <Icon size={14} className="shrink-0" />
+                <Icon
+                  size={16}
+                  className={
+                    'shrink-0 transition ' +
+                    (section === id ? 'text-primary' : 'text-foreground/60 group-hover:text-foreground')
+                  }
+                />
                 {label}
               </button>
             ))}
           </nav>
-        </aside>
+        </div>
+      </div>
 
-        {/* Panel */}
-        <main className="min-w-0 flex-1">
-          {section === 'account' && <AccountPanel />}
+      {/* 内容区可滚动 */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto max-w-5xl px-4 py-6 md:px-8">
+          <main className="min-w-0">
+            {section === 'account' && <AccountPanel />}
           {section === 'appearance' && <AppearancePanel />}
           {section === 'notifications' && <NotificationsPanel />}
+          {section === 'ai-style' && <ChatStylePanel />}
+          {section === 'news' && <NewsSettingsPanel />}
+          {section === 'rankings' && <RankingsSettingsPanel />}
           {section === 'team' && <TeamPanel />}
           {section === 'billing' && <BillingPanel />}
-          {section === 'api' && <ApiKeysPanel />}
+          {section === 'ai-keys' && <AiKeysPanel />}
+          {section === 'rest-api' && <ApiKeysPanel />}
+          {section === 'data-cache' && (
+            <div className="rounded-lg border bg-card p-5 text-sm text-muted-foreground">
+              本模块尚未启用。如需 PPT 锁定清理 / 90 天快照归档 / R2 孤儿扫描，请先实现
+              <code className="mx-1 rounded bg-muted px-1.5 py-0.5 text-xs">src/server/routers/cache.ts</code>
+              的 5 个 procedure。
+            </div>
+          )}
         </main>
+        </div>
       </div>
     </div>
+  );
+}
+
+/* =========================================================================
+ * Data & Cache（Phase 4 占位，BUG-019 暂未实现）
+ * ========================================================================= */
+
+function DataCachePanel() {
+  return (
+    <Section
+      title="数据与缓存"
+      subtitle="PPT 缓存清理、价格快照归档、R2 孤儿扫描（Phase 4 待启用）"
+    >
+      <div className="rounded-lg border bg-card p-5 text-sm text-muted-foreground">
+        <div className="mb-2 text-sm font-medium text-foreground">待启用</div>
+        本模块尚未启用。如需 PPT 锁定清理 / 90 天快照归档 / R2 孤儿扫描，请先实现
+        <code className="mx-1 rounded bg-muted px-1.5 py-0.5 text-xs">src/server/routers/cache.ts</code>
+        的 5 个 procedure（<code className="font-mono text-xs">stats</code> /{' '}
+        <code className="font-mono text-xs">getCleanupLog</code> /{' '}
+        <code className="font-mono text-xs">cleanPptCache</code> /{' '}
+        <code className="font-mono text-xs">cleanSnapshots</code> /{' '}
+        <code className="font-mono text-xs">scanOrphanR2</code>
+        ），然后在 <code className="mx-1 rounded bg-muted px-1.5 py-0.5 text-xs">_app.ts</code>{' '}
+        挂载 cacheRouter。
+        <ul className="mt-3 list-disc space-y-1 pl-5 text-xs">
+          <li>
+            进度参见：<code className="font-mono">docs/实施记录/46-第二轮回扫与深层漏洞修复_2026.09.03.md</code>{' '}
+            §四
+          </li>
+          <li>与本次新闻聚合 / 早报目标无任何关系，独立模块</li>
+        </ul>
+      </div>
+    </Section>
   );
 }
 
@@ -105,7 +198,7 @@ function AccountPanel() {
             </div>
           </div>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-3 border-t pt-4 text-xs">
+        <div className="mt-4 grid grid-cols-1 gap-3 border-t pt-4 text-xs sm:grid-cols-2">
           <Field label="Tenant ID" value={session?.user?.tenantId ?? '—'} mono />
           <Field label="角色" value={session?.user?.role ?? 'MEMBER'} />
           <Field label="用户 ID" value={session?.user?.id ?? '—'} mono />
@@ -209,8 +302,8 @@ function NotifRow({
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={
-          'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition ' +
-          (checked ? 'bg-primary' : 'bg-muted')
+          'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ' +
+          (checked ? 'bg-primary' : 'bg-foreground/20 dark:bg-foreground/25')
         }
       >
         <span
@@ -246,7 +339,7 @@ function TeamPanel() {
           当前为单租户计划。P5 阶段会上线团队成员邀请 / 角色管理（Owner / Admin / Member）。
         </p>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-3">
+      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
         <PlanCard label="当前计划" value="FREE" sub="个人开发者" />
         <PlanCard label="本月用量" value="0 / 100K tokens" sub="用量告警阈值 80%" />
       </div>
@@ -275,9 +368,9 @@ function BillingPanel() {
         <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           当前计划
         </div>
-        <div className="mb-1 text-2xl font-bold">FREE</div>
+        <div className="mb-1 text-2xl font-semibold tracking-tight">FREE</div>
         <div className="mb-4 text-xs text-muted-foreground">100K tokens / 月 · 单租户 · 单成员</div>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           <PlanBadge label="FREE" price="¥0" current />
           <PlanBadge label="PRO" price="¥299" sub="/ 月 · 5M tokens" />
           <PlanBadge label="TEAM" price="¥999" sub="/ 月 · 20M tokens" />
@@ -488,5 +581,265 @@ function Field({ label, value, mono }: { label: string; value: string; mono?: bo
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className={'mt-0.5 ' + (mono ? 'font-mono text-[11px] break-all' : '')}>{value}</div>
     </div>
+  );
+}
+
+/* =========================================================================
+ * 新闻设置
+ * 来源：整合 plan §3.4
+ * ========================================================================= */
+
+function NewsSettingsPanel() {
+  const utils = trpc.useUtils();
+  const toast = useToast();
+  const { data: settings, isLoading } = trpc.preferences.getNewsSettings.useQuery();
+  const { data: stats } = trpc.news.stats.useQuery();
+  const refreshMutation = trpc.news.refresh.useMutation({
+    onSuccess: (data: { totalItems: number }) => {
+      toast.success(`抓取完成，共 ${data.totalItems} 条`);
+      utils.news.stats.invalidate();
+    },
+  });
+  const updateMutation = trpc.preferences.updateNewsSettings.useMutation({
+    onSuccess: () => {
+      toast.success('设置已保存');
+      utils.preferences.getNewsSettings.invalidate();
+    },
+  });
+
+  const REFRESH_OPTIONS = [
+    { value: 1, label: '每 1 小时' },
+    { value: 3, label: '每 3 小时' },
+    { value: 6, label: '每 6 小时' },
+    { value: 12, label: '每 12 小时' },
+    { value: 24, label: '每天一次' },
+  ];
+
+  const CATEGORIES = ['AI Coding', '具身智能', 'AI政策'];
+
+  if (isLoading) {
+    return <Section title="新闻设置"><div className="py-8 text-center text-sm text-muted-foreground">加载中…</div></Section>;
+  }
+
+  return (
+    <Section title="新闻设置" subtitle="控制新闻聚合的频率和关注范围">
+      {/* 统计概览 */}
+      <div className="mb-4 grid grid-cols-3 gap-3">
+        <div className="rounded-lg border bg-card px-4 py-3">
+          <div className="text-xs text-muted-foreground">总新闻数</div>
+          <div className="mt-1 text-2xl font-semibold">{stats?.total ?? 0}</div>
+        </div>
+        <div className="rounded-lg border bg-card px-4 py-3">
+          <div className="text-xs text-muted-foreground">今日新增</div>
+          <div className="mt-1 text-2xl font-semibold">{stats?.today ?? 0}</div>
+        </div>
+        <div className="rounded-lg border bg-card px-4 py-3">
+          <div className="text-xs text-muted-foreground">活跃源</div>
+          <div className="mt-1 text-2xl font-semibold">{stats?.sources ?? 0}</div>
+        </div>
+      </div>
+
+      {/* 刷新频率 */}
+      <div className="mb-4 rounded-lg border bg-card p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm font-medium">自动刷新频率</div>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              通过 Vercel Cron 定时抓取；过短的频率会增加 API 限额风险
+            </p>
+          </div>
+          <select
+            value={settings?.newsRefreshInterval ?? 3}
+            onChange={(e) =>
+              updateMutation.mutate({ newsRefreshInterval: parseInt(e.target.value) })
+            }
+            className="rounded-md border bg-card px-3 py-1.5 text-sm"
+          >
+            {REFRESH_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* AI 早报提示 */}
+      <div className="mb-4 rounded-lg border bg-card p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm font-medium">AI 早报提示</div>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              每天 7:00 自动生成 AI 早报；当天首次打开时右上角提示。关闭后仍可在新闻页手动查看
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={settings?.briefingToast ?? true}
+            onClick={() =>
+              updateMutation.mutate({ briefingToast: !(settings?.briefingToast ?? true) })
+            }
+            className={
+              'relative h-5 w-9 rounded-full transition ' +
+              ((settings?.briefingToast ?? true) ? 'bg-primary' : 'bg-muted')
+            }
+          >
+            <span
+              className={
+                'absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all ' +
+                ((settings?.briefingToast ?? true) ? 'left-[18px]' : 'left-0.5')
+              }
+            />
+          </button>
+        </div>
+
+        {/* 早报/晚报时间窗口 */}
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+          <div>
+            <div className="text-sm font-medium">晨报/晚报分割时间</div>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              每日此时间之前生成晨报，之后生成晚报；可设为整点钟点
+            </p>
+          </div>
+          <select
+            value={settings?.briefingWindowHour ?? 8}
+            onChange={(e) =>
+              updateMutation.mutate({ briefingWindowHour: parseInt(e.target.value) })
+            }
+            className="rounded-md border bg-card px-3 py-1.5 text-sm"
+          >
+            {Array.from({ length: 24 }, (_, h) => (
+              <option key={h} value={h}>
+                {h.toString().padStart(2, '0')}:00（{h < 12 ? '晨报' : '晚报'}）
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* 关注分类 */}
+      <div className="mb-4 rounded-lg border bg-card p-5">
+        <div className="text-sm font-medium mb-3">关注的分类</div>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map((cat) => {
+            const checked = settings?.newsCategories?.includes(cat) ?? false;
+            return (
+              <label
+                key={cat}
+                className={
+                  'flex items-center gap-2 rounded-md border px-3 py-1.5 text-xs cursor-pointer transition ' +
+                  (checked ? 'border-primary bg-primary/10' : 'hover:bg-accent')
+                }
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => {
+                    const list = e.target.checked
+                      ? [...(settings?.newsCategories ?? []), cat]
+                      : (settings?.newsCategories ?? []).filter((c) => c !== cat);
+                    updateMutation.mutate({ newsCategories: list });
+                  }}
+                  className="h-3 w-3"
+                />
+                {cat}
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 手动抓取 */}
+      <div className="rounded-lg border bg-card p-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm font-medium">手动立即抓取</div>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              立即从所有新闻源拉取最新数据（约 5-15 秒）
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => refreshMutation.mutate()}
+            disabled={refreshMutation.isPending}
+            className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {refreshMutation.isPending ? '抓取中…' : '立即抓取'}
+          </button>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+/* =========================================================================
+ * 排行设置
+ * 来源：整合 plan §4 关联设置
+ * ========================================================================= */
+
+function RankingsSettingsPanel() {
+  const utils = trpc.useUtils();
+  const toast = useToast();
+  const { data: settings, isLoading } = trpc.preferences.getNewsSettings.useQuery();
+  const updateMutation = trpc.preferences.updateNewsSettings.useMutation({
+    onSuccess: () => {
+      toast.success('设置已保存');
+      utils.preferences.getNewsSettings.invalidate();
+    },
+  });
+
+  if (isLoading) {
+    return <Section title="排行设置"><div className="py-8 text-center text-sm text-muted-foreground">加载中…</div></Section>;
+  }
+
+  const followedModels = settings?.followedModels ?? [];
+  const threshold = settings?.priceAlertThreshold ?? null;
+
+  return (
+    <Section title="排行设置" subtitle="关注特定模型并设置价格预警">
+      {/* 关注模型 */}
+      <div className="mb-4 rounded-lg border bg-card p-5">
+        <div className="text-sm font-medium mb-2">关注的模型</div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          用逗号分隔多个模型 ID（如 gpt-4o, claude-fable-5）
+        </p>
+        <textarea
+          value={followedModels.join(', ')}
+          onChange={(e) => {
+            const list = e.target.value
+              .split(/[,\s]+/)
+              .map((s) => s.trim())
+              .filter(Boolean);
+            updateMutation.mutate({ followedModels: list });
+          }}
+          placeholder="gpt-4o, claude-fable-5"
+          className="w-full rounded-md border bg-background px-3 py-2 text-sm font-mono"
+          rows={2}
+        />
+      </div>
+
+      {/* 价格预警 */}
+      <div className="rounded-lg border bg-card p-5">
+        <div className="text-sm font-medium mb-2">价格预警阈值</div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          模型价格变动超过此百分比时通知（0 = 关闭）
+        </p>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            value={threshold ?? ''}
+            onChange={(e) => {
+              const v = e.target.value ? parseFloat(e.target.value) : null;
+              updateMutation.mutate({ priceAlertThreshold: v });
+            }}
+            placeholder="例如 10"
+            className="w-32 rounded-md border bg-background px-3 py-1.5 text-sm font-mono"
+          />
+          <span className="text-sm text-muted-foreground">%</span>
+        </div>
+      </div>
+    </Section>
   );
 }

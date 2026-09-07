@@ -1,0 +1,7 @@
+# 占位目录 —— 标杆项目调研报告归位
+#
+# 预计调研对象：
+#   calCom.md             Cal.com（开源预约系统，单体→monorepo 经典案例）
+#   plausible.md          Plausible（自托管分析，单 Next.js）
+#   outline.md            Outline（知识库，pnpm workspace 实战）
+#   calDotCom.md          alternative reference

@@ -49,8 +49,10 @@ export function ConfirmDialog({
         e.preventDefault();
         onCancel();
       } else if (e.key === 'Tab') {
-        // 简单 trap：只有 confirm/cancel 两个按钮
-        const focusables = dialogRef.current?.querySelectorAll<HTMLElement>('button');
+        // 修复：扩展 selector 覆盖所有可聚焦元素（button/input/select/textarea/a/[tabindex]）
+        const focusables = dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
         if (!focusables || focusables.length === 0) return;
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
@@ -77,7 +79,7 @@ export function ConfirmDialog({
       aria-modal="true"
       aria-labelledby="confirm-title"
       aria-describedby="confirm-desc"
-      className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in"
       onClick={onCancel}
     >
       <div
