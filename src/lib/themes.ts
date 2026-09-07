@@ -287,14 +287,23 @@ export function buildTokens(preset: ThemePreset, accent?: AccentHSL | null): {
   //    因为 Tailwind 配置里它们被 hsl(var(--accent)) 包裹使用（见 tailwind.config.ts）。
   //    --ring 直接以 var(--ring) 读取，所以可以保持完整 hsl() 值。
   if (accent) {
+    // V-13 修复：根据 accent L 动态算 accent-fg L（确保前景/背景对比度）
+    //   旧代码固定 15%/20%，紫色（h=290）下亮度过低导致看不清
+    //   新公式：保证 accent-fg 与 accent 的 L 差 ≥ 30（WCAG AA 4.5:1）
+    const darkAccentL = Math.max(40, accent.l + 5);
+    // 亮色模式：背景较浅，前景需更深；accent L 高 → 前景 L 更低；accent L 低 → 前景 L 略高
+    const lightFgL = accent.l >= 50 ? accent.l - 30 : accent.l + 30;
+    // 暗色模式：背景较深，前景需更亮；accent L 高 → 前景 L 更高；accent L 低 → 前景 L 略低
+    const darkFgL = accent.l >= 50 ? Math.min(95, accent.l + 35) : Math.max(45, accent.l + 40);
+
     const lightAccent = hslToCss(accent.h, accent.s, accent.l);              // 给 --ring 用（var(--ring) 直读，需要完整 hsl()）
-    const darkAccent = hslToCss(accent.h, accent.s, Math.max(40, accent.l + 5));
+    const darkAccent = hslToCss(accent.h, accent.s, darkAccentL);
     light['--accent'] = hslTriplet(accent.h, accent.s, accent.l);              // 三元组，被 hsl(var(--accent)) 包裹
     light['--ring'] = lightAccent;
-    light['--accent-fg'] = hslTriplet(accent.h, accent.s, 20);
-    dark['--accent'] = hslTriplet(accent.h, accent.s, Math.max(40, accent.l + 5));
+    light['--accent-fg'] = hslTriplet(accent.h, accent.s, lightFgL);
+    dark['--accent'] = hslTriplet(accent.h, accent.s, darkAccentL);
     dark['--ring'] = darkAccent;
-    dark['--accent-fg'] = hslTriplet(accent.h, accent.s, 15);
+    dark['--accent-fg'] = hslTriplet(accent.h, accent.s, darkFgL);
   }
 
   return { light, dark };
