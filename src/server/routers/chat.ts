@@ -94,8 +94,12 @@ export const chatRouter = router({
       let outputTokens = 0;
       let isMock = false;
       try {
+        // B-12 修复：chat() 签名是 (model, tenantId, messages, options)
+        // 此前误把 messages 传到 tenantId 位置，导致 tenantId 是垃圾数组，AI Key 永远查不到，
+        // 生产路径实际走到 dev-mode mock 分支返回占位
         const resp = await chat(
           modelName,
+          ctx.tenantId,
           history.map((m) => ({ role: m.role as 'system' | 'user' | 'assistant', content: m.content })),
           { temperature, maxTokens }
         );
