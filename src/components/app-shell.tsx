@@ -332,15 +332,19 @@ function useLocalCollapse(mobileDefault = true): [boolean, () => void] {
 
   // Lazy initial：直接读 localStorage（避免 SSR 不一致）
   const [v, setV] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      const stored = localStorage.getItem(COLLAPSE_KEY);
-      if (stored === '1') return true;
-      if (stored === '0') return false;
-    } catch {}
-    const isMobile = window.matchMedia('(max-width: 767px)').matches;
-    return isMobile && mobileDefault ? true : false;
-  });
+  if (typeof window === 'undefined') return false;
+  try {
+    const stored = localStorage.getItem(COLLAPSE_KEY);
+    if (stored === '1') return true;
+    if (stored === '0') return false;
+  } catch (e) {
+    // P2 修复：localStorage 不可用（隐私模式/被禁用）时降级为 matchMedia 判断
+    // 主流程不受影响，但写入丢失侧栏偏好
+    console.warn('[app-shell] read COLLAPSE_KEY failed:', (e as Error).message);
+  }
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+  return isMobile && mobileDefault ? true : false;
+});
 
   // 远端 sync：仅在认证用户首次得到 data 时跑一次
   // 注意：依赖里没有 v——避免 toggle 后 v 变化触发 sync 把 v 推回去
@@ -354,7 +358,10 @@ function useLocalCollapse(mobileDefault = true): [boolean, () => void] {
       setV(remoteCollapsed);
       try {
         localStorage.setItem(COLLAPSE_KEY, remoteCollapsed ? '1' : '0');
-      } catch {}
+      } catch (e) {
+        // P2 修复：写入失败仅丢失本地缓存，下次挂载会重新拉服务端
+        console.warn('[app-shell] write COLLAPSE_KEY failed:', (e as Error).message);
+      }
     }
     hasSyncedRemoteRef.current = true;
   }, [status, remotePrefs.data]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -364,7 +371,10 @@ function useLocalCollapse(mobileDefault = true): [boolean, () => void] {
       const next = !prev;
       try {
         localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
-      } catch {}
+      } catch (e) {
+        // P2 修复：仅丢失本地缓存，服务端 PATCH 仍会成功
+        console.warn('[app-shell] write COLLAPSE_KEY (toggle) failed:', (e as Error).message);
+      }
       if (status === 'authenticated') {
         setSidebarMut.mutate(
           { mode: next ? 'collapsed' : 'expanded' },

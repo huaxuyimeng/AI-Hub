@@ -108,7 +108,12 @@ export const projectRouter = router({
         return toPublicProject(project);
       } catch (e) {
         if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-          throw new TRPCError({ code: 'CONFLICT', message: `Slug "${input.slug}" already exists after retry` });
+          // P3 修复：tryCreate 内部用 randomBytes 追加后缀，故 P2002 通常是极端竞态
+          // （极小概率：两进程同时生成相同 randomBytes）。原错误信息改为更精确的"冲突"
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: `Slug "${input.slug}" 创建冲突（已重试，请重试）`,
+          });
         }
         throw e;
       }

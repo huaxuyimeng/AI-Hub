@@ -58,7 +58,9 @@ export function extractR2Key(input: string): string | null {
             }
           }
           return null;
-        } catch {
+        } catch (e) {
+          // P2 修复：单条记录读取失败跳过该条，不阻断整批
+          console.warn('[cleanup] read record failed:', (e as Error).message);
           return null;
         }
       })()
@@ -130,7 +132,9 @@ export async function cleanupOrphanFiles(): Promise<{ deleted: number; errors: n
         Key: safeKey,
       }));
       deleted.push(safeKey);
-    } catch {
+    } catch (e) {
+      // P2 修复：单文件删除失败不阻断其他文件，最终 errors 数会在响应中体现
+      console.warn('[cleanup] delete R2 object failed:', { key: safeKey, error: (e as Error).message });
       errors.push(safeKey);
     }
   }

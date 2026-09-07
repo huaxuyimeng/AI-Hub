@@ -41,8 +41,9 @@ export async function POST(req: NextRequest) {
   let form: FormData;
   try {
     form = await req.formData();
-  } catch {
-    return NextResponse.json({ error: 'Invalid form data' }, { status: 400 });
+  } catch (e) {
+    // P2 修复：formData 解析失败通常因客户端发非 multipart
+    return NextResponse.json({ error: 'Invalid form data', detail: (e as Error).message }, { status: 400 });
   }
   const file = form.get('file');
   if (!(file instanceof File)) {

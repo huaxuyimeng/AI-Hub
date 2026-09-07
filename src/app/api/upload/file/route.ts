@@ -100,8 +100,10 @@ export async function POST(req: NextRequest) {
   let form: FormData;
   try {
     form = await req.formData();
-  } catch {
-    return NextResponse.json({ error: 'Invalid form data' }, { status: 400 });
+  } catch (e) {
+    // P2 修复：formData 解析失败通常因客户端发非 multipart，返回 400
+    // 原错误信息已在响应中体现（前端可定位问题）
+    return NextResponse.json({ error: 'Invalid form data', detail: (e as Error).message }, { status: 400 });
   }
   const file = form.get('file');
   if (!(file instanceof File)) {
@@ -148,9 +150,10 @@ export async function POST(req: NextRequest) {
   const buf = Buffer.from(await file.arrayBuffer());
   try {
     new TextDecoder('utf-8', { fatal: true }).decode(buf);
-  } catch {
+  } catch (e) {
+    // P2 修复：二进制文件被明确拒绝，返回结构化错误
     return NextResponse.json(
-      { error: '文件不是有效的 UTF-8 文本（疑似二进制）' },
+      { error: '文件不是有效的 UTF-8 文本（疑似二进制）', detail: (e as Error).message },
       { status: 400 },
     );
   }
