@@ -87,6 +87,14 @@
   .dark dialog * {
     color-scheme: dark;
   }
+  /* V-15 修复：dialog 背景色显式跟随 dark/light，
+     surface-elevated 在 top-layer dialog 有时不继承 --surface-elevated 变量 */
+  .dark dialog.surface-elevated {
+    background-color: var(--surface-elevated) !important;
+  }
+  .dark dialog.surface {
+    background-color: var(--surface) !important;
+  }
   /* 键盘 focus-visible 焦点环：用 ring token（fallback 颜色兜底） */
   *:focus-visible {
     outline: 2px solid oklch(72% 0.14 65);

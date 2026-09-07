@@ -47,10 +47,17 @@ interface WallpaperItem {
   createdAt: string;
 }
 
+/** 读取当前是否为暗色（与 PageGradient 一致，避免与 theme context 的 race） */
+function useIsDark(): boolean {
+  if (typeof document === 'undefined') return false;
+  return document.documentElement.classList.contains('dark');
+}
+
 export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
   const { theme, setPreset, setMode, setBgUrl, uploadBg } = useTheme();
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const isDark = useIsDark(); // V-15：用于 PresetCard 预览跟随 dark/light
   const r2Ready = isR2ConfiguredClient();
   const toast = useToast();
   const utils = trpc.useUtils();
@@ -222,6 +229,7 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
                       description={p.description}
                       active={theme.preset === p.preset}
                       onSelect={() => setPreset(p.preset)}
+                      isDark={isDark}
                     />
                   ))}
                 </div>
@@ -304,12 +312,14 @@ function PresetCard({
   description,
   active,
   onSelect,
+  isDark,
 }: {
   preset: ThemePreset;
   name: string;
   description: string;
   active: boolean;
   onSelect: () => void;
+  isDark: boolean;
 }) {
   return (
     <button
@@ -323,7 +333,7 @@ function PresetCard({
           : 'hover:border-foreground/20')
       }
     >
-      <MiniPreview preset={preset} />
+      <MiniPreview preset={preset} isDark={isDark} />
       <div className="mt-2 flex items-center justify-between">
         <div className="min-w-0">
           <div className="truncate text-xs font-medium">{name}</div>
@@ -335,8 +345,9 @@ function PresetCard({
   );
 }
 
-function MiniPreview({ preset }: { preset: ThemePreset }) {
-  const t = PRESETS[preset].light;
+function MiniPreview({ preset, isDark }: { preset: ThemePreset; isDark: boolean }) {
+  // V-15 修复：跟随 dark/light 切换（用 isDark 参数而非硬编码 .light）
+  const t = isDark ? PRESETS[preset].dark : PRESETS[preset].light;
   return (
     <div
       className="relative h-16 overflow-hidden rounded-md border"
