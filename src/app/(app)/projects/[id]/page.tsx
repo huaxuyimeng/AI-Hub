@@ -29,6 +29,7 @@ import { trpc } from '@/lib/trpc';
 import { useToast } from '@/components/toast';
 import { useConfirm } from '@/components/confirm-dialog';
 import { ErrorState } from '@/components/ui/error-state';
+import { BackButton } from '@/components/ui/back-button';
 
 /**
  * C-8.2：简单信号量，限制并发数。
@@ -418,12 +419,15 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-card px-4 py-3 sm:px-6">
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-lg font-semibold" title={p.name}>
-            {p.name}
-          </div>
-          <div className="truncate text-xs text-muted-foreground">
-            /{p.slug} · {p.visibility}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <BackButton href="/projects" title="返回项目列表" />
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-lg font-semibold" title={p.name}>
+              {p.name}
+            </div>
+            <div className="truncate text-xs text-muted-foreground">
+              /{p.slug} · {p.visibility}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">

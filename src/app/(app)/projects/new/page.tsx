@@ -18,6 +18,7 @@ import {
   IconX,
 } from '@tabler/icons-react';
 import { trpc } from '@/lib/trpc';
+import { BackButton } from '@/components/ui/back-button';
 
 // 提示词模板分类
 const TEMPLATE_CATEGORIES = [
@@ -105,6 +106,9 @@ export default function NewProjectPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-8 py-10">
+      <div className="mb-6 flex items-center gap-3">
+        <BackButton href="/projects" title="返回项目列表" />
+      </div>
       <div className="mb-8">
         <h1 className="text-2xl font-bold">新建项目</h1>
         <p className="mt-1 text-sm text-muted-foreground">

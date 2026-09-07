@@ -133,8 +133,9 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
         onClick={() => setOpen(true)}
         aria-label="主题设置"
         className={
-          'inline-flex items-center rounded-md border bg-card transition hover:bg-accent ' +
-          (compact ? 'p-2' : 'gap-1.5 px-2.5 py-1.5 text-xs')
+          // V-11 折叠态对齐：所有折叠态按钮统一 30×30（与折叠按钮/退出按钮一致）
+          'inline-flex items-center justify-center rounded-md border bg-card transition hover:bg-accent ' +
+          (compact ? 'h-[30px] w-[30px] p-0' : 'gap-1.5 px-2.5 py-1.5 text-xs')
         }
         title="主题设置"
       >
