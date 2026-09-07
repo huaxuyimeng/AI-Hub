@@ -18,6 +18,11 @@
     "test:rankings": "tsx src/lib/rankings/algorithm.test.ts",
     "test:usage": "tsx src/lib/usage.test.ts",
     "test:slides": "tsx src/lib/slide-engine/slide-engine.test.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:install": "playwright install chromium --with-deps",
     "slide:lint": "tsx src/lib/slide-engine/cli.ts lint",
     "slide:snapshot": "tsx src/lib/slide-engine/cli.ts snapshot",
     "slide:render": "tsx src/lib/slide-engine/cli.ts render-pptx",
@@ -52,6 +57,7 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
