@@ -43,12 +43,20 @@ import { logger } from '../observability/logger';
  *
  * 仅在 callback 未捕获到真实 usage 时作为兜底（精度 ±20%）。
  * 真实 usage 应由 UsageCallbackHandler 在 LLM 响应后捕获。
+ *
+ * 2026-09-17 Bug19 修复：原签名只接收 content（output），input 永远返回 0
+ *                   导致 fallback 时计费 input 漏算。现改为分别接收 inputText 和 outputText。
  */
-function estimateTokens(text: string): { input: number; output: number } {
-  const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
-  const englishWords = (text.replace(/[\u4e00-\u9fff]/g, ' ').match(/\S+/g) || []).length;
-  const estimatedOutput = Math.ceil(chineseChars * 1.5 + englishWords * 1.25);
-  return { input: 0, output: estimatedOutput };
+function estimateTokens(inputText: string, outputText: string): { input: number; output: number } {
+  const estimate = (text: string): number => {
+    const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+    const englishWords = (text.replace(/[\u4e00-\u9fff]/g, ' ').match(/\S+/g) || []).length;
+    return Math.ceil(chineseChars * 1.5 + englishWords * 1.25);
+  };
+  return {
+    input: estimate(inputText),
+    output: estimate(outputText),
+  };
 }
 
 /** 合并 messages 为 system + user 两段文本（PromptTemplate 单变量用） */
@@ -421,7 +429,8 @@ async function lcelChatOpenAI(
 
   // ── Step 5: usage — 优先 callback 真实值，fallback 估算 ────────
   const realUsage = usageHandler.getUsage();
-  const estimated = estimateTokens(content);
+  // Bug19 修复：input/output 都基于实际文本估算
+  const estimated = estimateTokens(inputText, content);
   const usage = realUsage ?? estimated;
 
   logger.debug('[chatLC] OpenAI chain completed', {
@@ -496,7 +505,8 @@ async function lcelChatAnthropic(
 
   // ── Step 4: usage — 优先 callback 真实值，fallback 估算 ────────
   const realUsage = usageHandler.getUsage();
-  const estimated = estimateTokens(content);
+  // Bug19 修复：input/output 都基于实际文本估算
+  const estimated = estimateTokens(inputText, content);
   const usage = realUsage ?? estimated;
 
   logger.debug('[chatLC] Anthropic chain completed', {

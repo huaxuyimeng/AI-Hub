@@ -471,11 +471,13 @@ async function concludeNode(
   const ctx = (config.configurable as Partial<MeetingContext>) ?? {};
   const tenantId = ctx.tenantId;
   const hostModel = ctx.hostModel;
+  // Bug4 修复：与 catch 分支一致，缺失 ctx 时也写入 errors
   if (!tenantId || !hostModel) {
     const msg = `conclude: missing ${!tenantId ? 'tenantId' : 'hostModel'}`;
     logger.error('[meeting-graph] ' + msg);
     return {
-      conclusion: `[会议纪要生成失败] ${msg}`,
+      conclusion: `[会议纪要生成失败] ${msg}\n\n请手动查看上方所有发言记录。`,
+      errors: [...state.errors, msg],
     };
   }
 

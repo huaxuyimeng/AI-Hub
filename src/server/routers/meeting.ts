@@ -563,36 +563,48 @@ export const meetingRouter = router({
       // 2026-09-17 Bug2 修复：meeting-graph 内部所有 chatLC 调用都传 skipUsage，
       //                   这里按 finalState.usageTotal 按 model 聚合调用 recordUsage。
       //                   失败不阻塞主流程（与 chatLC 内部保持一致）。
+      //
+      // 2026-09-17 Bug14 修复：原代码循环里调 Object.keys()N 次且 break 条件混乱。
+      //                   重写为：每个 model 单独记录 cost，input/output 总额归到第一个 model。
       if (finalState.usageTotal) {
-        for (const [modelId, cost] of Object.entries(finalState.usageTotal.costByModel)) {
-          if (finalState.usageTotal.inputTokens === 0 && finalState.usageTotal.outputTokens === 0) break;
-          try {
-            await recordUsage({
-              tenantId,
-              modelId,
-              // 注意：这里只能用总额（recordUsage 是按 model 一天聚合），无法精确拆分 input/output 到 model
-              // 解决方案：把 input/output 全部归到第一个有 cost 的 model 上（其余 model cost 仍计入 costByModel 总和）
-              inputTokens: modelId === Object.keys(finalState.usageTotal.costByModel)[0]
-                ? finalState.usageTotal.inputTokens : 0,
-              outputTokens: modelId === Object.keys(finalState.usageTotal.costByModel)[0]
-                ? finalState.usageTotal.outputTokens : 0,
-              cost,
-              kind: 'meeting',
-            });
-          } catch (err) {
-            logger.warn('[meeting] runMultiTurn recordUsage failed', {
-              meetingId: meeting.id,
-              modelId,
-              error: (err as Error).message,
-            });
+        const modelIds = Object.keys(finalState.usageTotal.costByModel);
+        const hasUsage =
+          finalState.usageTotal.inputTokens > 0 ||
+          finalState.usageTotal.outputTokens > 0;
+
+        if (modelIds.length > 0 && hasUsage) {
+          for (const [idx, modelId] of modelIds.entries()) {
+            const cost = finalState.usageTotal.costByModel[modelId];
+            const isFirstModel = idx === 0;
+            try {
+              await recordUsage({
+                tenantId,
+                modelId,
+                // input/output 总额归到第一个 model（UsageStat 按 modelId 聚合，无跨 model 行）
+                inputTokens: isFirstModel ? finalState.usageTotal.inputTokens : 0,
+                outputTokens: isFirstModel ? finalState.usageTotal.outputTokens : 0,
+                cost,
+                kind: 'meeting',
+              });
+            } catch (err) {
+              logger.warn('[meeting] runMultiTurn recordUsage failed', {
+                meetingId: meeting.id,
+                modelId,
+                error: (err as Error).message,
+              });
+            }
           }
+          logger.info('[meeting] runMultiTurn usage recorded', {
+            meetingId: meeting.id,
+            totalInputTokens: finalState.usageTotal.inputTokens,
+            totalOutputTokens: finalState.usageTotal.outputTokens,
+            modelCount: modelIds.length,
+          });
+        } else if (modelIds.length === 0) {
+          logger.debug('[meeting] runMultiTurn: no usage to record (empty costByModel)', {
+            meetingId: meeting.id,
+          });
         }
-        logger.info('[meeting] runMultiTurn usage recorded', {
-          meetingId: meeting.id,
-          totalInputTokens: finalState.usageTotal.inputTokens,
-          totalOutputTokens: finalState.usageTotal.outputTokens,
-          modelCount: Object.keys(finalState.usageTotal.costByModel).length,
-        });
       }
 
       logger.info('[meeting] runMultiTurn completed', {

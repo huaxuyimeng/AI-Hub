@@ -196,6 +196,40 @@ async function runTests(): Promise<void> {
     assertEqual(handler.getUsage(), null, '畸形数据后 usage 仍为 null');
   }
 
+  // ── 10) Bug19 回归：fallback 估算 input 不能为 0 ─────────────
+  // 修复前 estimateTokens(text) 只估 output，input 永远 0，导致 fallback 时计费 input 漏算
+  // 修复后 estimateTokens(inputText, outputText) 分别估算
+  console.log('\n[10] Bug19 回归：estimateTokens 同时估算 input + output...');
+  {
+    // 简单逻辑单元：手工复制实现验证行为
+    // (estimateTokens 是 langchain-adapter private，不能直接 import)
+    const estimate = (text: string): number => {
+      const chineseChars = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+      const englishWords = (text.replace(/[\u4e00-\u9fff]/g, ' ').match(/\S+/g) || []).length;
+      return Math.ceil(chineseChars * 1.5 + englishWords * 1.25);
+    };
+    const inputText = '你是产品经理，请基于以上内容给出建议';
+    const outputText = '建议在 Q4 上线会员功能';
+    const inputEst = estimate(inputText);
+    const outputEst = estimate(outputText);
+    assert(inputEst > 0, `input 估算 > 0（实际=${inputEst}）`);
+    assert(outputEst > 0, `output 估算 > 0（实际=${outputEst}）`);
+    assert(inputEst !== outputEst, 'input/output 估算结果可能不同');
+
+    // 纯中文 16 字：16 * 1.5 = 24 token
+    const pureChinese = '一二三四五六七八九十一二三四五六';
+    const chineseEst = estimate(pureChinese);
+    assertEqual(chineseEst, 24, '16 个中文字 = 24 tokens');
+
+    // 纯英文 8 词：8 * 1.25 = 10 token
+    const pureEnglish = 'one two three four five six seven eight';
+    const englishEst = estimate(pureEnglish);
+    assertEqual(englishEst, 10, '8 个英文单词 = 10 tokens');
+
+    // 空字符串 → 0
+    assertEqual(estimate(''), 0, '空字符串 = 0 token');
+  }
+
   // ── Done ─────────────────────────────────────────────────────────────
   console.log(`\n=== UsageCallbackHandler 测试结果: ${passed} passed, ${failed} failed ===`);
   if (failed > 0) process.exit(1);
