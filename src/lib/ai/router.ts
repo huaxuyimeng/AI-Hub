@@ -24,6 +24,27 @@ export interface ChatOptions {
   maxTokens?: number;
   /** dev mode 下没有 key 时是否走 mock（默认 true） */
   devMock?: boolean;
+  /**
+   * 是否启用 thinking 模式（deepseek 等推理模型）
+   * - true：删 temperature，传 reasoning_effort
+   * - false：保留 temperature
+   * - undefined：自动按 provider（deepseek=true，其它=false）
+   */
+  thinking?: boolean;
+  /** DeepSeek thinking 模式推理强度：low / high / max（默认 high） */
+  reasoningEffort?: 'low' | 'high' | 'max';
+  /**
+   * 是否跳过 chatLC 内部的 recordUsage（默认 false）。
+   *
+   * 用途（2026-09-17 Bug2 修复）：
+   *   调用方需要按自定义 kind（如 'meeting' / 'analysis'）聚合记录 usage 时，
+   *   关闭 chatLC 内部的 kind:'chat' 自动记录，避免双重计 cost。
+   *
+   * 调用方责任：
+   *   传 skipUsage:true 时，必须在调用点附近按自己的业务语义 recordUsage。
+   *   失败不能阻塞主流程（与 chatLC 内部一致）。
+   */
+  skipUsage?: boolean;
 }
 
 export interface ChatResult {
@@ -129,15 +150,65 @@ async function chatOpenAI(
 ): Promise<ChatResult> {
   const client = new OpenAI({ apiKey, baseURL: baseUrl });
   const t0 = Date.now();
+
+  // ── DeepSeek thinking 模式支持（官方 2026-09 文档）
+  //   thinking 默认 enabled（reasoning_effort=high），
+  //   temperature / presence_penalty / frequency_penalty 在 thinking 模式下不生效
+  //   通过 extra_body.thinking.type 控制开/关
+  const isDeepSeek = baseUrl.includes('api.deepseek.com');
+  const useThinking = options.thinking ?? isDeepSeek; // 默认 deepseek 开 thinking
+  const temperature = useThinking ? undefined : (options.temperature ?? 0.7);
+
   try {
-    const resp = await client.chat.completions.create({
+    // DeepSeek 推理参数通过 extra_body 传递（官方文档要求）
+    // ⚠️ extra_body 仅放 thinking/reasoning_effort，绝不能放 model/messages
+    const extraBody: Record<string, unknown> | undefined = useThinking && isDeepSeek
+      ? { reasoning_effort: options.reasoningEffort ?? 'high', thinking: { type: 'enabled' } }
+      : undefined;
+
+    const requestBody: Record<string, unknown> = {
       model: modelName,
       messages,
-      temperature: options.temperature ?? 0.7,
-      max_tokens: options.maxTokens ?? 4096,
-    });
+    };
+    if (temperature !== undefined) requestBody.temperature = temperature;
+    if (options.maxTokens) requestBody.max_tokens = options.maxTokens;
+
+    // 用 unknown 绕过 SDK TS 类型树（thinking/reasoning_effort 不在 SDK 类型里）
+    const clientAny = client as unknown as {
+      chat: {
+        completions: {
+          create: (
+            args: Record<string, unknown>,
+            options?: { extra_body?: Record<string, unknown> }
+          ) => Promise<{
+            choices: Array<{
+              message: {
+                content: string | null;
+                reasoning_content?: string;
+              };
+            }>;
+            usage?: { prompt_tokens?: number; completion_tokens?: number };
+          }>;
+        };
+      };
+    };
+
+    const resp = await clientAny.chat.completions.create(
+      requestBody,
+      extraBody ? { extra_body: extraBody } : undefined,
+    );
+    const choice = resp.choices[0]?.message;
+    // 防御 #19：推理模型（如 deepseek-flash）的 reasoning_content 会用满 token，
+    //          message.content 可能是空字符串 —— 给调用方一个警告日志便于排查
+    if ((!choice?.content || choice.content.length === 0) && (choice as { reasoning_content?: string })?.reasoning_content) {
+      logger.warn('[router] OpenAI-compatible response had empty content but non-empty reasoning_content (likely reasoning model). Use a non-reasoning model for structured-output tasks.', {
+        model: modelName,
+        reasoningLen: ((choice as { reasoning_content?: string }).reasoning_content ?? '').length,
+        usage: resp.usage,
+      });
+    }
     return {
-      content: resp.choices[0]?.message?.content ?? '',
+      content: choice?.content ?? '',
       usage: {
         input: resp.usage?.prompt_tokens ?? 0,
         output: resp.usage?.completion_tokens ?? 0,
