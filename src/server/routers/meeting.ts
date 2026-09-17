@@ -471,11 +471,18 @@ export const meetingRouter = router({
         throw new TRPCError({ code: 'BAD_REQUEST', message: '无参与者' });
       }
 
-      // ── Step 2: 设置状态 ─────────────────────────────────
-      await prismaRaw.meeting.update({
-        where: { id: meeting.id },
+      // ── Step 2: 原子抢占 RUNNING 状态（Bug24 修复） ─────────
+      // 原代码：先 findFirst 读 status，再 update 设 RUNNING。
+      //   并发场景：A、B 同时读 status=ACTIVE，A、B 都执行 update → 两个 graph 同时跑。
+      // 修复：用 updateMany + where status='ACTIVE'，count=0 表示被别人抢了。
+      const claim = await prismaRaw.meeting.updateMany({
+        where: { id: meeting.id, status: 'ACTIVE', deletedAt: null },
         data: { status: 'RUNNING' },
       });
+      if (claim.count === 0) {
+        // 被别人抢了
+        throw new TRPCError({ code: 'CONFLICT', message: '会议已被其他请求抢占' });
+      }
 
       // ── Step 3: 准备 participant configs ─────────────────
       const participantConfigs: ParticipantConfig[] = meeting.participants.map((p) => ({
@@ -545,14 +552,38 @@ export const meetingRouter = router({
       // Bug4 修复：conclude 失败时 errors 会包含 'conclude: ...'，
       //           此时不应写 COMPLETED，应写 FAILED 让前端能区分。
       //           （其它参与者失败仍维持 COMPLETED，因为发言记录已落库）
+      // Bug22 修复：Step 6 也包 try/catch，DB 异常时回退 ACTIVE 避免会议卡 RUNNING
       const isConcludeFailed = finalState.errors.some((e) => e.startsWith('conclude:'));
-      await prismaRaw.meeting.update({
-        where: { id: meeting.id },
-        data: {
-          status: isConcludeFailed ? 'FAILED' : 'COMPLETED',
-          conclusion: finalState.conclusion ?? null,
-        },
-      });
+      try {
+        await prismaRaw.meeting.update({
+          where: { id: meeting.id },
+          data: {
+            status: isConcludeFailed ? 'FAILED' : 'COMPLETED',
+            conclusion: finalState.conclusion ?? null,
+          },
+        });
+      } catch (err) {
+        logger.error('[meeting] runMultiTurn step6 status update failed', {
+          meetingId: meeting.id,
+          error: (err as Error).message,
+        });
+        // 状态回退：避免会议卡 RUNNING
+        try {
+          await prismaRaw.meeting.update({
+            where: { id: meeting.id },
+            data: { status: 'ACTIVE' },
+          });
+        } catch (fallbackErr) {
+          logger.error('[meeting] runMultiRollback status reset failed', {
+            meetingId: meeting.id,
+            error: (fallbackErr as Error).message,
+          });
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: `状态写入失败：${(err as Error).message}`,
+        });
+      }
 
       const totalEntries = Object.values(finalState.transcripts).reduce(
         (sum, entries) => sum + entries.length,
