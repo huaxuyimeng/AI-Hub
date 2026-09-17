@@ -22,7 +22,13 @@
  */
 
 import { createRequire } from 'module';
-import { buildMeetingGraph, buildDecisionSummary } from '../meeting-graph';
+import {
+  buildMeetingGraph,
+  buildDecisionSummary,
+  buildPriorSpeeches,
+  buildCallLLMMessages,
+  buildErrorFallback,
+} from '../meeting-graph';
 import { MAX_MEETING_ROUNDS } from '../types';
 import type { ParticipantConfig } from '../types';
 
@@ -134,6 +140,87 @@ async function runTests(): Promise<void> {
   assert(partialSummary.includes('产品经理'), '已知 pid 映射到 role');
   assert(partialSummary.includes('uuid-unknown-003'), '未知 pid fallback 到 pid 本身（防御性）');
   assert(partialSummary.includes('未知参与者发言'), '未知参与者发言也保留');
+
+  // ── 7) callLLMNode 子函数：buildPriorSpeeches ───────────────────
+  // 验证：transcripts + participants 渲染为「之前所有发言」文本，按 role 显示
+  console.log('\n[7] callLLMNode 子函数：buildPriorSpeeches...');
+  const callLLMParticipants: ParticipantConfig[] = [
+    { id: 'pid-A', role: '产品经理', model: 'm', systemPrompt: '', maxTokens: 600, temperature: 0.7 },
+    { id: 'pid-B', role: '工程师', model: 'm', systemPrompt: '', maxTokens: 600, temperature: 0.7 },
+  ];
+  const callLLMTranscripts = {
+    'pid-A': [
+      { role: 'assistant' as const, content: 'A 说了', model: 'm', speaker: '产品经理', timestamp: 't1' },
+      { role: 'assistant' as const, content: 'A 又说了', model: 'm', speaker: '产品经理', timestamp: 't2' },
+    ],
+    'pid-B': [
+      { role: 'assistant' as const, content: 'B 说了', model: 'm', speaker: '工程师', timestamp: 't3' },
+    ],
+  };
+  const callLLMState: any = {
+    participants: callLLMParticipants,
+    transcripts: callLLMTranscripts,
+    topic: '会议主题 X',
+  };
+  const prior = buildPriorSpeeches(callLLMState);
+  assert(prior.includes('【产品经理】'), '含 role【产品经理】');
+  assert(prior.includes('【工程师】'), '含 role【工程师】');
+  assert(prior.includes('A 说了'), 'A 第一条发言在');
+  assert(prior.includes('A 又说了'), 'A 第二条发言也在（多轮发言累积）');
+  assert(prior.includes('B 说了'), 'B 发言在');
+  assert(!prior.includes('pid-A'), '不含 pid uuid');
+  assert(prior.split('---').length === 2, '用 --- 分隔两个 participant');
+
+  // ── 8) callLLMNode 子函数：buildCallLLMMessages ───────────────────
+  // 验证：priorSpeeches 为空（首发言者）vs 非空（后续发言者）两条分支
+  console.log('\n[8] callLLMNode 子函数：buildCallLLMMessages...');
+  const pmParticipant = callLLMParticipants[0];
+  // 第一个发言者（priorSpeeches 为空）
+  const firstSpeakerMsgs = buildCallLLMMessages(pmParticipant, callLLMState, '');
+  assertEqual(firstSpeakerMsgs.length, 2, 'messages 长度 = 2（system + user）');
+  assertEqual(firstSpeakerMsgs[0].role, 'system', '第一条是 system');
+  assertEqual(firstSpeakerMsgs[1].role, 'user', '第二条是 user');
+  assert(firstSpeakerMsgs[1].content.includes('你是第一个发言者'), '首个发言者 prompt 含「你是第一个发言者」');
+  assert(!firstSpeakerMsgs[1].content.includes('基于以上内容'), '首个发言者 prompt 不含「基于以上内容」（因为没上下文）');
+
+  // 后续发言者（priorSpeeches 非空）
+  const nextSpeakerMsgs = buildCallLLMMessages(pmParticipant, callLLMState, '【工程师】\nB 说了');
+  assertEqual(nextSpeakerMsgs[1].role, 'user', '后续 user 也是 user');
+  assert(nextSpeakerMsgs[1].content.includes('基于以上内容'), '后续发言 prompt 含「基于以上内容」');
+  assert(nextSpeakerMsgs[1].content.includes('【工程师】'), '后续发言 prompt 含之前发言摘要');
+  assert(!nextSpeakerMsgs[1].content.includes('你是第一个发言者'), '后续发言 prompt 不是首个');
+  assert(nextSpeakerMsgs[0].content === pmParticipant.systemPrompt, 'system = participant 的 systemPrompt');
+
+  // ── 9) callLLMNode 子函数：buildErrorFallback ────────────────────
+  // 验证：catch 分支写错误条目 + 累加 errors
+  console.log('\n[9] callLLMNode 子函数：buildErrorFallback...');
+  const errorState: any = {
+    transcripts: { 'pid-A': [] },
+    errors: [],
+  };
+  const errorResult = buildErrorFallback(pmParticipant, errorState, 'network timeout');
+  assert(errorResult.transcripts !== undefined, '返回 transcripts');
+  assert(errorResult.errors !== undefined, '返回 errors');
+  const errorEntries = (errorResult.transcripts! as any)['pid-A'];
+  assertEqual(errorEntries.length, 1, '1 条错误条目追加到 pid-A');
+  assertEqual(errorEntries[0].role, 'assistant', '错误条目 role = assistant');
+  assert(errorEntries[0].content.includes('[发言失败]'), '错误条目含 [发言失败] 前缀');
+  assert(errorEntries[0].content.includes('network timeout'), '错误条目含 error 详情');
+  assert(errorEntries[0].speaker === '产品经理', 'speaker = role');
+  assertEqual((errorResult.errors! as string[]).length, 1, 'errors 累加 1 条');
+  assert((errorResult.errors! as string[])[0].includes('产品经理'), 'errors 含 role');
+  assert((errorResult.errors! as string[])[0].includes('network timeout'), 'errors 含 error');
+
+  // 错误条目追加到已有 entries
+  const errorState2: any = {
+    transcripts: { 'pid-A': [{ role: 'assistant', content: '之前的发言', model: 'm', speaker: 'pm', timestamp: 't0' }] },
+    errors: [],
+  };
+  const errorResult2 = buildErrorFallback(pmParticipant, errorState2, 'rate limit');
+  const errorEntries2 = (errorResult2.transcripts! as any)['pid-A'];
+  assertEqual(errorEntries2.length, 2, '新错误条目追加到末尾（共 2 条）');
+  assertEqual(errorEntries2[0].content, '之前的发言', '原条目不变');
+  assert(errorEntries2[1].content.includes('[发言失败]'), '新条目是错误条目');
 
   // ── Done ─────────────────────────────────────────────────────────────
   console.log(`\n=== meeting-graph 测试结果: ${passed} passed, ${failed} failed ===`);

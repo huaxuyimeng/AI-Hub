@@ -14,12 +14,13 @@
 //   - chatLC / calculateCost 签名变化 → 同步调用
 
 import type { LangGraphRunnableConfig } from '@langchain/langgraph';
-import { chatLC } from '../ai/langchain-adapter';
+import { chatLC } from '../../lib/ai/langchain-adapter';
 import { calculateCost } from '../ai/pricing';
 import { logger } from '../observability/logger';
 import type { MeetingState, ParticipantConfig, TranscriptEntry } from './types';
 import { MAX_MEETING_ROUNDS, DEFAULT_DECISION_MODEL } from './types';
 import type { MeetingContext } from './state';
+import type { ChatMessage } from '../ai/router';
 
 // ─── Usage 累加 ──────────────────────────────────────────────────────────────
 
@@ -71,14 +72,13 @@ export function nextSpeakerNode(state: MeetingState): Partial<MeetingState> {
 /**
  * callLLM — 异步节点（核心）
  *
- * 职责：
- * 1. 调用 chatLC() 获取当前参与者的发言
- * 2. 追加到 transcripts[p.id]
- * 3. 异常时追加错误，不中断图执行
+ * 职责（拆分后）：
+ * - 前置守卫：缺 currentParticipant / tenantId 时早返回
+ * - 调用 4 个 helper：buildPriorSpeeches / buildCallLLMMessages / invokeAndAccumulate / buildErrorFallback
  *
- * 注意：本函数 127 行，已超出 50 行上限。下批次会抽 4 个子函数（buildPriorSpeeches /
- *       buildCallLLMMessages / invokeAndAccumulate / buildErrorEntry）。
- *       此处保持原逻辑 100% 等价，先完成文件级拆分。
+ * 拆分动机（2026-09-18）：
+ *   原 127 行超 50 行上限 2.5x，混合 6 步骤职责。
+ *   现按 Extract Function 模式抽 4 个子函数，主节点 ≤ 50 行。
  */
 export async function callLLMNode(
   state: MeetingState,
@@ -101,9 +101,28 @@ export async function callLLMNode(
     };
   }
 
-  // ── Step 1: 构造上下文 ────────────────────────────────
-  // 收集所有已发言的内容（包括历史轮次）
-  const priorSpeeches = Object.entries(state.transcripts)
+  // ── 构造上下文 + 调用 LLM ────────────────────────────
+  const priorSpeeches = buildPriorSpeeches(state);
+  const messages = buildCallLLMMessages(p, state, priorSpeeches);
+
+  try {
+    return await invokeAndAccumulate(p, state, tenantId, messages);
+  } catch (err) {
+    return buildErrorFallback(p, state, (err as Error).message);
+  }
+}
+
+// ─── callLLMNode 子函数 ────────────────────────────────────────────────
+
+/**
+ * buildPriorSpeeches — 把 state.transcripts 渲染成「之前所有发言」纯文本。
+ *
+ * 用于传给当前发言者作为「上下文」参考。Bug1 修复：用 participants.find() 把 pid 映射到 role。
+ *
+ * 导出供测试使用（生产代码应通过 callLLMNode 调用）。
+ */
+export function buildPriorSpeeches(state: MeetingState): string {
+  return Object.entries(state.transcripts)
     .map(([pid, entries]) => {
       const participant = state.participants.find((pp) => pp.id === pid);
       const role = participant?.role ?? pid;
@@ -111,92 +130,119 @@ export async function callLLMNode(
       return `【${role}】\n${content}`;
     })
     .join('\n\n---\n\n');
+}
 
-  // ── Step 2: 构造消息 ──────────────────────────────────
+/**
+ * buildCallLLMMessages — 构造 chatLC() 用的 system + user messages。
+ *
+ * 分支：priorSpeeches 为空（第一个发言者）时用简化 prompt。
+ *
+ * 导出供测试使用。
+ */
+export function buildCallLLMMessages(
+  p: ParticipantConfig,
+  state: MeetingState,
+  priorSpeeches: string,
+): ChatMessage[] {
   const systemContent = p.systemPrompt;
   const userContent = priorSpeeches
     ? `会议主题：${state.topic}\n\n目前所有参与者的发言：\n\n${priorSpeeches}\n\n你作为 ${p.role}，请基于以上内容，给出你的专业观点（200-400 字）。`
     : `会议主题：${state.topic}\n\n你是第一个发言者（${p.role}），请给出你的专业观点（200-400 字）。`;
 
-  const messages = [
-    { role: 'system' as const, content: systemContent },
-    { role: 'user' as const, content: userContent },
+  return [
+    { role: 'system', content: systemContent },
+    { role: 'user', content: userContent },
   ];
+}
 
-  // ── Step 3: 调用 LLM ──────────────────────────────────
-  try {
-    const result = await chatLC(p.model, tenantId, messages, {
-      temperature: p.temperature,
-      maxTokens: p.maxTokens,
-      // Bug2 修复：由 runMultiTurn mutation 按 meeting 语义聚合 recordUsage
-      skipUsage: true,
-    });
+/**
+ * invokeAndAccumulate — try 分支：调 LLM → 追加 transcript → 累加 usage。
+ *
+ * 失败时 throw，由 callLLMNode 的 catch 转给 buildErrorFallback。
+ */
+async function invokeAndAccumulate(
+  p: ParticipantConfig,
+  state: MeetingState,
+  tenantId: string,
+  messages: ChatMessage[],
+): Promise<Partial<MeetingState>> {
+  const result = await chatLC(p.model, tenantId, messages, {
+    temperature: p.temperature,
+    maxTokens: p.maxTokens,
+    // Bug2 修复：由 runMultiTurn mutation 按 meeting 语义聚合 recordUsage
+    skipUsage: true,
+  });
 
-    // ── Step 4: 构造发言记录 ────────────────────────────
-    const entry: TranscriptEntry = {
-      role: 'assistant',
-      content: result.content,
-      model: p.model,
-      speaker: p.role,
-      timestamp: new Date().toISOString(),
-    };
+  // 构造发言记录
+  const entry: TranscriptEntry = {
+    role: 'assistant',
+    content: result.content,
+    model: p.model,
+    speaker: p.role,
+    timestamp: new Date().toISOString(),
+  };
 
-    // ── Step 5: 更新 transcripts ─────────────────────────
-    const existingEntries = state.transcripts[p.id] ?? [];
-    const newTranscripts: Record<string, TranscriptEntry[]> = {
+  // 更新 transcripts（追加到该 participant）
+  const existingEntries = state.transcripts[p.id] ?? [];
+  const newTranscripts: Record<string, TranscriptEntry[]> = {
+    ...state.transcripts,
+    [p.id]: [...existingEntries, entry],
+  };
+
+  logger.debug('[meeting-graph] callLLM completed', {
+    participantId: p.id,
+    role: p.role,
+    model: p.model,
+    contentLen: result.content.length,
+    round: state.round,
+    entryCount: newTranscripts[p.id].length,
+    usage: result.usage,
+  });
+
+  // Bug2 修复：累加 usage 到 state（最终由 router 层一次性 recordUsage）
+  const usageTotal = accumulateUsage(
+    state.usageTotal,
+    p.model,
+    result.usage.input,
+    result.usage.output,
+  );
+
+  return { transcripts: newTranscripts, usageTotal };
+}
+
+/**
+ * buildErrorFallback — catch 分支：写错误占位条目 + 累加 errors。
+ *
+ * 导出供测试使用。
+ */
+export function buildErrorFallback(
+  p: ParticipantConfig,
+  state: MeetingState,
+  errorMsg: string,
+): Partial<MeetingState> {
+  logger.warn('[meeting-graph] callLLM failed', {
+    participantId: p.id,
+    role: p.role,
+    model: p.model,
+    error: errorMsg,
+    round: state.round,
+  });
+
+  const errorEntry: TranscriptEntry = {
+    role: 'assistant',
+    content: `[发言失败] ${errorMsg}`,
+    model: p.model,
+    speaker: p.role,
+    timestamp: new Date().toISOString(),
+  };
+
+  return {
+    transcripts: {
       ...state.transcripts,
-      [p.id]: [...existingEntries, entry],
-    };
-
-    logger.debug('[meeting-graph] callLLM completed', {
-      participantId: p.id,
-      role: p.role,
-      model: p.model,
-      contentLen: result.content.length,
-      round: state.round,
-      entryCount: newTranscripts[p.id].length,
-      usage: result.usage,
-    });
-
-    // Bug2 修复：累加 usage 到 state（最终由 router 层一次性 recordUsage）
-    const usageTotal = accumulateUsage(
-      state.usageTotal,
-      p.model,
-      result.usage.input,
-      result.usage.output,
-    );
-
-    return { transcripts: newTranscripts, usageTotal };
-
-  } catch (err) {
-    // ── 异常处理：记录错误，继续执行 ──────────────────────
-    const errorMsg = (err as Error).message;
-
-    logger.warn('[meeting-graph] callLLM failed', {
-      participantId: p.id,
-      role: p.role,
-      model: p.model,
-      error: errorMsg,
-      round: state.round,
-    });
-
-    // 写入错误发言占位（保留前端可见的错误信息）
-    const errorEntry: TranscriptEntry = {
-      role: 'assistant',
-      content: `[发言失败] ${errorMsg}`,
-      model: p.model,
-      speaker: p.role,
-      timestamp: new Date().toISOString(),
-    };
-
-    return {
-      transcripts: {
-        ...state.transcripts,
-        [p.id]: [...(state.transcripts[p.id] ?? []), errorEntry],
-      },
-      errors: [...state.errors, `${p.role}: ${errorMsg}`],
-    };
-  }
+      [p.id]: [...(state.transcripts[p.id] ?? []), errorEntry],
+    },
+    errors: [...state.errors, `${p.role}: ${errorMsg}`],
+  };
 }
 
 /**

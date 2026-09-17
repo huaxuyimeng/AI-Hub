@@ -16,6 +16,9 @@ export {
 export {
   accumulateUsage,
   buildDecisionSummary,
+  buildPriorSpeeches,
+  buildCallLLMMessages,
+  buildErrorFallback,
   callLLMNode,
   concludeNode,
   decideContinueNode,
