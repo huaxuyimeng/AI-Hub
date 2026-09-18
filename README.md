@@ -1,21 +1,26 @@
-# AIHub —— 毕业设计 MVP 骨架
+# AIHub
 
-## 来源
+> AIHub 是一个毕业设计 MVP 平台，把四类 AI 内容工作流收拢在一个工作台里。
+> 骨架由 `d:\1Money\design\` 下的批次 A/S/P/B 设计文档直接生成（见下方"骨架来源"）。
 
-本骨架由 `d:\1Money\design\` 下的批次 A/S/P/B 设计文档直接生成：
+## 四大模块
 
-| 文件 / 目录 | 来源文档 |
-|------------|---------|
-| `prisma/schema.prisma` | `数据库设计.md §三 + §十` |
-| `src/lib/db.ts` | `数据库设计.md §4.2 + §10` |
-| `src/lib/crypto.ts` | `API设计.md §4.4.1`（B7 补全） |
-| `src/lib/sanitize.ts` | `数据库设计.md §10.4` |
-| `src/lib/lifecycle.ts` | `数据库设计.md §10.7` |
-| `src/lib/cleanup.ts` | `部署运维.md §11.1` |
-| `src/lib/usage.ts` | `AI集成.md §10.1`（Fix-1 修复后） |
-| `src/lib/ai/*` | `AI集成.md §三 §四 §五 §七`（B8 / B9） |
-| `src/server/routers/*` | `API设计.md §二`（B6 软删除） |
-| `src/app/api/cron/cleanup/route.ts` | `部署运维.md §11.1`（B13） |
+| 模块 | 状态 | 关键文件 |
+|------|------|---------|
+| **AI 新闻聚合** | ✅ | `src/lib/news/service.ts`、`src/server/routers/news.ts`、`src/app/(app)/news/page.tsx` |
+| **AI 模型排行** | ✅ | `src/lib/rankings/`、`src/server/routers/rankings.ts`、`src/app/(app)/rankings/page.tsx` |
+| **B 站 UP 主追踪** | ✅ | `src/lib/bilibili/`（wbi 签名 + 登录态 cookie + 字幕抓取） |
+| **AI 早报 (PPT)** | ✅ | `src/features/daily-briefing/`（每日自动生成可下载 PPT） |
+
+## 技术栈
+
+- **前端**：Next.js 14 (App Router) + TypeScript 5
+- **API**：tRPC 11（端到端类型安全）
+- **数据库**：Prisma 6 + PostgreSQL（dev 退化为 SQLite）
+- **存储**：Cloudflare R2（文件）+ Upstash Redis（缓存 / 速率限制）
+- **AI 路由**：LiteLLM Proxy + 多 Provider 直连（DeepSeek / 智谱 / Anthropic / Kimi）
+- **样式**：CSS 变量主题系统（6 套预设 + HSL DIY） + `@tabler/icons-react`
+- **鉴权**：NextAuth.js（GitHub OAuth + 本地开发默认账号）
 
 ## 快速开始
 
@@ -23,57 +28,109 @@
 # 1. 安装依赖
 pnpm install
 
-# 2. 配置环境变量（复制 .env.example 为 .env 并填值）
+# 2. 配置环境变量
 cp .env.example .env
+# 必填：DATABASE_URL、NEXTAUTH_SECRET、CRON_SECRET、至少一个 AI Provider Key
+# 推荐：R2 存储、Upstash Redis、B 站 SESSDATA（爬虫）
 
 # 3. 初始化数据库
-pnpm db:migrate
+pnpm prisma migrate dev
 
-# 4. 启动开发
+# 4. 启动开发服务
 pnpm dev
+# → http://localhost:3000
+```
+
+## 目录结构
+
+```
+aihub/
+├── src/
+│   ├── app/                 # Next.js App Router
+│   │   ├── (app)/           #   已登录工作台（/news、/rankings、/projects、/meeting）
+│   │   ├── api/             #   REST 端点（cron / upload / news）
+│   │   └── privacy/ terms/  #   合规页面
+│   ├── components/          # 共享 UI（app-shell、theme-*、news/*、rankings/*、chat/*）
+│   ├── features/            # 业务模块（daily-briefing PPT 引擎等）
+│   ├── lib/                 # 核心库
+│   │   ├── ai/              #   LiteLLM 路由、key 解析、模型发现
+│   │   ├── news/            #   多源抓取、意图搜索、健康度
+│   │   ├── bilibili/        #   wbi 签名 + cookie + 字幕
+│   │   ├── slide-engine/    #   PPT 早报 IR
+│   │   ├── rankings/        #   算法 + 抓取 + 调度
+│   │   └── observability/   #   日志 + 监控
+│   └── server/              # tRPC routers + 上下文
+├── prisma/                  # schema / migrations / seed
+├── landing/                 # 静态产品演示页
+├── docs/                    # 设计文档 / 实施记录 / 架构图 / 评审清单
+└── public/                  # 静态资源
 ```
 
 ## 关键设计
 
-- **多租户**：`createTenantPrisma(ctx)` 强制注入 `tenantId` + `deletedAt: null`
+- **多租户**：`createTenantPrisma(ctx)` 强制注入 `tenantId`，缺失即拒绝
 - **软删除**：白名单内 9 个模型（User / Project / ApiKey / Conversation / Score / InstalledPlugin / PluginAuditLog / UsageStat）含 `deletedAt`
-- **AI 路由**：LiteLLM 统一暴露，路由策略见 `src/lib/ai/router.ts`
-- **Cron**：单一 `cleanupOrphanFiles()`，三处共用（API / script / cron route）
-- **B 站爬虫**：wbi 签名 + 登录态 cookie + 间隔节流，详见 [40-B站爬虫wbi签名cookie注入-修复报告.md](./docs/实施记录/40-B站爬虫wbi签名cookie注入-修复报告.md)
+- **AI Key 解析**：唯一入口 `src/lib/ai/key-resolver.ts`，组件禁止直接读 env
+- **颜色系统**：所有色值走 `src/app/globals.css` 的 CSS 变量，禁止硬编码 `#xxx`
+- **图标**：统一 `@tabler/icons-react`
+- **Cron**：单一 `cleanupOrphanFiles()`，三处共用（API route / script / cron route）
+- **B 站爬虫**：wbi 签名 + SESSDATA cookie + 节流；详见 `docs/实施记录/40-B站爬虫wbi签名cookie注入-修复报告.md`
 
-## 整合 v3 已交付（2026-08-30）
+## 骨架来源（批次 A/S/P/B）
 
-| 模块 | 状态 | 关键文件 |
-|------|------|---------|
-| 新闻聚合 | ✅ | `src/lib/news/service.ts`、`src/server/routers/news.ts` |
-| 新闻 UI | ✅ | `src/app/(app)/news/page.tsx` |
-| 新闻设置 | ✅ | `src/app/(app)/settings/page.tsx`（新闻频率 + 关注分类 + 关注源） |
-| 模型排行 API | ✅ | `src/server/routers/rankings.ts` |
-| 混合爬虫 | ✅ | `src/lib/rankings/scraper.ts`（OFFICIAL + AA + MANUAL） |
-| 排行 UI | ✅ | `src/app/(app)/rankings/page.tsx`（Top3 + 帕累托图 + 表格） |
-| 模型详情页 | ✅ | `src/app/(app)/rankings/[id]/page.tsx`（价格走势 + 相关新闻） |
-| 侧边栏入口 | ✅ | `src/components/app-shell.tsx`（新闻 / 排行） |
-| 性价比算法 | ✅ | `src/lib/rankings/algorithm.ts` |
-| 算法单测 | ✅ | `src/lib/rankings/algorithm.test.ts`（13 个用例） |
+| 文件 / 目录 | 设计文档 |
+|------------|---------|
+| `prisma/schema.prisma` | `数据库设计.md §三 + §十` |
+| `src/lib/db.ts` | `数据库设计.md §4.2 + §10` |
+| `src/lib/ai/*` | `AI集成.md §三 §四 §五 §七` |
+| `src/server/routers/*` | `API设计.md §二` |
+| `src/app/api/cron/cleanup/route.ts` | `部署运维.md §11.1` |
+| `src/lib/bilibili/*` | `B站爬虫wbi签名cookie注入-修复报告.md` |
 
-### 验收结果
+## 整合 v3 交付状态（2026-08-30）
 
-- ✅ `npx tsc --noEmit` 通过
-- ✅ `npx prisma validate` 通过
-- ✅ `npx tsx src/lib/rankings/algorithm.test.ts` 13/13 通过
-- ✅ 数据互联：模型详情页通过 `relatedModels` 拉取相关新闻
-- ✅ 自动发现：`scraper.discoverFromNews()` 从近 7 天新闻提取模型名
-- ⚠️ 用量统计价格表当前来自 `PRICING_TABLE`（lib/ai/pricing.ts），未来可改为聚合 `rankings.list` 数据（见设计 §5.2）
+| 模块 | 状态 | 备注 |
+|------|------|------|
+| 新闻聚合 + UI + 设置 | ✅ | 多源抓取 + 意图搜索 + 关注分类 |
+| 模型排行 API + UI + 详情页 | ✅ | Top3 + 帕累托图 + 价格走势 |
+| 混合爬虫（OFFICIAL + AA + MANUAL） | ✅ | `src/lib/rankings/scraper.ts` |
+| 自动发现（从近 7 天新闻提取模型名） | ✅ | `scraper.discoverFromNews()` |
+| 性价比算法 + 单测 | ✅ | `src/lib/rankings/algorithm.test.ts` 13/13 |
+| 用量统计 + 价格表 | ✅ | `src/lib/usage.ts` + `PRICING_TABLE` |
+| 数据互联（模型详情 → 相关新闻） | ✅ | `relatedModels` |
 
-## 边界
+## 开发命令
 
-本骨架是 MVP，不包含：
+| 命令 | 用途 |
+|---|---|
+| `pnpm dev` | 启动开发服务 |
+| `pnpm build` | 生产构建 |
+| `pnpm typecheck` | 全量类型检查 |
+| `pnpm test:rankings` | 模型排行算法单测 |
+| `pnpm test:usage` | 用量计费单测 |
+| `pnpm test:slides` | 早报 IR 单测 |
+| `pnpm slide:lint` | 早报 IR lint |
 
-- ❌ 实际 LiteLLM docker-compose（见 `部署运维.md §6`）
-- ❌ 完整的 OAuth 回调 URL 注册（`.env.example` 留 placeholder，需在 GitHub Developer Settings 创建 OAuth App）
-- ❌ Vitest / Playwright 完整测试套件（仅含算法单测）
-- ❌ OpenTelemetry instrumentation 接线（依赖已加，实施留批次 C12）
-- ❌ 模型爬虫的厂商专用解析器（OpenAI/Anthropic/DeepSeek 仅占位，生产需定制）
+## 边界（MVP 不包含）
 
-后续批次任务见 `design/批次C修复报告.md`。
+- ❌ LiteLLM docker-compose 模板（见 `部署运维.md §6`）
+- ❌ GitHub OAuth App 注册（需在 GitHub Developer Settings 自行创建）
+- ❌ 完整 Vitest / Playwright 套件（仅含算法与早报单测）
+- ❌ OpenTelemetry 接线（依赖已加，实施留待后续批次）
+- ❌ 模型爬虫的厂商专用解析器（OpenAI / Anthropic / DeepSeek 仅占位）
 
+## 安全说明
+
+本仓库**绝不包含**真实凭据：
+
+```bash
+# 克隆后必须自行生成
+openssl rand -base64 32   # → NEXTAUTH_SECRET
+openssl rand -hex 32      # → CRON_SECRET
+```
+
+所有密钥、cookie、session token 必须放在本地 `.env`（已被 `.gitignore` 拦截）。
+
+## 许可
+
+[MIT](./LICENSE) © 2026 AIHub Authors
