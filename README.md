@@ -3,6 +3,24 @@
 > AIHub 是一个毕业设计 MVP 平台，把四类 AI 内容工作流收拢在一个工作台里。
 > 骨架由 `d:\1Money\design\` 下的批次 A/S/P/B 设计文档直接生成（见下方"骨架来源"）。
 
+## 项目简介
+
+**AIHub = AI 工作台（Workbench） + AI 早报自动生成 + 多源 AI 信息聚合**
+
+为独立开发者 / 内容创作者 / AI 行业从业者打造的「一站式 AI 信息中枢」：
+
+- **AI 新闻聚合**：自动抓取 10+ 中英文 AI 资讯源（机器之心 / 量子位 / AIbase / Unite.AI / Hacker News / 36kr 等），按置信度 + 来源质量 + 厂商标签三维度评分；支持 RSS / HTML / API 三类解析器
+- **AI 模型排行**：基于"能力 + 价格 + 上下文窗口"的加权算法 + Pareto 前沿筛选，每日更新；支持 50+ 模型横向对比
+- **B 站 UP 主追踪**：WBI 签名 + 登录态 cookie 破解 + RSS 兜底，抓取指定 UP 主的视频 + 字幕，支持字幕语义分析
+- **AI 早报（PPT）**：每日定时任务拉取最新新闻 → 大模型生成简报 JSON → 经过 lint 校验 → 渲染成可下载的 PPTX；用户可一键生成"今日 AI 行业 PPT"
+
+**核心差异化**：
+- 自研 slide-engine（基于 PPTX 模板 + IR 中间表示 + lint 规则），保证 PPT 生成质量
+- 多租户架构 + 软删除 + RBAC，单实例支持多个团队
+- 全量 TypeScript + tRPC 端到端类型安全 + Prisma 6 + Next.js 14 App Router
+
+**定位**：毕业设计 MVP（已上线 https://github.com/huaxuyimeng/AI-Hub），可作为个人 AI 工具箱使用
+
 ## 四大模块
 
 | 模块 | 状态 | 关键文件 |
