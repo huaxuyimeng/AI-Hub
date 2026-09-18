@@ -30,8 +30,9 @@ playwright-report/
 .tmp-*-test/
 test-results/
 snapshots/
-landing/
 public/landing/
+landing/.workbuddy/
+landing/_spec/
 docs/
 .aiexclude
 .claude/
@@ -51,3 +52,5 @@ src/**/CLAUDE.md
 简版-完整版.md
 # 架构/内部文档不进公开仓库
 ARCHITECTURE.md
+# landing 内部重复备份不进公开仓库
+*.dup-backup
