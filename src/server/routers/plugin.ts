@@ -31,7 +31,7 @@ const SEED_PLUGINS = [
     displayName: 'Auto Doc Generator',
     description: '基于 AST 自动生成函数级 JSDoc / Python docstring',
     author: 'AIHub Docs',
-    tags: 'docs,docs,productivity',
+    tags: 'docs,productivity,quality',
     iconUrl: null,
   },
 ];
@@ -47,6 +47,9 @@ export const pluginRouter = router({
   installedList: protectedProcedure.query(async ({ ctx }) => {
     const prisma = createTenantPrisma({ tenantId: ctx.tenantId });
     return prisma.installedPlugin.findMany({
+      // B-07 修复：显式加 deletedAt: null，防止中间件失效时返回已卸载的"幽灵"插件。
+      //         createTenantPrisma 通常会自动注入，但显式声明更稳（详见 2026-09-09 全量 Bug 排查）。
+      where: { deletedAt: null },
       orderBy: { createdAt: 'desc' },
       include: { plugin: true },
     });
@@ -62,26 +65,37 @@ export const pluginRouter = router({
       // DS-03: 不要用 seed.id（slug）当主键，会与生产 uuid 冲突且类型不一致
       // 改用 name 唯一，create 不传 id，让 @default(uuid()) 自行生成
       const { id: _omitId, ...seedData } = seed;
-      await prismaRaw.plugin.upsert({
-        where: { name: seed.name },
-        update: {},
-        create: seedData,
-      });
-
-      const plugin = await prismaRaw.plugin.findUnique({ where: { name: seed.name } });
-      if (!plugin) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
-
-      const existing = await prismaRaw.installedPlugin.findFirst({
-        where: { tenantId: ctx.tenantId, pluginId: plugin.id, deletedAt: null },
-      });
-      if (existing) {
-        return { ok: true, alreadyInstalled: true };
+      // B-20 修复：upsert 不带 deletedAt 条件会"复活"已软删的同名 plugin。
+      //          改用 findFirst + create/update 手动处理。
+      const existingPlugin = await prismaRaw.plugin.findFirst({ where: { name: seed.name } });
+      if (existingPlugin && existingPlugin.deletedAt !== null) {
+        // 复活：清掉 deletedAt
+        await prismaRaw.plugin.update({
+          where: { id: existingPlugin.id },
+          data: { deletedAt: null, ...seedData },
+        });
+      } else if (!existingPlugin) {
+        await prismaRaw.plugin.create({ data: seedData });
       }
 
-      const installed = await prisma.installedPlugin.create({
-        data: { tenantId: ctx.tenantId, pluginId: plugin.id, enabled: true },
-      });
-      return { ok: true, installed };
+      const plugin = await prismaRaw.plugin.findFirst({ where: { name: seed.name, deletedAt: null } });
+      if (!plugin) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+
+      // TOCTOU 修复：findFirst + create 之间存在竞态窗口，改用 Prisma 唯一约束兜底
+      // InstalledPlugin 表目前无 (tenantId, pluginId) 唯一约束，若出现并发 install，
+      // Prisma 会抛 P2002 Unique constraint failed，应用层捕获并返回 alreadyInstalled。
+      try {
+        const installed = await prisma.installedPlugin.create({
+          data: { tenantId: ctx.tenantId, pluginId: plugin.id, enabled: true },
+        });
+        return { ok: true, installed };
+      } catch (e: any) {
+        // P2002 = 唯一约束冲突，说明另一个请求已经创建
+        if (e?.code === 'P2002') {
+          return { ok: true, alreadyInstalled: true };
+        }
+        throw e;
+      }
     }),
 
   uninstall: protectedProcedure

@@ -145,7 +145,14 @@ export async function recordUsageIfNeeded(
         modelId: supported.name,
         inputTokens: result.usage.input,
         outputTokens: result.usage.output,
-        cost: calculateCost(supported.name, result.usage.input, result.usage.output, 0),
+        // Bug38 修复：把 cached token 也计入 calculateCost
+        //   (OpenAI / DeepSeek / Anthropic 等支持 prompt cache 的 provider)
+        cost: calculateCost(
+          supported.name,
+          result.usage.input,
+          result.usage.output,
+          result.usage.cachedInput ?? 0,
+        ),
         kind: 'chat',
       });
     } catch (err) {

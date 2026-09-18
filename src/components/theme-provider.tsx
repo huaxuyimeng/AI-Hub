@@ -22,6 +22,7 @@ interface ThemeContextValue {
   setMode: (m: StoredTheme['mode']) => void;
   setAccent: (a: AccentHSL | null) => void;
   setBgUrl: (url: string | null) => void;
+  setBgOpacity: (opacity: number) => void;
   reset: () => void;
   /** 上传背景图到 R2 并写 UserPreferences */
   uploadBg: (file: File) => Promise<string | null>;
@@ -50,12 +51,17 @@ function applyThemeVars(theme: StoredTheme) {
   root.dataset.preset = theme.preset;
 
   if (theme.bgUrl) {
-    root.style.setProperty('--bg-image', `url("${theme.bgUrl}")`);
-    // V-03: 背景图 class 挂到 body，避免 ::before z-index: -1 与 dialog 冲突
+    // H-31 修复：当有背景图时，在 <html> 上挂 data-has-bg，
+    //        让 globals.css 把 body/AppShell 的实色背景透明化，露出 body 背景图
+    root.setAttribute('data-has-bg', '1');
     document.body.classList.add('has-bg-image');
+    root.style.setProperty('--bg-image', `url("${theme.bgUrl}")`);
+    root.style.setProperty('--bg-opacity', String(theme.bgOpacity));
   } else {
-    root.style.removeProperty('--bg-image');
+    root.removeAttribute('data-has-bg');
     document.body.classList.remove('has-bg-image');
+    root.style.removeProperty('--bg-image');
+    root.style.removeProperty('--bg-opacity');
   }
 }
 
@@ -66,6 +72,7 @@ const STUB: ThemeContextValue = {
   setMode: NOOP_FN,
   setAccent: NOOP_FN,
   setBgUrl: NOOP_FN,
+  setBgOpacity: NOOP_FN,
   reset: NOOP_FN,
   uploadBg: async () => null,
 };
@@ -116,7 +123,7 @@ export function ThemeProvider({
   React.useEffect(() => {
     if (status !== 'authenticated' || !remoteTheme.data) return;
     const rt = remoteTheme.data.theme;
-    const fingerprint = `${rt.preset}|${rt.mode}|${rt.bgUrl ?? ''}|${rt.accent ? `${rt.accent.h}/${rt.accent.s}/${rt.accent.l}` : ''}`;
+    const fingerprint = `${rt.preset}|${rt.mode}|${rt.bgUrl ?? ''}|${rt.accent ? `${rt.accent.h}/${rt.accent.s}/${rt.accent.l}` : ''}|${rt.bgOpacity}`;
     // 只有当服务端指纹与上次同步不同，或尚未同步过，才覆盖本地
     if (remoteSyncRef.current && lastSyncedRef.current === fingerprint) return;
     // 解锁条件：当前 localStorage 是默认值（用户未在客户端改动）— 让服务端覆盖
@@ -148,10 +155,11 @@ export function ThemeProvider({
             mode: next.mode,
             accent: next.accent,
             bgUrl: next.bgUrl,
+            bgOpacity: next.bgOpacity,
           })
           .then(() => {
             // 同步成功，更新 lastSyncedRef，避免 effect #4 拿旧 refetch 覆盖
-            const fingerprint = `${next.preset}|${next.mode}|${next.bgUrl ?? ''}|${next.accent ? `${next.accent.h}/${next.accent.s}/${next.accent.l}` : ''}`;
+            const fingerprint = `${next.preset}|${next.mode}|${next.bgUrl ?? ''}|${next.accent ? `${next.accent.h}/${next.accent.s}/${next.accent.l}` : ''}|${next.bgOpacity}`;
             lastSyncedRef.current = fingerprint;
             // 后续 invalidate 不要带 stale 数据
             utils.preferences.get.invalidate();
@@ -188,14 +196,22 @@ export function ThemeProvider({
       setMode: (m) => update({ ...theme, mode: m }),
       setAccent: (a) => update({ ...theme, accent: a }),
       setBgUrl: (url) => update({ ...theme, bgUrl: url }),
+      setBgOpacity: (opacity) => update({ ...theme, bgOpacity: opacity }),
       reset: () => update(DEFAULT_THEME),
       uploadBg: async (file: File) => {
         const fd = new FormData();
         fd.append('file', file);
-        const res = await fetch('/api/upload/bg', { method: 'POST', body: fd });
+        const res = await fetch('/api/upload/bg', { method: 'POST', body: fd, signal: AbortSignal.timeout(30_000) });
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error((data as { error?: string }).error ?? `HTTP ${res.status}`);
+          // 优先取 JSON.error；JSON 解析失败则用纯文本兜底（2026-09-10 调试 400）
+          let msg: string | undefined;
+          try { msg = (await res.json()).error; } catch { /* noop */ }
+          if (!msg) {
+            try { msg = await res.text(); } catch { /* noop */ }
+          }
+          const errMsg = msg ?? `HTTP ${res.status}`;
+          console.error('[uploadBg] 400 detail:', errMsg);
+          throw new Error(errMsg);
         }
         const { url } = (await res.json()) as { url: string };
         update({ ...theme, bgUrl: url });

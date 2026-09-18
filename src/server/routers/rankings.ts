@@ -51,6 +51,7 @@ export const rankingsRouter = router({
           priceOutput: m.priceOutput,
           intelligence: m.intelligence,
           speed: m.speed,
+          contextWindow: m.contextWindow, // Batch 6
           scoreSource: m.scoreSource,
           isPending: m.isPending,
           description: m.description,

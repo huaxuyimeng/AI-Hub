@@ -64,6 +64,7 @@ interface SearchResult {
     priceOutput: number;
     intelligence: number | null;
     speed: number | null;
+    contextWindow: number | null; // Batch 6
     description: string | null;
     isPending: boolean;
     valueScore: number;

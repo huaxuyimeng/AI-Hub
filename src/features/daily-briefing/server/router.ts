@@ -11,7 +11,8 @@ import { TRPCError } from '@trpc/server';
 import { router, protectedProcedure } from '@/server/context';
 import { prismaBase as prisma } from '@/lib/db';
 import { generateDailyReport } from '@/features/daily-briefing/lib/generate';
-import { buildBriefingPptx, briefingFileName } from '@/features/daily-briefing/lib/build-pptx';
+import { briefingFileName } from '@/features/daily-briefing/lib/build-pptx';
+import { buildBriefingPptxAuto } from '@/features/daily-briefing/lib/build-pptx-dispatch';
 import { DailyReportContentSchema, BRIEFING_THEMES } from '@/features/daily-briefing/lib/types';
 import { beijingDateString } from '@/features/daily-briefing/lib/collect';
 import { adaptV1ToV4, isV1Content } from '@/features/daily-briefing/lib/adapters/v1-to-v4';
@@ -50,10 +51,11 @@ export const dailyReportRouter = router({
       select: {
         date: true, status: true, degraded: true, theme: true,
         phase: true, error: true, content: true,
+        pptxBuiltAt: true, // O3'：把缓存构建时间暴露给前端，让用户能看到「上次构建 PPT 是什么时候」
       },
     });
     if (!row) {
-      return { exists: false as const, date, status: 'none' as const, degraded: false, theme: 'paper', content: null, error: null, phase: null };
+      return { exists: false as const, date, status: 'none' as const, degraded: false, theme: 'paper', content: null, error: null, phase: null, pptxBuiltAt: null };
     }
     return {
       exists: true as const,
@@ -64,6 +66,7 @@ export const dailyReportRouter = router({
       phase: row.phase,
       error: row.error,
       content: row.status === 'ready' ? parseContent(row.content) : null,
+      pptxBuiltAt: row.pptxBuiltAt,
     };
   }),
 
@@ -84,53 +87,67 @@ export const dailyReportRouter = router({
       const row = await prisma.dailyReport.findUnique({
         where: { date: input.date },
         // 不读 pptxBase64：面板只显示元数据 + 内容；pptxBase64 是 PPT 缓存，由 download 单独读取
-        select: { date: true, theme: true, degraded: true, content: true, status: true },
+        select: { date: true, theme: true, degraded: true, content: true, status: true, pptxBuiltAt: true },
       });
       if (!row || row.status !== 'ready') {
         throw new TRPCError({ code: 'NOT_FOUND', message: '早报不存在或未就绪' });
+      }
+      const parsedContent = parseContent(row.content);
+      if (!parsedContent) {
+        throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: '早报内容损坏，请重新生成' });
       }
       return {
         date: row.date,
         theme: row.theme,
         degraded: row.degraded,
-        content: parseContent(row.content),
+        content: parsedContent,
+        pptxBuiltAt: row.pptxBuiltAt,
+        isDraft: row.degraded && parsedContent.cover.subtitle.includes('草稿'),
       };
     }),
 
-  /** 触发生成（异步，立即返回当前状态；前端轮询 today） */
-  generate: protectedProcedure.mutation(async ({ ctx }) => {
-    const date = beijingDateString();
-    const existing = await prisma.dailyReport.findUnique({ where: { date } });
-    if (existing?.status === 'ready') {
-      return { date, status: 'ready' as const, message: '今日早报已生成' };
-    }
-    // 防并发：若已经在 generating，则不重复触发（避免重复生成同一份）
-    if (existing?.status === 'generating') {
-      return { date, status: 'generating' as const, message: '正在生成中，请稍候' };
-    }
+  /** 触发生成（异步，立即返回当前状态；前端轮询 today）
+   * @param mode - 'auto'（默认）走 LLM → 失败自动降级草稿；'draft' 强制草稿模式
+   */
+  generate: protectedProcedure
+    .input(z.object({ mode: z.enum(['auto', 'draft']).optional().default('auto') }))
+    .mutation(async ({ ctx, input }) => {
+      const date = beijingDateString();
+      const existing = await prisma.dailyReport.findUnique({ where: { date } });
+      if (existing?.status === 'ready') {
+        return { date, status: 'ready' as const, message: '今日早报已生成' };
+      }
+      if (existing?.status === 'generating') {
+        return { date, status: 'generating' as const, message: '正在生成中，请稍候' };
+      }
 
-    // 读取用户的 windowHour 偏好（默认 8，即 08:00 分割晨报/晚报）
-    const prefs = await prisma.userPreferences.findUnique({
-      where: { userId: ctx.session.user.id },
-      select: { briefingWindowHour: true },
-    });
-    const windowHour = prefs?.briefingWindowHour ?? 8;
+      const prefs = await prisma.userPreferences.findUnique({
+        where: { userId: ctx.session.user.id },
+        select: { briefingWindowHour: true },
+      });
+      const windowHour = prefs?.briefingWindowHour ?? 8;
+      const mode = input.mode ?? 'auto';
 
-    // 异步执行，不阻塞响应；失败由状态记录，次日 cron 兜底
-    generateDailyReport(undefined, windowHour).catch((err) => {
-      logger.error('daily report async generation crashed', { error: (err as Error).message });
-    });
+      // Batch 3：mode='draft' → 直接传 'draft'，generateDailyReport 跳过 LLM
+      generateDailyReport(undefined, windowHour, mode).catch((err) => {
+        logger.error('daily report async generation crashed', { error: (err as Error).message });
+      });
 
-    return { date, status: 'generating' as const, message: '正在生成今日早报' };
-  }),
+      return { date, status: 'generating' as const, message: mode === 'draft' ? '正在生成机器草稿' : '正在生成今日早报' };
+    }),
 
-  /** 重新生成：清掉旧记录（含 PPT 缓存）+ 再异步跑（用于 failed 或主题变化后重制） */
+  /** 重新生成：清掉旧记录（含 PPT 缓存）+ 再异步跑（用于 failed 或主题变化后重制）
+   * @param mode - 'draft' 强制草稿模式，其余走 LLM（默认 auto）
+   */
   regenerate: protectedProcedure
-    .input(z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }).optional())
+    .input(z.object({
+      date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      mode: z.enum(['auto', 'draft']).optional().default('auto'),
+    }))
     .mutation(async ({ ctx, input }) => {
       const date = input?.date ?? beijingDateString();
-      // 修复：用事务保证"删除 + 创建 generating 记录"的原子性，
-      //       避免快速连续点击导致两个 generate 并发跑
+      const mode = input.mode ?? 'auto';
+
       await prisma.$transaction(async (tx) => {
         await tx.dailyReport.deleteMany({ where: { date } });
         await tx.dailyReport.create({
@@ -143,16 +160,15 @@ export const dailyReportRouter = router({
           },
         });
       });
-      // 读取用户 windowHour 偏好
       const prefs = await prisma.userPreferences.findUnique({
         where: { userId: ctx.session.user.id },
         select: { briefingWindowHour: true },
       });
       const windowHour = prefs?.briefingWindowHour ?? 8;
-      generateDailyReport(undefined, windowHour).catch((err) => {
+      generateDailyReport(undefined, windowHour, mode).catch((err) => {
         logger.error('daily report regenerate async crashed', { date, error: (err as Error).message });
       });
-      return { date, status: 'generating' as const, message: '已清空旧记录，正在重新生成' };
+      return { date, status: 'generating' as const, message: mode === 'draft' ? '已清空旧记录，正在生成机器草稿' : '已清空旧记录，正在重新生成' };
     }),
 
   /** 换主题（清掉对应主题的 PPT 缓存，下次下载时重建） */
@@ -162,6 +178,14 @@ export const dailyReportRouter = router({
       theme: z.enum(BRIEFING_THEMES as unknown as [string, ...string[]]),
     }))
     .mutation(async ({ input }) => {
+      // P1-2 修复：先检查记录是否存在，不存在报 NOT_FOUND 而不是抛 P2025 500
+      const exists = await prisma.dailyReport.findUnique({
+        where: { date: input.date },
+        select: { date: true },
+      });
+      if (!exists) {
+        throw new TRPCError({ code: 'NOT_FOUND', message: `日期 ${input.date} 的早报不存在` });
+      }
       await prisma.dailyReport.update({
         where: { date: input.date },
         data: { theme: input.theme, pptxBase64: null, pptxBuiltAt: null },
@@ -225,8 +249,8 @@ export const dailyReportRouter = router({
       }
 
       if (!cacheHit) {
-        const buffer = await buildBriefingPptx(content);
-        base64 = buffer.toString('base64');
+        const outcome = await buildBriefingPptxAuto(content, row.theme);
+        base64 = outcome.buffer.toString('base64');
         // R-6 修复：缓存写回带重试（最多 3 次，间隔 500ms），避免高频访问场景下首次写入失败后缓存永远缺失
         const writeCache = async (attempt = 1): Promise<void> => {
           try {
@@ -244,7 +268,15 @@ export const dailyReportRouter = router({
           }
         };
         void writeCache(); // fire-and-forget，不阻塞下载响应
-        logger.info('daily report pptx built', { date: input.date, theme: row.theme, duration: Date.now() - t0 });
+        logger.info('daily report pptx built', {
+          date: input.date,
+          theme: row.theme,
+          engine: outcome.producedBy,
+          mode: outcome.mode,
+          pages: outcome.engineReport?.pageCount ?? null,
+          fallback: outcome.fallbackReason,
+          duration: Date.now() - t0,
+        });
       } else {
         logger.debug('daily report pptx cache hit', { date: input.date, theme: row.theme });
       }
@@ -254,6 +286,7 @@ export const dailyReportRouter = router({
         base64,
         mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
         cacheHit,
+        isDraft: row.degraded && content.cover.subtitle.includes('草稿'),
       };
     }),
 });

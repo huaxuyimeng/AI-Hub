@@ -108,7 +108,9 @@ export async function POST(req: NextRequest) {
     ]);
   } catch (e) {
     // 入库失败：把已上传图删掉，避免悬挂对象
-    deleteObject(key).catch(() => {});
+    deleteObject(key).catch((err) => {
+      logger.warn('[bg/upload] R2 delete failed (orphaned file will be cleaned by cron)', { key, error: (err as Error)?.message });
+    });
     return NextResponse.json({ error: '入库失败' }, { status: 500 });
   }
 
@@ -130,13 +132,17 @@ export async function DELETE(req: NextRequest) {
       where: { id, userId: session.user.id },
     });
     if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-    deleteObject(row.r2Key).catch(() => {});
+    deleteObject(row.r2Key).catch((err) => {
+      logger.warn('[bg/upload] R2 delete failed (orphan cleanup will retry)', { key: row.r2Key, error: (err as Error)?.message });
+    });
     await prismaBase.wallpaperHistory.delete({ where: { id: row.id } });
     if (row.isActive) {
       await prismaBase.userPreferences.update({
         where: { userId: session.user.id },
         data: { bgImageUrl: null },
-      }).catch(() => {});
+      }).catch((err) => {
+        logger.warn('[bg/upload] UserPreferences cleanup failed (DB soft-delete already done)', { userId: session.user.id, error: (err as Error)?.message });
+      });
     }
     return NextResponse.json({ ok: true });
   }
@@ -147,7 +153,9 @@ export async function DELETE(req: NextRequest) {
   });
   if (existing?.bgImageUrl) {
     // 直接传 URL，deleteObject 内部会 parse key
-    deleteObject(existing.bgImageUrl).catch(() => {});
+    deleteObject(existing.bgImageUrl).catch((err) => {
+      logger.warn('[bg/upload] R2 delete failed on active bg removal', { url: existing.bgImageUrl, error: (err as Error)?.message });
+    });
   }
   // active 历史也一起标 inactive 删掉
   await prismaBase.wallpaperHistory.updateMany({
@@ -157,7 +165,9 @@ export async function DELETE(req: NextRequest) {
   await prismaBase.userPreferences.update({
     where: { userId: session.user.id },
     data: { bgImageUrl: null },
-  }).catch(() => {});
+  }).catch((err) => {
+    logger.warn('[bg/upload] UserPreferences.bgImageUrl clear failed', { userId: session.user.id, error: (err as Error)?.message });
+  });
 
   return NextResponse.json({ ok: true });
 }

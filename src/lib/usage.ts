@@ -28,7 +28,7 @@ interface UsageParams {
   outputTokens: number;
   cost: number;
   /** Q2 修复：区分调用来源，analysisCount / messageCount 各自分开计数 */
-  kind?: 'chat' | 'analysis';
+  kind?: 'chat' | 'analysis' | 'meeting' | 'briefing';
 }
 
 const MAX_RETRIES = 3;

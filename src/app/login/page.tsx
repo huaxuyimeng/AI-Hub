@@ -6,6 +6,14 @@ import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { IconBrandGithub, IconLoader2 } from '@tabler/icons-react';
 
+/**
+ * 本地开发默认账号（来自 .env.local 的 NEXT_PUBLIC_DEV_DEFAULT_ACCOUNT）。
+ * 格式："email,password"。
+ * 生产环境 NEXT_PUBLIC_DEV_DEFAULT_ACCOUNT 未配置时为空，自动跳过。
+ */
+const DEV_ACCOUNT = process.env.NEXT_PUBLIC_DEV_DEFAULT_ACCOUNT ?? '';
+const [DEV_EMAIL, DEV_PASSWORD] = DEV_ACCOUNT.split(',').map((s) => s.trim());
+
 export default function LoginPage() {
   // Suspense 包裹：useSearchParams 在 Next 14 必须配 Suspense，否则 build 阶段预渲染失败
   return (
@@ -24,8 +32,8 @@ function LoginForm() {
   const sp = useSearchParams();
   const callbackUrl = sp.get('callbackUrl') ?? '/workbench';
 
-  const [email, setEmail] = useState('admin@aihub.local');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState(DEV_EMAIL);
+  const [password, setPassword] = useState(DEV_PASSWORD);
   const [name, setName] = useState('');
   const [registerMode, setRegisterMode] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,6 +49,7 @@ function LoginForm() {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({ email, password, name: name || undefined }),
+          signal: AbortSignal.timeout(10_000),
         });
         const data = await res.json();
         if (!res.ok) {
@@ -158,7 +167,7 @@ function LoginForm() {
               {registerMode ? '注册并登录' : '登录'}
             </button>
 
-            {!registerMode && (email === 'admin@aihub.local' || password === 'admin123') && (
+            {!registerMode && DEV_EMAIL && (email === DEV_EMAIL || password === DEV_PASSWORD) && (
               <button
                 type="button"
                 onClick={() => { setEmail(''); setPassword(''); }}
@@ -169,10 +178,9 @@ function LoginForm() {
             )}
           </form>
 
-          {!registerMode && (email === 'admin@aihub.local' || password === 'admin123') && (
+          {!registerMode && DEV_EMAIL && (email === DEV_EMAIL || password === DEV_PASSWORD) && (
             <p className="mt-3 rounded-md bg-muted/50 px-3 py-2 text-center text-[11px] leading-relaxed text-muted-foreground">
-              当前为开发环境，默认填入测试账号 <span className="font-mono">admin@aihub.local</span> / <span className="font-mono">admin123</span>。
-              生产部署前移除此默认值。
+              当前为开发环境，默认填入测试账号 <span className="font-mono">{DEV_EMAIL}</span> / <span className="font-mono">{DEV_PASSWORD}</span>。
             </p>
           )}
 

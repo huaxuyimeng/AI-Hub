@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cleanupOrphanFiles } from '@/lib/cleanup';
+import { withLock } from '@/lib/observability/distributed-lock';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const result = await cleanupOrphanFiles();
+    const result = await withLock('cron:cleanup-orphan', 120, async () => {
+      return await cleanupOrphanFiles();
+    });
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);

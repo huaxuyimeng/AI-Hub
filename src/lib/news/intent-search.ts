@@ -200,7 +200,18 @@ export async function parseSearchIntent(
       clearTimeout(timeoutId!);
 
       const raw = res.content.trim();
-      const parsed = JSON.parse(raw || '{}') as Partial<SearchIntent>;
+      // B-10 修复：同上，AI 输出畸形 JSON 时降级为空意图（详见 2026-09-09 全量 Bug 排查）。
+      let parsed: Partial<SearchIntent>;
+      try {
+        parsed = JSON.parse(raw || '{}') as Partial<SearchIntent>;
+      } catch (e) {
+        console.warn('[intent-search] AI 输出不是合法 JSON，降级为空意图：', e);
+        return {
+          intent: { query, filters: {}, sort: 'value-asc', expandSynonyms: true },
+          degraded: true,
+          degradeReason: 'AI 输出不是合法 JSON',
+        };
+      }
 
       // 规范化 provider 大小写
       if (parsed.filters?.provider) {

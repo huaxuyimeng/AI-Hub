@@ -815,9 +815,11 @@ async function driveFreeBytes(drive: string): Promise<number> {
   try {
     const st = await fsp.statfs(`${drive}:\\`);
     return Number(st.bavail) * Number(st.bsize);
-  } catch {
-    // 设计意图：盘符离线/权限不足时返回 0 作为"无法估算"信号，调用方会处理
-    return 0;
+  } catch (e) {
+    // B-16 修复：盘符离线/权限拒绝时返回 NaN（无法估算）而不是 0（被误判为"磁盘完全空"）。
+    //          调用方需用 Number.isFinite() 判断（详见 2026-09-09 全量 Bug 排查）。
+    console.warn(`[driveFreeBytes] statfs failed for ${drive}:\\:`, e);
+    return NaN;
   }
 }
 

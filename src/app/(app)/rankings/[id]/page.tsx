@@ -16,6 +16,10 @@ import { trpc } from '@/lib/trpc';
 import { PriceChart } from '@/components/rankings/PriceChart';
 import { NewsCard } from '@/components/news/NewsCard';
 import { BackButton } from '@/components/ui/back-button';
+import { formatContextWindow } from '@/components/rankings/format-context-window'; // Batch 6 共享
+
+/** 详情页内的小写别名（HTML 内联短），避免重复 `formatContextWindow(...)` */
+const formatCtx = formatContextWindow;
 
 export default function ModelDetailPage() {
   const params = useParams<{ id: string }>();
@@ -127,6 +131,10 @@ export default function ModelDetailPage() {
           )}
           <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
             速度：{speed > 0 ? `${speed} tokens/s` : '—'}
+          </span>
+          {/* Batch 6：上下文窗口 */}
+          <span className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+            上下文：{model.contextWindow ? formatCtx(model.contextWindow) : '—'}
           </span>
         </div>
 

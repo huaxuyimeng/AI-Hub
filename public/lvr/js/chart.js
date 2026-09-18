@@ -34,14 +34,28 @@
       return;
     }
     const all = rows.concat(excluded);
-    const prices = all.map((r) => r.price).filter((p) => p > 0);
-    const intels = all.map((r) => r.model.intelligence);
-    if (!prices.length) {
+    /* Fix #B3: intelligence / price 为负数或 NaN 时过滤掉（防止坐标 NaN） */
+    const validRows = rows.filter((r) =>
+      typeof r.model.intelligence === 'number' && isFinite(r.model.intelligence) &&
+      typeof r.price === 'number' && isFinite(r.price) && r.price > 0
+    );
+    const validEx = excluded.filter((ex) =>
+      typeof ex.model.intelligence === 'number' && isFinite(ex.model.intelligence) &&
+      typeof ex.price === 'number' && isFinite(ex.price) && ex.price > 0
+    );
+    const validAll = validRows.concat(validEx);
+    const prices = validAll.map((r) => r.price);
+    const intels = validAll.map((r) => r.model.intelligence);
+    if (!prices.length || !validRows.length) {
       container.innerHTML = '<p class="lvr-empty">价格数据异常，无法绘制对数轴</p>';
       return;
     }
-    const lo = Math.log10(Math.min.apply(null, prices)) - 0.06;
-    const hi = Math.log10(Math.max.apply(null, prices)) + 0.06;
+    let lo = Math.log10(Math.min.apply(null, prices));
+    let hi = Math.log10(Math.max.apply(null, prices));
+    /* Fix #B4: lo === hi 时（所有价格相同）扩展范围防止 /0 */
+    if (lo === hi) { lo -= 0.5; hi += 0.5; }
+    lo -= 0.06;
+    hi += 0.06;
     const iMin = Math.floor(Math.min.apply(null, intels) - 4);
     const iMax = Math.ceil(Math.max.apply(null, intels) + 4);
 
@@ -134,33 +148,33 @@
 
     container.innerHTML = parts.join('');
 
-    /* legend (HTML, above the svg) */
+    /* Fix #B7: 清理旧的 tooltip/legend（避免重复 DOM 元素） */
     const wrap = container.parentElement;
-    let legend = wrap.querySelector('.lvr-legend');
-    if (!legend) {
-      legend = document.createElement('div');
-      legend.className = 'lvr-legend';
-      wrap.insertBefore(legend, container);
-    }
+    const oldTip = wrap.querySelector('.lvr-tooltip');
+    if (oldTip) oldTip.remove();
+    const oldLegend = wrap.querySelector('.lvr-legend');
+    if (oldLegend) oldLegend.remove();
+
+    /* legend (HTML, above the svg) */
+    const legend = document.createElement('div');
+    legend.className = 'lvr-legend';
+    wrap.insertBefore(legend, container);
     legend.innerHTML =
       `<span><i class="lg-line"></i>帕累托前沿</span>` +
       `<span><i class="lg-dot" style="background:#f59e0b"></i>Top 3</span>` +
       `<span><i class="lg-dot" style="background:#38bdf8"></i>前沿模型</span>` +
       `<span><i class="lg-dot" style="background:rgba(148,163,184,.6)"></i>其他参排</span>` +
-      `<span><i class="lg-dot lg-hollow"></i>未排名 (${excluded.length})</span>`;
+      `<span><i class="lg-dot lg-hollow"></i>未排名 (${validEx.length})</span>`;
 
-    /* tooltip + click, event delegation */
-    let tip = wrap.querySelector('.lvr-tooltip');
-    if (!tip) {
-      tip = document.createElement('div');
-      tip.className = 'lvr-tooltip';
-      tip.hidden = true;
-      wrap.appendChild(tip);
-    }
+    /* tooltip + click, event delegation（一次性绑定，不重复） */
+    const tip = document.createElement('div');
+    tip.className = 'lvr-tooltip';
+    tip.hidden = true;
+    wrap.appendChild(tip);
     const byId = {};
-    rows.forEach((r) => { byId[r.model.id] = r; });
+    validRows.forEach((r) => { byId[r.model.id] = r; });
     const exById = {};
-    excluded.forEach((ex) => { exById[ex.model.id] = ex; });
+    validEx.forEach((ex) => { exById[ex.model.id] = ex; });
 
     container.addEventListener('mouseover', (e) => {
       const g = e.target.closest('.lvr-pt');

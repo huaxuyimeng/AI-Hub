@@ -52,7 +52,9 @@ const globalForPrisma = globalThis as unknown as {
 export const prismaBase =
   globalForPrisma.__prismaBase ??
   new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'warn', 'error'] : ['warn', 'error'],
+    // P0 控制台清理：开发模式关闭 query 日志（每条 SQL 都打印，太吵）
+    // 线上用 warn + error；开发也统一用 warn + error，把 query 留给 Prisma Studio
+    log: ['warn', 'error'],
   });
 
 if (process.env.NODE_ENV !== 'production') {

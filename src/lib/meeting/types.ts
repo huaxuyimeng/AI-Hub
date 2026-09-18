@@ -102,12 +102,17 @@ export interface MeetingState {
    * 累计 usage（运行时，不写 DB）。由 callLLMNode / makeDecision / concludeNode
    * 累加；runMeetingGraph 结束后读出供 recordUsage(kind: 'meeting') 使用。
    * 2026-09-17 Bug2 修复引入。
+   * 2026-09-18 Bug38 扩展：新增 cachedTokens + cachedByModel 用于 prompt cache 计费。
    */
   usageTotal?: {
     inputTokens: number;
     outputTokens: number;
-    /** 按 model 分组的 cost（calculateCost 输出） */
+    /** 按 model 分组的 cost（calculateCost 输出，已扣除 cache 折扣） */
     costByModel: Record<string, number>;
+    /** 全场 prompt cache 命中 token 总数（跨所有 model） */
+    cachedTokens: number;
+    /** 按 model 分组的 cached tokens（用于调试 / 后续 recordUsage 细分） */
+    cachedByModel: Record<string, number>;
   };
 }
 

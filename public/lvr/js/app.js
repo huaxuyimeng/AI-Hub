@@ -7,10 +7,10 @@
 (function () {
   const LVR = window.LVR || (window.LVR = {});
 
+  /* esc() 和 fmtPrice 提到模块级（避免每次调用重建对象） */
+  const ESC_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' };
   function esc(s) {
-    return String(s).replace(/[&<>'"]/g, (c) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    }[c]));
+    return String(s).replace(/[&<>'"]/g, (c) => ESC_MAP[c]);
   }
   function fmtPrice(v) {
     if (v >= 100) return '¥' + v.toFixed(0) + '/亿';
@@ -20,8 +20,28 @@
   function fmtSpeed(v) { return Math.round(v) + ' tok/s'; }
 
   function init(container, opts) {
+    /* Fix #B1: container 为 null/undefined 时抛友好错误而非 TypeError */
+    if (!container) {
+      console.error('[LVR] init() 缺少 container 参数：LVR.init(document.getElementById("app"))');
+      return;
+    }
     opts = opts || {};
     const data = opts.data || window.LVR_DATA;
+
+    /* Fix #B2: 完整 data 校验，避免 rank() 内部抛异常 */
+    if (!data || !Array.isArray(data.models) || !data.models.length) {
+      container.innerHTML =
+        '<div class="lvr-root"><p class="lvr-empty">数据异常：models 字段缺失或为空。</p></div>';
+      return;
+    }
+    if (typeof data.blendWeights !== 'object' || data.blendWeights === null) {
+      data.blendWeights = { input: 0.7, output: 0.3 };
+    }
+    if (typeof data.usdCny !== 'number' || data.usdCny <= 0) {
+      data.usdCny = 7.1;
+    }
+    data.updatedAt = data.updatedAt || new Date().toISOString();
+
     const { rows, excluded, mean, total, ranked } = LVR.ranking.rank(
       data.models, data.blendWeights, data.usdCny
     );
@@ -108,9 +128,9 @@
 
     const $ = (id) => container.querySelector(id);
 
-    renderPodium($('#lvr-podium'), rows.slice(0, 3), openModal);
-    LVR.chart.renderChart($('#lvr-chart'), rows, frontier, (r) => openModal(r), excluded);
-    renderTable($('#lvr-tbody'), rows, openModal);
+    renderPodium($('#lvr-podium'), rows.slice(0, 3));
+    LVR.chart.renderChart($('#lvr-chart'), rows, frontier, openModal, excluded);
+    renderTable($('#lvr-tbody'), rows);
     $('#lvr-count').textContent = `共 ${rows.length} 个`;
 
     $('#lvr-search').addEventListener('input', (e) => {
@@ -119,7 +139,7 @@
         ? rows.filter((r) =>
             (r.model.name + r.model.provider + r.model.id).toLowerCase().includes(q))
         : rows;
-      renderTable($('#lvr-tbody'), list, openModal);
+      renderTable($('#lvr-tbody'), list);
       $('#lvr-count').textContent = `共 ${list.length} 个`;
     });
 
@@ -139,6 +159,23 @@
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
 
+    /* Fix #B5: 事件委托 —— 只在容器上一次绑定 click，避免重复绑定导致内存泄漏 */
+    const podium = $('#lvr-podium');
+    const tbody = $('#lvr-tbody');
+    const byId = {};
+    rows.forEach((r) => { byId[r.model.id] = r; });
+
+    const handlePodiumClick = (e) => {
+      const card = e.target.closest('.lvr-podium-card');
+      if (card) openModal(byId[card.dataset.modelId]);
+    };
+    const handleTableClick = (e) => {
+      const btn = e.target.closest('.lvr-btn[data-model-id]');
+      if (btn) openModal(byId[btn.dataset.modelId]);
+    };
+    podium.addEventListener('click', handlePodiumClick);
+    tbody.addEventListener('click', handleTableClick);
+
     function closeModal() {
       modal.hidden = true;
       if (lastFocus && lastFocus.focus) lastFocus.focus();
@@ -147,6 +184,14 @@
 
     function openModal(r) {
       const m = r.model;
+      /* Fix #B6: 所有字段提供默认值，避免显示 'undefined' */
+      const priceSource = m.priceSource ?? '官方挂牌价';
+      const desc = m.desc ?? '暂无描述';
+      const apiKeyUrl = m.apiKeyUrl ?? '#';
+      const officialUrl = m.officialUrl ?? '#';
+      const docsUrl = m.docsUrl ?? '#';
+      const priceInput = (typeof m.priceInput === 'number' && isFinite(m.priceInput)) ? m.priceInput : 0;
+      const priceOutput = (typeof m.priceOutput === 'number' && isFinite(m.priceOutput)) ? m.priceOutput : 0;
       $('#lvr-modal-body').innerHTML = `
         <div class="lvr-modal-head">
           <span class="lvr-badge">${esc(m.provider)}</span>
@@ -154,24 +199,24 @@
         </div>
         <div class="lvr-modal-metrics">
           <div><b>${r.value.toFixed(1)}</b><span>性价比</span></div>
-          <div><b>${m.intelligence}</b><span>能力指数</span></div>
-          <div><b>${fmtSpeed(m.speed)}</b><span>输出速度</span></div>
-          <div><b>${fmtPrice(r.price)}</b><span>混合价格</span></div>
+          <div><b>${m.intelligence ?? '—'}</b><span>能力指数</span></div>
+          <div><b>${m.speed ? fmtSpeed(m.speed) : '—'}</b><span>输出速度</span></div>
+          <div><b>${r.price ? fmtPrice(r.price) : '—'}</b><span>混合价格</span></div>
         </div>
-        <p class="lvr-modal-desc">${esc(m.desc)}</p>
+        <p class="lvr-modal-desc">${esc(desc)}</p>
         <table class="lvr-modal-price">
-          <tr><td>输入价格</td><td>$${m.priceInput.toFixed(2)} / M tokens（≈ ¥${(m.priceInput * data.usdCny).toFixed(2)}）</td></tr>
-          <tr><td>输出价格</td><td>$${m.priceOutput.toFixed(2)} / M tokens（≈ ¥${(m.priceOutput * data.usdCny).toFixed(2)}）</td></tr>
-          <tr><td>价格来源</td><td>${esc(m.priceSource)}</td></tr>
+          <tr><td>输入价格</td><td>$${priceInput.toFixed(2)} / M tokens（≈ ¥${(priceInput * data.usdCny).toFixed(2)}）</td></tr>
+          <tr><td>输出价格</td><td>$${priceOutput.toFixed(2)} / M tokens（≈ ¥${(priceOutput * data.usdCny).toFixed(2)}）</td></tr>
+          <tr><td>价格来源</td><td>${esc(priceSource)}</td></tr>
           <tr><td>能力分来源</td><td>${m.scoreSource === 'AA-SNAPSHOT'
             ? 'AA 榜单快照 (2026-08-27)'
             : 'AA 模型页实时抓取 (2026-08-28)'}</td></tr>
           ${m.estimated ? '<tr><td>备注</td><td>能力分 / 速度为榜单快照估计值</td></tr>' : ''}
         </table>
         <div class="lvr-modal-actions">
-          <a class="lvr-btn lvr-btn-primary" href="${esc(m.apiKeyUrl)}" target="_blank" rel="noopener noreferrer">获取官方 API Key →</a>
-          <a class="lvr-btn" href="${esc(m.officialUrl)}" target="_blank" rel="noopener noreferrer">官方网站</a>
-          <a class="lvr-btn" href="${esc(m.docsUrl)}" target="_blank" rel="noopener noreferrer">API 文档</a>
+          <a class="lvr-btn lvr-btn-primary" href="${esc(apiKeyUrl)}" target="_blank" rel="noopener noreferrer">获取官方 API Key →</a>
+          <a class="lvr-btn" href="${esc(officialUrl)}" target="_blank" rel="noopener noreferrer">官方网站</a>
+          <a class="lvr-btn" href="${esc(docsUrl)}" target="_blank" rel="noopener noreferrer">API 文档</a>
         </div>`;
       lastFocus = document.activeElement;
       modal.hidden = false;
@@ -179,7 +224,8 @@
     }
   }
 
-  function renderPodium(el, top3, onPick) {
+  /* renderPodium / renderTable 不再接收 onPick（事件已委托到 init 中） */
+  function renderPodium(el, top3) {
     el.innerHTML = top3.map((r) => `
       <button type="button" class="lvr-podium-card lvr-place-${r.rank}" data-model-id="${esc(r.model.id)}">
         <span class="lvr-medal">#${r.rank}</span>
@@ -192,15 +238,14 @@
         </span>
         <span class="lvr-podium-value">性价比 ${r.value.toFixed(1)}</span>
       </button>`).join('');
-    const byId = {};
-    top3.forEach((r) => { byId[r.model.id] = r; });
-    el.addEventListener('click', (e) => {
-      const card = e.target.closest('.lvr-podium-card');
-      if (card) onPick(byId[card.dataset.modelId]);
-    });
   }
 
-  function renderTable(tbody, list, onPick) {
+  function renderTable(tbody, list) {
+    /* Fix #B8: 空列表显示占位提示 */
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="lvr-empty-row">无匹配模型</td></tr>';
+      return;
+    }
     tbody.innerHTML = list.map((r) => {
       const rankCls = r.rank <= 3 ? ` lvr-rank-${r.rank}` : '';
       return `
@@ -221,11 +266,6 @@
         <td><button type="button" class="lvr-btn lvr-btn-sm" data-model-id="${esc(r.model.id)}">详情</button></td>
       </tr>`;
     }).join('');
-    const byId = {};
-    list.forEach((r) => { byId[r.model.id] = r; });
-    tbody.querySelectorAll('.lvr-btn').forEach((btn) => {
-      btn.addEventListener('click', () => onPick(byId[btn.dataset.modelId]));
-    });
   }
 
   LVR.init = init;

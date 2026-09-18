@@ -29,35 +29,28 @@ export interface ModelPricing {
  * TypeScript 的 zod tuple 会确保漏改被 tsc 捕获。
  */
 export const PRICING_TABLE: ModelPricing[] = [
-  // ── DeepSeek 系列 ────────────────────────────────────────────────────
+  // ── DeepSeek 系列（官方 2026-09 实价，来源 api-docs.deepseek.com/quick_start/pricing）──
+  // deepseek-flash (DeepSeek-V4.1-Flash)：缓存命中 $0.003/0.006、未命中 $0.15/0.3、输出 $0.6/1.2
+  // deepseek-v4-pro：缓存命中 $0.022/0.044、未命中 $0.66/1.32、输出 $1.98/3.96
+  // 这里取 PEAK（全价），用户夜间 UTC 01:00-04:00 与 06:00-10:00 是 peak
   {
-    name: 'deepseek-v4-flash',
-    displayName: 'DeepSeek V4 Flash',
+    name: 'deepseek-flash',
+    displayName: 'DeepSeek Flash (V4.1)',
     provider: 'DeepSeek',
-    inputPrice: 0.27,
-    outputPrice: 1.10,
-    cacheReadPrice: 0.07,
-    maxContextWindow: 128000,
+    inputPrice: 0.30, // cache miss
+    outputPrice: 1.20,
+    cacheReadPrice: 0.006, // cache hit
+    maxContextWindow: 1_000_000,
     supportsPromptCache: true,
   },
   {
-    name: 'deepseek-chat',
-    displayName: 'DeepSeek V3',
+    name: 'deepseek-v4-pro',
+    displayName: 'DeepSeek V4 Pro',
     provider: 'DeepSeek',
-    inputPrice: 0.27,
-    outputPrice: 1.10,
-    cacheReadPrice: 0.07,
-    maxContextWindow: 64000,
-    supportsPromptCache: true,
-  },
-  {
-    name: 'deepseek-reasoner',
-    displayName: 'DeepSeek R1',
-    provider: 'DeepSeek',
-    inputPrice: 0.55,
-    outputPrice: 2.20,
-    cacheReadPrice: 0.07,
-    maxContextWindow: 64000,
+    inputPrice: 1.32,
+    outputPrice: 3.96,
+    cacheReadPrice: 0.044,
+    maxContextWindow: 64_000,
     supportsPromptCache: true,
   },
 
@@ -116,6 +109,92 @@ export const PRICING_TABLE: ModelPricing[] = [
     inputPrice: 0,
     outputPrice: 0,
     maxContextWindow: 8192,
+    supportsPromptCache: false,
+  },
+
+  // ── 阿里 Qwen 系列（dashscope 百炼） ───────────────────────────────
+  {
+    name: 'qwen3.8-max',
+    displayName: 'Qwen 3.8 Max',
+    provider: '阿里 Qwen',
+    inputPrice: 0.50,
+    outputPrice: 1.50,
+    maxContextWindow: 1_000_000,
+    supportsPromptCache: false,
+  },
+  {
+    name: 'qwen-plus',
+    displayName: 'Qwen Plus',
+    provider: '阿里 Qwen',
+    inputPrice: 0.10,
+    outputPrice: 0.40,
+    maxContextWindow: 32_000,
+    supportsPromptCache: false,
+  },
+
+  // ── MiniMax 海螺 ───────────────────────────────────────────────────
+  {
+    name: 'MiniMax-M2.7-highspeed',
+    displayName: 'MiniMax M2.7 Highspeed',
+    provider: 'MiniMax',
+    inputPrice: 0.20,
+    outputPrice: 0.60,
+    maxContextWindow: 128_000,
+    supportsPromptCache: false,
+  },
+  {
+    name: 'MiniMax-M2.7',
+    displayName: 'MiniMax M2.7',
+    provider: 'MiniMax',
+    inputPrice: 0.50,
+    outputPrice: 1.50,
+    maxContextWindow: 128_000,
+    supportsPromptCache: false,
+  },
+  // 其它 M 系列型号（按 displayName 推断统一用 M2.5/M2 价格，留 stub 防 unknown error）
+  {
+    name: 'MiniMax-M2.5-highspeed',
+    displayName: 'MiniMax M2.5 Highspeed',
+    provider: 'MiniMax',
+    inputPrice: 0.15,
+    outputPrice: 0.45,
+    maxContextWindow: 128_000,
+    supportsPromptCache: false,
+  },
+  {
+    name: 'MiniMax-M2.5',
+    displayName: 'MiniMax M2.5',
+    provider: 'MiniMax',
+    inputPrice: 0.35,
+    outputPrice: 1.05,
+    maxContextWindow: 128_000,
+    supportsPromptCache: false,
+  },
+  {
+    name: 'MiniMax-M2-highspeed',
+    displayName: 'MiniMax M2 Highspeed',
+    provider: 'MiniMax',
+    inputPrice: 0.10,
+    outputPrice: 0.30,
+    maxContextWindow: 128_000,
+    supportsPromptCache: false,
+  },
+  {
+    name: 'MiniMax-M2',
+    displayName: 'MiniMax M2',
+    provider: 'MiniMax',
+    inputPrice: 0.25,
+    outputPrice: 0.75,
+    maxContextWindow: 128_000,
+    supportsPromptCache: false,
+  },
+  {
+    name: 'MiniMax-M3',
+    displayName: 'MiniMax M3',
+    provider: 'MiniMax',
+    inputPrice: 0.80,
+    outputPrice: 2.40,
+    maxContextWindow: 256_000,
     supportsPromptCache: false,
   },
 ];

@@ -51,6 +51,7 @@ export const preferencesRouter = router({
       mode: row.themeMode === 'light' || row.themeMode === 'dark' ? row.themeMode : 'system',
       accent: parseAccent(row.accentHsl),
       bgUrl: row.bgImageUrl,
+      bgOpacity: row.bgImageOpacity,
     };
     return {
       theme,
@@ -70,6 +71,7 @@ export const preferencesRouter = router({
         l: z.number().min(0).max(100),
       }).nullable().optional(),
       bgUrl: z.string().url().nullable().optional(),
+      bgOpacity: z.number().min(0).max(1).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const data: {
@@ -77,11 +79,13 @@ export const preferencesRouter = router({
         themeMode?: string;
         accentHsl?: string | null;
         bgImageUrl?: string | null;
+        bgImageOpacity?: number;
       } = {};
       if (input.preset) data.themePreset = input.preset;
       if (input.mode) data.themeMode = input.mode;
       if ('accent' in input) data.accentHsl = serializeAccent(input.accent ?? null);
       if ('bgUrl' in input) data.bgImageUrl = input.bgUrl ?? null;
+      if (typeof input.bgOpacity === 'number') data.bgImageOpacity = input.bgOpacity;
 
       const row = await prismaBase.userPreferences.upsert({
         where: { userId: ctx.session.user.id },
@@ -93,6 +97,7 @@ export const preferencesRouter = router({
           themeMode: data.themeMode ?? 'system',
           accentHsl: data.accentHsl ?? null,
           bgImageUrl: data.bgImageUrl ?? null,
+          bgImageOpacity: data.bgImageOpacity ?? 0.35,
         },
       });
 
@@ -102,6 +107,7 @@ export const preferencesRouter = router({
         mode: row.themeMode === 'light' || row.themeMode === 'dark' ? row.themeMode : ('system' as const),
         accent: parseAccent(row.accentHsl),
         bgUrl: row.bgImageUrl,
+        bgOpacity: row.bgImageOpacity,
       };
     }),
 
@@ -265,5 +271,72 @@ export const preferencesRouter = router({
         chatReasoningDepth: row.chatReasoningDepth,
         chatStyleOnboarded: row.chatStyleOnboarded,
       };
+    }),
+
+  // ── AI 代码评审提示词（可自定义） ──────────────────────────────────────
+
+  /** 获取当前评审提示词（null = 使用 deep-code-audit 默认规则） */
+  getAnalysisPrompt: protectedProcedure.query(async ({ ctx }) => {
+    const row = await prismaBase.userPreferences.findUnique({
+      where: { userId: ctx.session.user.id },
+      select: { analysisPrompt: true },
+    });
+    return { prompt: row?.analysisPrompt ?? null };
+  }),
+
+  /** 更新评审提示词（传入 null = 恢复默认） */
+  updateAnalysisPrompt: protectedProcedure
+    .input(z.object({ prompt: z.string().max(8000).nullable() }))
+    .mutation(async ({ ctx, input }) => {
+      await prismaBase.userPreferences.upsert({
+        where: { userId: ctx.session.user.id },
+        update: { analysisPrompt: input.prompt },
+        create: {
+          userId: ctx.session.user.id,
+          tenantId: ctx.tenantId!,
+          analysisPrompt: input.prompt,
+        },
+      });
+      return { ok: true };
+    }),
+
+  // ── AI 代码评审 8 维度权重（可自定义） ──────────────────────────────
+
+  /** 获取评审 8 维度权重（null = 用 DEFAULT_CATEGORIES 默认权重） */
+  getCategoryWeights: protectedProcedure.query(async ({ ctx }) => {
+    const row = await prismaBase.userPreferences.findUnique({
+      where: { userId: ctx.session.user.id },
+      select: { categoryWeights: true },
+    });
+    // 容错解析（失败视为未配置）
+    if (!row?.categoryWeights) return { weights: null };
+    try {
+      const parsed = JSON.parse(row.categoryWeights);
+      if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return { weights: null };
+      return { weights: parsed as Record<string, number> };
+    } catch {
+      return { weights: null };
+    }
+  }),
+
+  /**
+   * 更新评审 8 维度权重。
+   * weights = null 表示恢复默认；其他情况必须是 8 个 key 的对象，值 ∈ [0, 1]
+   */
+  updateCategoryWeights: protectedProcedure
+    .input(z.object({
+      weights: z.record(z.number().min(0).max(1)).nullable(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      await prismaBase.userPreferences.upsert({
+        where: { userId: ctx.session.user.id },
+        update: { categoryWeights: input.weights ? JSON.stringify(input.weights) : null },
+        create: {
+          userId: ctx.session.user.id,
+          tenantId: ctx.tenantId!,
+          categoryWeights: input.weights ? JSON.stringify(input.weights) : null,
+        },
+      });
+      return { ok: true, weights: input.weights };
     }),
 });

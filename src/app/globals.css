@@ -3,6 +3,20 @@
 @tailwind utilities;
 
 /* =========================================================================
+ * 浏览器原生 View Transitions API（2026-09-10 流畅度改造）
+ *
+ * Chrome 111+ / Edge 111+ 默认支持 <300ms 内页面切换的截图插值。
+ * 老浏览器无任何副作用，会被解析器忽略。
+ *
+ * 与 NavigationFade 组件的关系：
+ *   - Chrome 111+ 用浏览器 native cross-fade（最快、无感）
+ *   - 其它浏览器：NavigationFade 用 CSS 模拟，等价视觉感受
+ * ========================================================================= */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation-duration: 90ms; }
+::view-transition-new(root) { animation-duration: 140ms; }
+
+/* =========================================================================
  * Workbench 配色系统 (skill: workbench-ui-designer §4)
  *
  * :root 与 .dark 都是「变量占位」，具体值由 <ThemeProvider> 运行时注入。
@@ -148,7 +162,14 @@
 }
 
 /* =========================================================================
- * 微动效（skill §P4）
+ * 微动效（skill §P4）+ 流畅度强化（2026-09-10 改造）
+ *
+ * 优化点：
+ *   1. page-enter 从 320ms 缩短到 180ms（避免"空白→淡入"的断档）
+ *      translateY 从 8px 减到 4px（更克制）；缩放 0.995 → 取消（缩放容易引发重排）
+ *      prefers-reduced-motion 时彻底关掉
+ *   2. 全局 transform-gpu utility：把动画目标强制提升为合成层
+ *   3. .layout-stable：路由切换时阻止 layout box 重排
  * ========================================================================= */
 
 @layer utilities {
@@ -158,35 +179,51 @@
     color: var(--muted-foreground);
   }
 
-  /* 各页面 enter 动画：从下方 8px 上升 + 轻微缩放 + 透明度（用户能看见） */
+  /* 页面 enter 动画：从下方 4px 上升 + 透明度（用户能看见、但不卡） */
   /* M-01: 收窄选择器到 .page-enter（避免全局动画影响 dialog/popover 等） */
   .page-enter {
-    animation: page-enter 320ms cubic-bezier(0.16, 1, 0.3, 1);
+    animation: page-enter 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    /* P0: 强制 GPU 合成层，避免重绘 */
+    transform: translateZ(0);
+    will-change: transform, opacity;
   }
   @keyframes page-enter {
     from {
       opacity: 0;
-      transform: translateY(8px) scale(0.995);
+      transform: translate3d(0, 4px, 0);
     }
     to {
       opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translate3d(0, 0, 0);
     }
   }
 
-  /* slide-in（toast 用）：从右上角双轴入场 */
+  /* slide-in（toast 用）：从右上角双轴入场（GPU 友好） */
   .animate-slide-in {
-    animation: slide-in 240ms cubic-bezier(0.16, 1, 0.3, 1);
+    animation: slide-in 220ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, opacity;
   }
   @keyframes slide-in {
     from {
       opacity: 0;
-      transform: translateX(-12px) translateY(-8px);
+      transform: translate3d(-12px, -8px, 0);
     }
     to {
       opacity: 1;
-      transform: translateX(0) translateY(0);
+      transform: translate3d(0, 0, 0);
     }
+  }
+
+  /* P0: 全局 GPU 提升 utility —— 凡是在动画/过渡中的元素建议套这个 */
+  .gpu {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* P0: 路由切换时锁定 layout，避免 collapse 抖动 */
+  .layout-stable {
+    contain: layout paint style;
   }
 
   /* C-16 修复：NewsAnalyticsModal 用的动画 keyframes，统一在此声明
@@ -196,8 +233,8 @@
     to   { opacity: 1; }
   }
   @keyframes analytics-modalIn {
-    from { opacity: 0; transform: translateY(8px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; transform: translate3d(0, 8px, 0) scale(0.97); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
   }
   @keyframes analytics-barGrow {
     from { width: 0%; }
@@ -212,13 +249,39 @@
     to   { stroke-dashoffset: 0; }
   }
   @keyframes analytics-kpiIn {
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translate3d(0, 6px, 0); }
+    to   { opacity: 1; transform: translate3d(0, 0, 0); }
   }
 
   /* 输入框 focus 时的柔和过渡 */
   .input-focus {
     transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+  }
+
+  /* 全局交互元素的统一过渡（按钮、卡片、列表行等） */
+  .transition-base {
+    transition: background-color 160ms ease-out,
+                border-color 160ms ease-out,
+                color 160ms ease-out,
+                box-shadow 160ms ease-out,
+                transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 160ms ease-out;
+  }
+
+  /* P0: 路由切换衔接 —— NavigationFade 组件使用
+     transit-out：老页退出（60ms 透明度到 0） */
+  .navigation-fade-root {
+    /* 强制 GPU 合成 + layout 隔离 → 切换时不会触发祖先 layout 重排 */
+    transform: translateZ(0);
+    contain: layout paint style;
+  }
+  .navigation-fade-root.transit-out {
+    opacity: 0;
+    transition: opacity 60ms ease-out;
+  }
+  .navigation-fade-root:not(.transit-out) {
+    opacity: 1;
+    transition: opacity 120ms ease-out;
   }
 
   /* 减少动效偏好用户 */
@@ -229,6 +292,7 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }
@@ -319,13 +383,19 @@
     border-width: 0.5px;
   }
 
-  /* V-03 修改：背景图机制挂到 body，避免 ::before z-index: -1 与 dialog 冲突 */
+  /* V-03 修改：背景图机制挂到 body，避免 ::before z-index: -1 与 dialog 冲突
+     2026-09-10 重构：background-image 由 BgLayer 双图层 + opacity transition 接管，
+       这里只保留透明化和蒙版逻辑（--bg-opacity、::before、> * z-index）。*/
   body.has-bg-image {
-    background-image: var(--bg-image);
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-color: transparent;
+  }
+  /* H-31 修复：当 <html> 有 data-has-bg 属性时，把 body 和 AppShell 根 div 的实色背景
+     强制改成透明，背景图才能从 body 透出来。
+     选择器特异性：(0,1,2) > (0,1,1) 的 body.bg-background。 */
+  html[data-has-bg] body {
+    background-color: transparent;
+  }
+  html[data-has-bg] [data-app-shell-bg] {
     background-color: transparent;
   }
   body.has-bg-image::before {
@@ -333,13 +403,47 @@
     position: fixed;
     inset: 0;
     background: var(--background);
-    opacity: 0.86;
+    /* 2026-09-09 新增：透明度由用户调节，CSS 变量传入，fallback 0.35 */
+    opacity: var(--bg-opacity, 0.35);
     pointer-events: none;
     z-index: 0;
   }
-  body.has-bg-image > * {
+  /* H-31+2026-09-10：所有内容浮在背景之上，但 BgLayer 自身必须留在 z-index:0，
+     所以用 :not(.bg-layer) 排除。 */
+  body.has-bg-image > *:not(.bg-layer) {
     position: relative;
     z-index: 1;
+  }
+
+  /* =====================================================================
+   * BgLayer — 壁纸双图层 crossfade 容器（2026-09-10 新增）
+   *
+   *   - 容器铺满视口，z-index:0（被子层 ::before 蒙版压在背景之上、所有内容之下）
+   *   - 每个 <img> 用 data-active 切换 opacity，300ms ease 过渡
+   *   - 两层 z-index 1/2 切换前台
+   * ===================================================================== */
+  .bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    /* 防止 body.has-bg-image > * 的 z-index:1 把这里也带起来 */
+    contain: layout paint;
+  }
+  .bg-layer-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    opacity: 0;
+    transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity;
+  }
+  .bg-layer-img[data-active='1'] {
+    opacity: 1;
   }
 }
 
@@ -392,36 +496,178 @@
   --pg-acc: var(--pg-accd);
 }
 
-/* 主光晕 blob —— 圆+重模糊=有机一团 */
+/* 主光晕 blob
+   完整重写（2026-09-10 第四轮）：
+   - 用 CSS 自带居中技巧（left:50%; top:50%; transform:translate(-50%, -50%)）
+     保证页面加载后 blob 严格在视口正中央
+   - JS 用 transform: translate3d 在 CSS 居中基础上叠加鼠标位移
+   - 加调试点（data-debug 启用时显示红点中心）—— 排查位置问题
+*/
 .page-gradient-blob {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: fixed;
+  /* CSS 自带居中（保证 blob 中心在视口中心） */
+  left: 50%;
+  top: 50%;
   width: 380px;
   height: 380px;
   margin-left: -190px;
   margin-top: -190px;
   border-radius: 50%;
   filter: blur(40px);
-  transform: translate(50vw, 50vh);
+  /* JS 用 transform 叠加鼠标位移 */
+  transform: translate3d(0, 0, 0);
   transition:
     transform 700ms cubic-bezier(0.16, 1, 0.3, 1),
-    --pg-c1 2400ms cubic-bezier(0.45, 0.05, 0.55, 0.95),
-    --pg-c2 2400ms cubic-bezier(0.45, 0.05, 0.55, 0.95),
-    --pg-c3 2400ms cubic-bezier(0.45, 0.05, 0.55, 0.95),
-    --pg-acc 800ms cubic-bezier(0.16, 1, 0.3, 1);
+    background-image 300ms ease;
   will-change: transform;
-
-  /* 中心强调色 → 调色板色 → 透明
-     - 0% 中心：accent（强调色）
-     - 30% 近距：调色板色 1（饱和）
-     - 60% 中距：调色板色 2（柔和）
-     - 88% 远距：完全透明（自然消失） */
-  background: radial-gradient(
+  /* 默认渐变（JS 挂载后立刻覆盖） */
+  background-image: radial-gradient(
     circle,
-    var(--pg-acc) 0%,
-    var(--pg-c1) 30%,
-    var(--pg-c2) 60%,
+    hsl(65 75% 55%) 0%,
+    oklch(70% 0.16 220 / 0.13) 30%,
+    oklch(72% 0.15 290 / 0.10) 60%,
     transparent 88%
   );
+}
+
+/* 调试用：blob 中心点
+   JS 会读取 ?debug=blob 或 localStorage('aihub-debug-blob') 来决定是否启用
+*/
+.page-gradient-blob[data-debug="1"]::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-left: -4px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: #ff0066;
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #ff0066;
+  z-index: 1;
+}
+
+/* =========================================================================
+ * CodeBlock — VSCode 风格语法高亮
+ *
+ * 主题策略：
+ *   - light 模式：基于 VSCode Light+ (prism 浅色版)
+ *   - dark 模式：基于 VSCode Dark+ (prism-tomorrow 近似色)
+ *   - token 颜色用 CSS 变量，便于主题切换
+ * ========================================================================= */
+
+pre[class*="language-"],
+code[class*="language-"] {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 0.85em;
+  text-shadow: none !important;
+  tab-size: 2;
+}
+
+/* Light 主题（VSCode Light+ 同款配色） */
+:root,
+:root:not(.dark) {
+  --code-bg: #f6f8fa;
+  --code-fg: #24292f;
+  --code-comment: #6e7781;
+  --code-keyword: #cf222e;
+  --code-string: #0a3069;
+  --code-number: #0550ae;
+  --code-function: #8250df;
+  --code-class: #953800;
+  --code-variable: #24292f;
+  --code-operator: #cf222e;
+  --code-punctuation: #24292f;
+  --code-tag: #116329;
+  --code-attr-name: #0550ae;
+  --code-attr-value: #0a3069;
+  --code-builtin: #953800;
+  --code-regex: #0a3069;
+  --code-deleted: #82071e;
+  --code-inserted: #116329;
+}
+
+/* Dark 主题（VSCode Dark+ 同款配色） */
+.dark {
+  --code-bg: #0d1117;
+  --code-fg: #e6edf3;
+  --code-comment: #8b949e;
+  --code-keyword: #ff7b72;
+  --code-string: #a5d6ff;
+  --code-number: #79c0ff;
+  --code-function: #d2a8ff;
+  --code-class: #ffa657;
+  --code-variable: #e6edf3;
+  --code-operator: #ff7b72;
+  --code-punctuation: #c9d1d9;
+  --code-tag: #7ee787;
+  --code-attr-name: #79c0ff;
+  --code-attr-value: #a5d6ff;
+  --code-builtin: #ffa657;
+  --code-regex: #a5d6ff;
+  --code-deleted: #ffdcd7;
+  --code-inserted: #aff5b4;
+}
+
+/* Token 颜色映射（覆盖 prism 默认 .token.* 类） */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata { color: var(--code-comment); font-style: italic; }
+.token.punctuation { color: var(--code-punctuation); }
+.token.namespace { opacity: 0.7; }
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted { color: var(--code-tag); }
+.token.boolean,
+.token.number { color: var(--code-number); }
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted { color: var(--code-string); }
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string { color: var(--code-operator); }
+.token.atrule,
+.token.attr-value,
+.token.keyword { color: var(--code-keyword); }
+.token.function,
+.token.class-name { color: var(--code-function); }
+.token.regex,
+.token.important,
+.token.variable { color: var(--code-variable); }
+.token.important,
+.token.bold { font-weight: bold; }
+.token.italic { font-style: italic; }
+
+/* 类名（class-name）用更显眼的橙色 */
+.token.class-name { color: var(--code-class); }
+
+/* 行号（如果启用） */
+pre[class*="language-"].line-numbers {
+  position: relative;
+  padding-left: 3.5em;
+  counter-reset: linenumber;
+}
+pre[class*="language-"].line-numbers > code {
+  position: relative;
+  white-space: inherit;
+}
+.line-numbers .line-numbers-rows {
+  position: absolute;
+  pointer-events: none;
+  top: 1em;
+  font-size: 100%;
+  left: 0;
+  width: 3em;
+  letter-spacing: -1px;
+  border-right: 1px solid var(--code-comment);
+  user-select: none;
 }

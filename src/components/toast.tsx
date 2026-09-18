@@ -88,9 +88,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               key={t.id}
               role="status"
               className={
-                'pointer-events-auto flex w-80 items-start gap-2 rounded-md border px-3 py-2 shadow-lg animate-slide-in ' +
+                // P0: 缩短 slide-in 到 220ms；加 .gpu 类强制 GPU 提升
+                'gpu pointer-events-auto flex w-80 items-start gap-2 rounded-md border px-3 py-2 shadow-lg animate-slide-in ' +
                 KIND_STYLES[t.kind]
               }
+              style={{ willChange: 'transform, opacity' }}
             >
               <Icon size={16} className="mt-0.5 shrink-0" />
               <div className="flex-1 text-xs">{t.message}</div>

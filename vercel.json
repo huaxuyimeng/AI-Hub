@@ -6,8 +6,12 @@
       "schedule": "0 */3 * * *"
     },
     {
+      "path": "/api/cron/discover-models",
+      "schedule": "0 */24 * * *"
+    },
+    {
       "path": "/api/cron/refresh-models",
-      "schedule": "0 4 * * *"
+      "schedule": "30 */24 * * *"
     },
     {
       "path": "/api/cron/refresh-terms",

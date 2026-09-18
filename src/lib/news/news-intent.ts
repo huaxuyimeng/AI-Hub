@@ -253,7 +253,19 @@ export async function parseNewsIntent(
     }
 
     const raw = res.content.trim();
-    const parsed = JSON.parse(raw) as Partial<NewsIntent>;
+    // B-10 修复：AI 返回的内容用 try/catch 兜底，畸形 JSON 时降级返回空意图。
+    //          之前 JSON.parse 无保护，AI 输出带 markdown code fence 或截断时会直接抛错。
+    let parsed: Partial<NewsIntent>;
+    try {
+      parsed = JSON.parse(raw) as Partial<NewsIntent>;
+    } catch (e) {
+      console.warn('[news-intent] AI 输出不是合法 JSON，降级为空意图：', e);
+      return {
+        intent: { query, sort: 'recent', expandSynonyms: true },
+        degraded: true,
+        degradeReason: 'AI 输出不是合法 JSON',
+      };
+    }
 
     // 校验并规范化
     const filters: NewsIntent['filters'] = {};

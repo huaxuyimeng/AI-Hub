@@ -49,7 +49,13 @@ export interface ChatOptions {
 
 export interface ChatResult {
   content: string;
-  usage: { input: number; output: number };
+  /**
+   * Token usage.
+   * - input / output: standard counts (billable)
+   * - cachedInput: subset of input that hit prompt cache (typically priced at ~10%)
+   *   For dev-mock / unparseable responses, cachedInput is omitted (= 0).
+   */
+  usage: { input: number; output: number; cachedInput?: number };
 }
 
 export interface RouteDecision {

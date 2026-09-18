@@ -11,7 +11,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
 import { BriefingToast } from '@/features/daily-briefing/components/BriefingToast';
 import {
@@ -30,7 +30,9 @@ import {
   IconTrendingUp,
   IconMenu2,
   IconTrash,
+  IconUsersGroup,
   IconX,
+  IconSparkles,
 } from '@tabler/icons-react';
 import type { TablerIconType } from '@/lib/icon-type';
 import { ThemeSwitcher } from './theme/theme-switcher';
@@ -53,6 +55,8 @@ const NAV_MODES = [
 const NAV_PAGES = [
   { href: '/projects', label: '项目', icon: IconFolders },
   { href: '/chat', label: '对话', icon: IconMessages },
+  { href: '/meeting', label: '会议', icon: IconUsersGroup },
+  { href: '/expert-market', label: '专家', icon: IconSparkles },
   { href: '/usage', label: '用量', icon: IconChartBar },
   { href: '/news', label: '新闻', icon: IconNews },
   { href: '/rankings', label: '排行', icon: IconTrendingUp },
@@ -65,6 +69,7 @@ const COLLAPSE_KEY = 'aihub-sidebar-mode';
 
 export function AppShell({ user, children }: { user: User; children: React.ReactNode }) {
   const pathname = usePathname() ?? '';
+  const router = useRouter();
   const [collapsed, toggle] = useLocalCollapse(false);
   // R-01 + I-14: 移动端 drawer 状态
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -76,7 +81,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
   }, [pathname]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
+    <div data-app-shell-bg className="flex h-screen w-full overflow-hidden bg-background">
       {/* R-01 修复：移动端 backdrop（仅在 drawer 打开时显示） */}
       {mobileOpen && (
         <button
@@ -99,13 +104,15 @@ export function AppShell({ user, children }: { user: User; children: React.React
 
       <aside
         className={
-          // R-01 修复：移动端用 fixed 抽屉 + translate 切换；桌面端用 w-16/w-60
-          'shrink-0 flex flex-col border-r bg-card transition-[width,transform] duration-200 ' +
-          'fixed inset-y-0 left-0 z-40 w-60 ' +
+          // R-01 修复：移动端用 fixed 抽屉 + translate 切换；桌面端用 w-12/w-52
+          // P0 流畅度强化：will-change 提前告知 GPU 准备合成；用 .gpu 类强制 3D 提升
+          'gpu shrink-0 flex flex-col border-r bg-card transition-[width,transform] duration-200 ease-out ' +
+          'fixed inset-y-0 left-0 z-40 w-52 ' +
           (mobileOpen ? 'translate-x-0 ' : '-translate-x-full ') +
           'md:relative md:inset-auto md:translate-x-0 ' +
-          (collapsed ? 'md:w-16' : 'md:w-60')
+          (collapsed ? 'md:w-12' : 'md:w-52')
         }
+        style={{ willChange: 'width, transform' }}
       >
         {/* 移动端：抽屉内的关闭按钮（仅 mobile 显示） */}
         <button
@@ -225,7 +232,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
             </>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <ThemeToggle compact />
+              <ThemeToggle />
               <ThemeSwitcher compact />
               <button
                 type="button"
@@ -261,7 +268,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
         </div>
       </aside>
 
-      <main className="flex flex-1 flex-col overflow-hidden">{children}</main>
+      <main className="layout-stable flex flex-1 flex-col overflow-hidden">{children}</main>
       <BriefingToast />
     </div>
   );
@@ -290,13 +297,17 @@ function NavLink({
   active: boolean;
   collapsed: boolean;
 }) {
+  const router = useRouter();
   return (
     <Link
       href={href}
       title={collapsed ? label : undefined}
       aria-label={label}
+      onMouseEnter={() => router.prefetch(href)}
       className={
-        'group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition ' +
+        // P0 流畅度：transition 改为 GPU 友好（transform 不算 width/inset）
+        // 背景色 160ms、颜色 160ms 与全局 .transition-base 一致
+        'group gpu flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors duration-150 ' +
         (active
           ? 'bg-primary/10 font-medium text-primary'
           // V-12 修复：去掉 /80 opacity（非 active 态用 100% 前景色，更清晰）
@@ -331,21 +342,25 @@ function useLocalCollapse(mobileDefault = true): [boolean, () => void] {
     staleTime: 60_000,
   });
 
-  // Lazy initial：直接读 localStorage（避免 SSR 不一致）
-  const [v, setV] = useState<boolean>(() => {
-  if (typeof window === 'undefined') return false;
-  try {
-    const stored = localStorage.getItem(COLLAPSE_KEY);
-    if (stored === '1') return true;
-    if (stored === '0') return false;
-  } catch (e) {
-    // P2 修复：localStorage 不可用（隐私模式/被禁用）时降级为 matchMedia 判断
-    // 主流程不受影响，但写入丢失侧栏偏好
-    console.warn('[app-shell] read COLLAPSE_KEY failed:', (e as Error).message);
-  }
-  const isMobile = window.matchMedia('(max-width: 767px)').matches;
-  return isMobile && mobileDefault ? true : false;
-});
+  // H-hydration-2：lazy initial 在 SSR 总返回 false，与客户端首 render 对齐
+  //                 localStorage + matchMedia 读取延迟到 useEffect（mounted 后才执行）
+  // 之前版本直接 lazy 读 localStorage → SSR 与客户端首 render 不一致 → hydration mismatch
+  const [v, setV] = useState<boolean>(false);
+
+  useEffect(() => {
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(COLLAPSE_KEY);
+    } catch (e) {
+      // P2 修复：localStorage 不可用（隐私模式/被禁用）时降级为 matchMedia 判断
+      console.warn('[app-shell] read COLLAPSE_KEY failed:', (e as Error).message);
+    }
+    if (stored === '1') { setV(true); return; }
+    if (stored === '0') { setV(false); return; }
+    // 无显式偏好 → 用 matchMedia 推断（仅客户端能跑）
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+    setV(isMobile && mobileDefault ? true : false);
+  }, [mobileDefault]);
 
   // 远端 sync：仅在认证用户首次得到 data 时跑一次
   // 注意：依赖里没有 v——避免 toggle 后 v 变化触发 sync 把 v 推回去

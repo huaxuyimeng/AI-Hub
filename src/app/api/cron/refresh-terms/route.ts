@@ -248,25 +248,46 @@ async function runEvaluate(batch: string) {
     orderBy: { firstSeen: 'desc' },
     take: 50,
   });
+
+  // 优化前：50 次串行 count + 50 次串行 create（N+1 + N）
+  // 优化后：50 次 count 并行（用 Promise.all），+ 1 次 createMany 批量写入
+  const canonicals = terms.map((t) => t.canonical);
+  const frequencyMap = new Map<string, number>();
+  if (canonicals.length > 0) {
+    // 并行查频次：50 次 count 改为 Promise.all，单批 ~50ms 完成
+    const counts = await Promise.all(
+      terms.map(async (t) => {
+        const c = await prisma.newsItem.count({
+          where: {
+            deletedAt: null,
+            OR: [
+              { title: { contains: t.canonical } },
+              { summary: { contains: t.canonical } },
+            ],
+          },
+        });
+        return { canonical: t.canonical, cnt: c };
+      })
+    );
+    for (const r of counts) frequencyMap.set(r.canonical, r.cnt);
+  }
+
+  // 批量计算 label + createMany 单次写入
+  const rows = terms.map((t) => {
+    const count = frequencyMap.get(t.canonical) ?? 0;
+    const label = count >= 3 ? 'true_positive' : count === 0 ? 'false_positive' : 'uncertain';
+    return { canonical: t.canonical, batch, label, frequency: count };
+  });
+  if (rows.length > 0) {
+    await prisma.termEvaluation.createMany({ data: rows });
+  }
+
   let tp = 0;
   let fp = 0;
   let uncertain = 0;
-  for (const term of terms) {
-    const count = await prisma.newsItem.count({
-      where: {
-        deletedAt: null,
-        OR: [
-          { title: { contains: term.canonical } },
-          { summary: { contains: term.canonical } },
-        ],
-      },
-    });
-    const label = count >= 3 ? 'true_positive' : count === 0 ? 'false_positive' : 'uncertain';
-    await prisma.termEvaluation.create({
-      data: { canonical: term.canonical, batch, label, frequency: count },
-    });
-    if (label === 'true_positive') tp++;
-    else if (label === 'false_positive') fp++;
+  for (const r of rows) {
+    if (r.label === 'true_positive') tp++;
+    else if (r.label === 'false_positive') fp++;
     else uncertain++;
   }
   const precision = tp + fp > 0 ? tp / (tp + fp) : 0;

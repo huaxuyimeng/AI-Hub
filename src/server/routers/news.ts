@@ -463,4 +463,147 @@ export const newsRouter = router({
       const result = await newsIntentSearch(input.query, ctx.tenantId);
       return result;
     }),
+
+  /**
+   * 获取所有新闻源的调度状态（用于设置页展示）
+   */
+  schedule: publicProcedure
+    .input(z.object({
+      /** 全局刷新间隔（分钟）；null = 跟随全局默认（3h） */
+      globalIntervalMinutes: z.number().int().min(15).max(1440).optional(),
+    }).optional())
+    .query(async ({ input }) => {
+      const sources = await prismaBase.newsSource.findMany({
+        orderBy: { priority: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          url: true,
+          type: true,
+          enabled: true,
+          fragile: true,
+          priority: true,
+          fetchIntervalMinutes: true,
+          nextFetchAt: true,
+          lastFetchAt: true,
+          lastCount: true,
+          lastMs: true,
+          unhealthy: true,
+          lastError: true,
+          notes: true,
+        },
+      });
+
+      // 取全局默认间隔（所有用户的众数）
+      const globalMinutes = input?.globalIntervalMinutes ?? await getDefaultInterval();
+
+      return {
+        globalIntervalMinutes: globalMinutes,
+        sources: sources.map((s) => ({
+          id: s.id,
+          name: s.name,
+          url: s.url,
+          type: s.type,
+          enabled: s.enabled,
+          fragile: s.fragile,
+          priority: s.priority,
+          fetchIntervalMinutes: s.fetchIntervalMinutes,
+          nextFetchAt: s.nextFetchAt?.toISOString() ?? null,
+          lastFetchAt: s.lastFetchAt?.toISOString() ?? null,
+          lastCount: s.lastCount,
+          lastMs: s.lastMs,
+          unhealthy: s.unhealthy,
+          lastError: s.lastError,
+          notes: s.notes,
+        })),
+      };
+    }),
+
+  /**
+   * 更新单个新闻源的刷新间隔（源级覆盖）
+   */
+  setSourceInterval: protectedProcedure
+    .input(z.object({
+      sourceId: z.string().uuid(),
+      /** 覆盖间隔（分钟）；null = 取消覆盖，恢复全局设置 */
+      intervalMinutes: z.number().int().min(15).max(1440).nullable(),
+    }))
+    .mutation(async ({ input }) => {
+      await prismaBase.newsSource.update({
+        where: { id: input.sourceId },
+        data: { fetchIntervalMinutes: input.intervalMinutes },
+      });
+      return { ok: true };
+    }),
+
+  /**
+   * 全量刷新（手动触发）：强制抓取所有启用的源，忽略 nextFetchAt。
+   * 不会修改各源的 nextFetchAt（保持原计划不变）。
+   */
+  refreshAll: protectedProcedure
+    .mutation(async () => {
+      const globalMinutes = await getDefaultInterval();
+      const sources = await prismaBase.newsSource.findMany({
+        where: { enabled: true },
+        orderBy: { priority: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          url: true,
+          type: true,
+          priority: true,
+          fetchIntervalMinutes: true,
+        },
+      });
+      const { fetchSources } = await import('@/lib/news/scheduler');
+      const result = await fetchSources(sources, globalMinutes, false);
+      return result;
+    }),
+
+  /**
+   * 刷新指定源（手动触发）
+   */
+  refreshSources: protectedProcedure
+    .input(z.object({
+      sourceIds: z.array(z.string().uuid()).min(1),
+    }))
+    .mutation(async ({ input }) => {
+      const globalMinutes = await getDefaultInterval();
+      const sources = await prismaBase.newsSource.findMany({
+        where: { id: { in: input.sourceIds }, enabled: true },
+        select: {
+          id: true,
+          name: true,
+          url: true,
+          type: true,
+          priority: true,
+          fetchIntervalMinutes: true,
+        },
+      });
+      const { fetchSources } = await import('@/lib/news/scheduler');
+      const result = await fetchSources(sources, globalMinutes, false);
+      return result;
+    }),
 });
+
+async function getDefaultInterval(): Promise<number> {
+  try {
+    const rows = await prismaBase.userPreferences.findMany({
+      select: { newsRefreshInterval: true },
+      where: { newsRefreshInterval: { gt: 0 } },
+    });
+    if (rows.length === 0) return 180;
+    const freq = new Map<number, number>();
+    for (const r of rows) {
+      freq.set(r.newsRefreshInterval, (freq.get(r.newsRefreshInterval) ?? 0) + 1);
+    }
+    let best = 180;
+    let bestCount = 0;
+    for (const [v, c] of freq) {
+      if (c > bestCount) { bestCount = c; best = v; }
+    }
+    return best;
+  } catch {
+    return 180;
+  }
+}

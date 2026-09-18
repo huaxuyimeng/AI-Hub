@@ -23,3 +23,31 @@ e2e/**/login-failure.png
 e2e/test-results/
 e2e/playwright-report/
 playwright-report/
+
+# ==== 本次推送保护（本地保留，仅 git 不追踪）====
+.backups/
+.workbuddy/
+.tmp-*-test/
+test-results/
+snapshots/
+landing/
+public/landing/
+docs/
+.aiexclude
+.claude/
+.cursor/skills/deep-code-audit/
+.devserver-tmp.log.err
+.tests-report.txt
+*.pptx
+# 内部项目记录不进公开仓库
+AIHub-项目经历.md
+简版-完整版.md
+# 安全敏感：auth cookie + 老的 push 辅助脚本
+scripts/.auth/
+scripts/push-to-github.sh
+scripts/push-with-pat.bat
+# 内嵌的 AI 协作指南不进公开仓库
+src/**/CLAUDE.md
+简版-完整版.md
+# 架构/内部文档不进公开仓库
+ARCHITECTURE.md

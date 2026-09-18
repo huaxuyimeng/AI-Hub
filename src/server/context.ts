@@ -74,9 +74,11 @@ export const requireAdmin = t.middleware(async ({ ctx, next, path }) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' });
   }
   // 实时查库（避免 JWT 快照带来的越权窗口）
-  const user = await prismaRaw.user.findUnique({
-    where: { id: ctx.session.user.id },
-    select: { role: true, deletedAt: true },
+  const user = await prismaRaw.user.findFirst({
+    // B-09 修复：加 tenantId 校验，防止跨租户 admin 越权。
+    //          之前只按 id 查，理论上若 session.user.id 被伪造可绕过（详见 2026-09-09 全量 Bug 排查）。
+    where: { id: ctx.session.user.id, tenantId: ctx.tenantId ?? '' },
+    select: { role: true, deletedAt: true, tenantId: true },
   });
   if (!user || user.deletedAt !== null) {
     throw new TRPCError({ code: 'UNAUTHORIZED', message: 'User no longer valid' });

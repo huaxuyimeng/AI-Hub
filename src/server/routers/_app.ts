@@ -15,7 +15,10 @@ import { rankingsRouter } from './rankings';
 import { dailyReportRouter } from '@/features/daily-briefing/server/router';
 import { bilibiliRouter } from './bilibili';
 import { aiKeysRouter } from './ai-keys';
+import { modelsRouter } from './models';
 import { cleanupRouter } from './cleanup';
+import { meetingRouter } from './meeting';
+import { expertRouter } from './expert';
 // BUG-019：cacheRouter 文件已存在但未实现（Phase 4 未完整），暂不挂载。
 //   CachePanel.tsx 也未在 settings/page.tsx 引用，未启用。
 //   后续如需启用"数据与缓存"面板，需：
@@ -38,7 +41,10 @@ export const appRouter = router({
   dailyReport: dailyReportRouter,
   bilibili: bilibiliRouter,
   aiKeys: aiKeysRouter,
+  models: modelsRouter,
   cleanup: cleanupRouter,
+  meeting: meetingRouter,
+  expert: expertRouter,
 });
 
 export type AppRouter = typeof appRouter;

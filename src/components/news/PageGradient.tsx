@@ -3,17 +3,27 @@
 /**
  * PageGradient — 鼠标跟随的柔光 blob
  *
- * 设计：
- * - 一个 div，圆角 50%，CSS filter: blur() 让边缘自然柔化成有机的"一团"
- * - 鼠标位置 = 强调色（accent）；向外过渡到调色板的其它色相
- * - 跟随鼠标移动（CSS transform + 700ms transition）
- * - 6 套调色板可在主题面板切换；自动模式每 25 秒随机切换
- * - 颜色通过 @property 注册，浏览器原生插值
- * - 取消 SVG filter 和 mix-blend-mode（避免颜色叠加变深）
- * - 取消独立 "svg" 色阶（用 light/dark 原色即可）
+ * 完整重写（2026-09-10 第六轮）
  *
- * 尺寸：380×380px box，40px blur → 视觉半径 ~220px
- *      比之前 520px 圆形径向渐变小约 40%，比上一版 SVG blob 大约 10%
+ * 定位方案（最终版）：
+ *   CSS：.page-gradient-blob 用 left:50%; top:50%; margin:-190px; → 严格居中
+ *   JS：mousemove 时写 transform: translate3d(dx, dy, 0)
+ *       其中 dx = clientX - centerX, dy = clientY - centerY
+ *       centerX = window.innerWidth / 2
+ *       centerY = window.innerHeight / 2
+ *       → blob 中心严格跟随鼠标
+ *
+ * 为什么不用 top/left：
+ *   top/left 的 transition 比 transform 慢得多（top/left 触发 layout/paint，
+ *   transform 只触发 composite），动画卡顿。
+ *
+ * 为什么不用 transform: translate(-50%, -50%)：
+ *   因为父元素已经用 margin 把左上角定位到 center - 190，所以 transform 直接
+ *   在这个基础上加 translate(dx, dy) 即可。
+ *
+ * 调试：
+ *   localStorage.setItem('aihub-debug-blob', '1') → blob 中心显示红点
+ *   localStorage.removeItem('aihub-debug-blob') → 关闭
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -24,177 +34,158 @@ import {
 } from '@/lib/palettes/gradient-palettes';
 import { useTheme } from '@/components/theme-provider';
 import {
-  useGradientPalette,
   GRADIENT_PALETTE_NAMES,
   type GradientPaletteName,
 } from '@/lib/hooks/use-gradient-palette';
 
+const BLOB_SIZE = 380;
+const BLOB_HALF = BLOB_SIZE / 2;
+
 /** 随机选一套（避免和上一次相同） */
 function pickRandom(lastIdx: number): number {
-  if (PALETTES.length <= 1) return 0;
-  let idx = Math.floor(Math.random() * PALETTES.length);
-  if (idx === lastIdx) idx = (idx + 1) % PALETTES.length;
+  const len = PALETTES.length;
+  if (len <= 1) return 0;
+  let idx = Math.floor(Math.random() * len);
+  if (idx === lastIdx) idx = (idx + 1) % len;
   return idx;
 }
 
-/**
- * 把调色板应用到 CSS 变量（@property 已注册 → 自动平滑过渡）
- *
- * 这里用 light/dark 直接套用（透明度和之前的 radial-gradient 背景一样）。
- * 之前设计过 svg[] 数组（高饱和度），用户反馈"颜色变深了"，所以删掉。
- */
-function applyPalette(palette: Palette, isDark: boolean) {
-  const root = document.documentElement;
-  if (isDark) {
-    root.style.setProperty('--pg-c1', palette.dark[0]);
-    root.style.setProperty('--pg-c2', palette.dark[1]);
-    root.style.setProperty('--pg-c3', palette.dark[2]);
-  } else {
-    root.style.setProperty('--pg-c1', palette.light[0]);
-    root.style.setProperty('--pg-c2', palette.light[1]);
-    root.style.setProperty('--pg-c3', palette.light[2]);
-  }
+/** 构造 radial-gradient 字符串 */
+function buildGradient(palette: Palette, isDark: boolean, accentColor: string): string {
+  const colors = isDark ? palette.dark : palette.light;
+  return (
+    `radial-gradient(circle, ` +
+    `${accentColor} 0%, ` +
+    `${colors[0]} 30%, ` +
+    `${colors[1]} 60%, ` +
+    `transparent 88%)`
+  );
 }
 
 export function PageGradient() {
   const blobRef = useRef<HTMLDivElement>(null);
-  // V-16 修复：直接订阅 localStorage + 自定义事件。
-  // 原代码 [choice] = useGradientPalette() 是 PageGradient 自己的 useState 实例，
-  // 与 Picker 里的 hook 互不相通，所以 Picker 改 choice 时 PageGradient 永远拿初始值。
-  // 改：每次 Picker 改 → dispatchEvent → 本组件监听后 setChoice → useEffect 触发 apply()
+
+  /* ---- 调色板状态 ---- */
   const [choice, setChoice] = useState<GradientPaletteName>('auto');
   useEffect(() => {
-    // 初始从 localStorage 读
     try {
       const raw = window.localStorage.getItem('aihub-gradient-palette');
-      if (raw && (GRADIENT_PALETTE_NAMES as readonly string[]).includes(raw)) {
+      if (
+        raw &&
+        (GRADIENT_PALETTE_NAMES as readonly string[]).includes(raw)
+      ) {
         setChoice(raw as GradientPaletteName);
       }
     } catch {
       /* ignore */
     }
-    // 监听跨组件事件
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<GradientPaletteName>).detail;
-      if (typeof detail === 'string' && (GRADIENT_PALETTE_NAMES as readonly string[]).includes(detail)) {
+      if (
+        typeof detail === 'string' &&
+        (GRADIENT_PALETTE_NAMES as readonly string[]).includes(detail)
+      ) {
         setChoice(detail);
       }
     };
     window.addEventListener('aihub-gradient-palette-change', handler);
     return () => window.removeEventListener('aihub-gradient-palette-change', handler);
   }, []);
+
+  /* ---- 主题 accent ---- */
   const { theme } = useTheme();
-
   const accent = theme.accent ?? { h: 65, s: 75, l: 55 };
-  const accentColor = `hsl(${accent.h} ${accent.s}% ${accent.l}%)`;
+  const isDark = theme.mode === 'dark';
+  const accentL = accent.l + (isDark ? 5 : 0);
+  const accentColor = `hsl(${accent.h} ${accent.s}% ${accentL}%)`;
 
-  // 检测当前是否为暗色模式（直接读 DOM，避免对 theme context 的依赖）
-  const readIsDark = (): boolean => {
-    if (typeof document === 'undefined') return false;
-    return document.documentElement.classList.contains('dark');
+  /* ---- auto 模式当前调色板索引 ---- */
+  const paletteIdxRef = useRef<number>(-1);
+
+  /* ---- 调色板应用 ---- */
+  const applyGradient = () => {
+    const el = blobRef.current;
+    if (!el) return;
+    let palette: Palette;
+    if (choice === 'auto') {
+      paletteIdxRef.current = pickRandom(paletteIdxRef.current);
+      palette = PALETTES[paletteIdxRef.current];
+    } else {
+      palette = getPaletteByName(choice);
+    }
+    el.style.backgroundImage = buildGradient(palette, isDark, accentColor);
   };
 
-  /**
-   * 把当前 accent 同步到 --pg-acc 变量
-   *
-   * 跳过「首挂」：bootstrap 脚本已经按 localStorage 写入了正确的 --pg-acc。
-   * 如果 React 第一次 render 立刻用「默认值」（accent=null → 橙色）覆盖回去，
-   * 会触发 800ms 颜色过渡，肉眼可见的橙色一闪。
-   * 依赖 useGradientPalette 第二次 setName(localStorage 值) 后，
-   * theme.accent 也会被 ThemeProvider 同步更新，下一次 render 才会真正写入。
-   */
-  const isFirstAccentRender = useRef(true);
   useEffect(() => {
-    if (isFirstAccentRender.current) {
-      isFirstAccentRender.current = false;
-      return;
-    }
-    const root = document.documentElement;
-    root.style.setProperty('--pg-acc', accentColor);
-  }, [accentColor]);
+    applyGradient();
+    if (choice !== 'auto') return;
+    const id = window.setInterval(applyGradient, 25_000);
+    return () => window.clearInterval(id);
+  }, [choice, isDark, accentColor]);
 
-  /**
-   * 调色板切换 + auto 模式每 25s 随机切一次
-   *
-   * 跳过「首次 apply()」—— bootstrap 已经把 --pg-c1/2/3 写到了 localStorage
-   * 里的实际调色板（glacier / dusk / moss / ...）。
-   * 如果这里再调一次 applyPalette，会用 useGradientPalette 的初始值 'auto'
-   * 选出一个随机调色板，覆写掉 bootstrap 的结果，又一次闪烁。
-   *
-   * interval 必须每次都注册（cleanup 会保证单实例）—— 否则 auto 模式永远不轮播。
-   */
-  const isFirstPaletteRender = useRef(true);
+  /* ---- 调试模式 ---- */
   useEffect(() => {
-    let paletteIdx = -1;
-    let intervalId: number | null = null;
-
-    const apply = () => {
-      // H-24 修复：拆开赋值与取值，避免逗号运算符副作用隐藏在三元表达式里
-      let palette: Palette;
-      if (choice === 'auto') {
-        paletteIdx = pickRandom(paletteIdx);
-        palette = PALETTES[paletteIdx];
+    const el = blobRef.current;
+    if (!el) return;
+    try {
+      const debug = window.localStorage.getItem('aihub-debug-blob');
+      if (debug === '1') {
+        el.dataset.debug = '1';
       } else {
-        palette = getPaletteByName(choice);
+        delete el.dataset.debug;
       }
-      applyPalette(palette, readIsDark());
-    };
-
-    // 首挂跳过 apply，bootstrap 已写入正确值
-    if (!isFirstPaletteRender.current) {
-      apply();
+    } catch {
+      /* ignore */
     }
-    isFirstPaletteRender.current = false;
+  }, []);
 
-    // auto 模式下启动 25s 轮播
-    if (choice === 'auto') {
-      intervalId = window.setInterval(apply, 25_000);
-    }
+  /* ---- 鼠标跟踪（最关键的部分） ----
+     核心数学：
+       CSS 已把 blob 中心定在 (window.innerWidth/2, window.innerHeight/2)
+       JS 计算鼠标相对于这个中心的偏移量：
+         dx = clientX - innerWidth/2
+         dy = clientY - innerHeight/2
+       写入 transform: translate3d(dx, dy, 0)
+       → blob 中心严格 = (clientX, clientY)
 
-    return () => {
-      if (intervalId !== null) window.clearInterval(intervalId);
-    };
-  }, [choice]);
-
-  // 监听 light/dark 切换（属性变化 → 立刻重应用调色板）
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const observer = new MutationObserver(() => {
-      if (choice === 'auto') return; // auto 由 interval 驱动
-      applyPalette(getPaletteByName(choice), readIsDark());
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-    return () => observer.disconnect();
-  }, [choice]);
-
-  // 鼠标跟踪（rAF 节流 + 700ms transition 平滑插值）
+     BUG-FIX（2026-09-10 第六轮）：
+       用户实测：第四轮后光晕跑到鼠标**左边**了，需要**向右**校准 1.5cm（约 57px）。
+       原因：前三轮累计 -89px 偏移过度（向左过头）。
+       解决方案：LEFT_CALIBRATION_PX 由 -89 改为 -32（+57 = 向右挪 1.5cm）。
+       Y 轴（上下）按用户要求**不动**。
+  */
   useEffect(() => {
     const el = blobRef.current;
     if (!el) return;
 
+    // 水平校准常量（px）：负值 = 向左挪
+    // 89px ≈ 2.35cm（96 DPI 屏幕下 1cm ≈ 37.8px）
+    // -75 第一轮用户校准（向左 2cm）
+    // - 7 第二轮用户校准（再向左 0.2cm）
+    // - 7 第三轮用户校准（再向左 0.2cm）
+    // +57 第四轮用户校准（向右 1.5cm，因为第三轮后偏左了）
+    const LEFT_CALIBRATION_PX = -32;
+    const TOP_CALIBRATION_PX = 0;
+
+    // 初始 transform：仅校准常量（CSS 居中）
+    el.style.transform = `translate3d(${LEFT_CALIBRATION_PX}px, ${TOP_CALIBRATION_PX}px, 0)`;
+
     let raf = 0;
-    let x = window.innerWidth / 2;
-    let y = window.innerHeight / 2;
+    let dx = LEFT_CALIBRATION_PX;
+    let dy = TOP_CALIBRATION_PX;
 
     const flush = () => {
       raf = 0;
-      el.style.transform = `translate(${x}px, ${y}px)`;
+      el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
     };
 
     const onMove = (e: MouseEvent) => {
-      x = e.clientX;
-      y = e.clientY;
+      dx = e.clientX - window.innerWidth / 2 + LEFT_CALIBRATION_PX;
+      dy = e.clientY - window.innerHeight / 2 + TOP_CALIBRATION_PX;
       if (!raf) raf = requestAnimationFrame(flush);
     };
 
-    // 初始位置
-    el.style.transform = `translate(${x}px, ${y}px)`;
-
     window.addEventListener('mousemove', onMove, { passive: true });
-
     return () => {
       window.removeEventListener('mousemove', onMove);
       if (raf) cancelAnimationFrame(raf);

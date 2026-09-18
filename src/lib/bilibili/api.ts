@@ -2,13 +2,20 @@
  * B 站公开 API 封装（D-1）
  *
  * 目标：用最少代码拿到 UP 主视频列表、视频详情、字幕信息
- * - 全部走 B 站公开免认证接口（不需要登录/签名/OAuth）
+ * - 走 B 站公开接口（需登录态 cookie 才能过风控校验）
  * - 失败安全：429 / 412 → 返回 null，调用方按 UP 主粒度降级
  *
  * API 来源：
- *   - 视频列表：https://api.bilibili.com/x/space/arc/search?mid={uid}&order=pubdate
+ *   - 视频列表：https://api.bilibili.com/x/space/wbi/arc/search?mid={uid}&order=pubdate
+ *     （注意路径中必须有 `wbi` 段，见下）
  *   - 视频详情：https://api.bilibili.com/x/web-interface/view?bvid={bvid}
  *   - 播放信息：https://api.bilibili.com/x/player/v2?bvid={bvid}&cid={cid}
+ *
+ * ⚠️ 2026-09-16 修复：视频列表端点**必须**是 `/x/space/wbi/arc/search`。
+ *   历史版本用的是旧端点 `/x/space/arc/search`，该端点恒返回 `-799 请求过于频繁`，
+ *   对**它**做 wbi 签名并不会让它变得可用（实测见 `out/_cookie_ab.txt`）——
+ *   真正起作用的是路径里的 `wbi` 段。这一个词的差别，决定了整条 B 站链路
+ *   是「全部走 RSS 兜底」还是「官方 API 直连可用」。
  *
  * 参考：
  *   - docs/06-B站与多模态-增量设计.md §3.3
@@ -125,17 +132,35 @@ interface ListApiResponse {
  * @returns 视频数组；失败返回空数组
  */
 export async function listLatestVideos(mid: number | string, limit = 5): Promise<BiliListVideo[]> {
-  const rawUrl = `https://api.bilibili.com/x/space/arc/search?mid=${mid}&ps=${Math.min(
+  // ⚠️ 2026-09-16 修复（本次最大的一个 bug，只有一个词）
+  //
+  // 原代码用的是**旧版**端点 `/x/space/arc/search`，然后对它做 wbi 签名，
+  // 注释写着「加 wbi 签名（解决 -799 风控）」。这个因果判断是错的。
+  //
+  // 实测对照（`out/_cookie_ab.txt`，同一个 cookie、同一时刻）：
+  //   旧 API `/x/space/arc/search`     + 完整 cookie → code=-799 请求过于频繁，0 条
+  //   旧 API `/x/space/arc/search`     + 3 字段 cookie → code=-799，0 条
+  //   **wbi API `/x/space/wbi/arc/search` + 3 字段 cookie → code=0，5 条 ✅**
+  //
+  // 即：**决定成败的是路径里的 `wbi` 段，不是签名本身。**
+  // 对旧端点签名等于给一扇锁着的门配钥匙 —— 门本身不通。
+  //
+  // 连带影响：旧端点永远返回 -799，于是下面那段「15s/30s/60s 指数退避」
+  // 每个失败的 UP 都会**真实等待 105 秒**，7 个 UP 就是 90s+ 的纯空转
+  // （`scraper.ts` 的 UP 间隔 15s 之外还要再叠这一层）。
+  // 换成 wbi 端点后 -799 不再出现，长退避失去意义。
+  const rawUrl = `https://api.bilibili.com/x/space/wbi/arc/search?mid=${mid}&ps=${Math.min(
     Math.max(limit, 1),
     50,
-  )}&pn=1&order=pubdate&jsonp=jsonp`;
+  )}&pn=1&order=pubdate`;
 
-  // 指数退避：对 -799 风控最多重试 3 次（15s → 30s → 60s），不换 IP，只等
-  const RETRY_DELAYS_MS = [15_000, 30_000, 60_000];
+  // wbi 端点实测稳定（7/7 返回 code=0，见 `out/_wbi_verify.txt`），
+  // 因此只需一次轻量重试兜住网络抖动，不再需要 15/30/60s 的长退避。
+  const RETRY_DELAYS_MS = [3_000];
 
   for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
     try {
-      // 加 wbi 签名（解决 -799 风控）
+      // wbi 端点**必须**签名，参数不全会被判 -352 风控校验失败
       let url: string;
       try {
         url = await signWbi(rawUrl);
@@ -156,20 +181,26 @@ export async function listLatestVideos(mid: number | string, limit = 5): Promise
       }
       const json = (await res.json()) as ListApiResponse;
 
-      // -799：风控限流 → 等一下再重试
+      // -799 理论上不该再出现（那只在旧端点发生）。保留一次短重试兜底，
+      // 但不再等 15/30/60 秒 —— 实测它对旧端点毫无作用，纯属浪费。
       if (json.code === -799) {
         if (attempt < RETRY_DELAYS_MS.length) {
-          console.warn(`[bilibili] -799 风控（mid=${mid}），${RETRY_DELAYS_MS[attempt] / 1000}s 后重试（${attempt + 1}/${RETRY_DELAYS_MS.length}）`);
+          console.warn(`[bilibili] -799（mid=${mid}），${RETRY_DELAYS_MS[attempt] / 1000}s 后重试`);
           await new Promise((r) => setTimeout(r, RETRY_DELAYS_MS[attempt]));
           continue;
-        } else {
-          console.error(`[bilibili] -799 风控（mid=${mid}）重试耗尽，放弃`);
-          return [];
         }
+        console.error(`[bilibili] -799（mid=${mid}）重试耗尽，放弃`);
+        return [];
       }
 
-      if (json.code !== 0 || !json.data?.list?.vlist) {
+      if (json.code !== 0) {
         console.warn('[bilibili] list api code error', { mid, code: json.code, msg: json.message });
+        return [];
+      }
+      // code=0 但 vlist 为空是**正常情况**（该 UP 无公开投稿），不是错误，
+      // 所以只 debug 记录，不 warn —— 避免健康度告警被噪声打满。
+      if (!json.data?.list?.vlist) {
+        console.debug('[bilibili] list empty', { mid });
         return [];
       }
       return json.data.list.vlist.map((v) => ({

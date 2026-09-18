@@ -58,9 +58,8 @@ export function extractR2Key(input: string): string | null {
             }
           }
           return null;
-        } catch (e) {
-          // P2 修复：单条记录读取失败跳过该条，不阻断整批
-          console.warn('[cleanup] read record failed:', (e as Error).message);
+        } catch {
+          // P2 修复：单条记录读取失败跳过该条，不阻断整批（静默避免 dev 刷屏）
           return null;
         }
       })()
@@ -83,11 +82,8 @@ function normalizeR2Key(rawKey: string): string | null {
  * 阈值：ORPHAN_RETENTION_DAYS 天的孤儿文件（默认 7 天，与批次 B13 一致）
  */
 export async function cleanupOrphanFiles(): Promise<{ deleted: number; errors: number; skipped: boolean }> {
-  // C16：R2 未配置时显式跳过，不再尝试构造 S3Client
-  if (!isR2Configured()) {
-    console.warn('[cleanup] R2 未配置，跳过孤儿文件清理');
-    return { deleted: 0, errors: 0, skipped: true };
-  }
+  // C16：R2 未配置时静默跳过（env 未配置属正常情况，不刷屏 dev 终端）
+  if (!isR2Configured()) return { deleted: 0, errors: 0, skipped: true };
 
   const retentionDays = parseInt(process.env.ORPHAN_RETENTION_DAYS ?? '7', 10);
   const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
@@ -132,9 +128,8 @@ export async function cleanupOrphanFiles(): Promise<{ deleted: number; errors: n
         Key: safeKey,
       }));
       deleted.push(safeKey);
-    } catch (e) {
-      // P2 修复：单文件删除失败不阻断其他文件，最终 errors 数会在响应中体现
-      console.warn('[cleanup] delete R2 object failed:', { key: safeKey, error: (e as Error).message });
+    } catch {
+      // P2 修复：单文件删除失败不阻断其他文件，最终 errors 数会在响应中体现（静默避免 dev 刷屏）
       errors.push(safeKey);
     }
   }

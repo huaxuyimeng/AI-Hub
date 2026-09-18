@@ -328,6 +328,8 @@ export interface StoredTheme {
   mode: 'light' | 'dark' | 'system';
   accent: AccentHSL | null;
   bgUrl: string | null;
+  /** 背景图透明度：0.0（全透明）到 1.0（完全不透明），默认 0.35 */
+  bgOpacity: number;
 }
 
 export const DEFAULT_THEME: StoredTheme = {
@@ -335,6 +337,7 @@ export const DEFAULT_THEME: StoredTheme = {
   mode: 'system',
   accent: null,
   bgUrl: null,
+  bgOpacity: 0.35,
 };
 
 const STORAGE_KEY = 'aihub-theme-v2';
@@ -351,6 +354,7 @@ export function readStoredTheme(): StoredTheme {
         mode: parsed.mode ?? 'system',
         accent: parsed.accent ?? null,
         bgUrl: parsed.bgUrl ?? null,
+        bgOpacity: typeof parsed.bgOpacity === 'number' ? parsed.bgOpacity : 0.35,
       };
     }
   } catch {

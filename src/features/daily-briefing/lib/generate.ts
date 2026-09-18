@@ -28,25 +28,41 @@ import {
   type ConfidenceLevel,
   type DirectionKey,
 } from './types';
+import { computeConfidenceBySources } from './source-tiers';
+import { runLayoutQA, upgradeDegradedReason } from './qa-gate';
+import { repairContent } from './postprocess';
+import { buildDraftBrief, type DraftReason } from './draft-brief';
 
-const LLM_MODEL = 'deepseek-v4-flash';
+const LLM_MODEL = 'deepseek-flash';
 const LLM_TIMEOUT_MS = 90_000;
 const MIN_ITEMS = 5;
 const MAX_ITEMS = 10;
 /** 给 LLM 的候选上限（控制 token） */
 const CANDIDATE_CAP = 30;
 
+// （Batch 2 边界说明）
+// validate-brief 的正式接入点将在 Batch 3（drafts 降级模式）统一处理，
+// 本批仅保证函数、类型、规则、单测全部就绪，调用入口独立可见。
+// 设计：generate.ts 的 v4 → brief.json 转换器在 Batch 4（Page 3）一并实现。
+
 // ---------------------------------------------------------------------------
-// 置信度计算（复用采集阶段已有的 crossSources 数据）
+// 置信度计算（Batch 2 重写：基于白名单 + tier 判定独立信源）
+//
+// 来源：参考 ai-news-kit docs/03-置信度评级规则.md
+// 关键差异：旧版用 `new Set(sources)` 把 tier 3 聚合站算成独立源
+//          新版按 tier + group 合并（转载 / 同集团 / tier 3 不算独立）
 // ---------------------------------------------------------------------------
 
+/**
+ * v2 置信度计算（基于信源白名单）
+ *
+ * @param sources 来源名称列表（如 ["Anthropic News", "量子位", "TechCrunch AI"]）
+ * @returns A / B / C / D
+ */
 function computeConfidenceLevel(item: { source: string; crossSources?: string[] }): ConfidenceLevel {
-  const allSources = [item.source, ...(item.crossSources ?? [])];
-  const uniqueCount = new Set(allSources.map(s => s.trim()).filter(Boolean)).size;
-  if (uniqueCount >= 3) return 'A';
-  if (uniqueCount === 2) return 'B';
-  if (uniqueCount === 1) return 'C';
-  return 'D';
+  const allSources = [item.source, ...(item.crossSources ?? [])]
+    .filter(Boolean);
+  return computeConfidenceBySources(allSources);
 }
 
 /** 判断两条新闻是否为同一事件 */
@@ -69,7 +85,7 @@ async function llmJson<T>(systemPrompt: string, userPrompt: string, timeoutMs: n
   let lastErr: unknown;
   const deadline = Date.now() + timeoutMs;
   // 尝试所有支持的模型（优先 deepseek，再降级）
-  const modelCandidates = ['deepseek-v4-flash', 'glm-4-7-flash', 'gpt-4o-mini'] as const;
+  const modelCandidates = ['deepseek-flash', 'glm-4-7-flash', 'gpt-4o-mini'] as const;
 
   for (const model of modelCandidates) {
     if (Date.now() >= deadline) break;
@@ -91,7 +107,14 @@ async function llmJson<T>(systemPrompt: string, userPrompt: string, timeoutMs: n
         { temperature: 0.3, devMock: true }
       );
       const cleaned = res.content.replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '');
-      return JSON.parse(cleaned) as T;
+      // B-19 修复：mock/dev 路径返回的内容可能不是合法 JSON，单独 try/catch 区分错误类型。
+      //          之前 SyntaxError 被当网络错误抛掉走非 key 路径直接 throw，外层 retry 把它当成真实错误。
+      try {
+        return JSON.parse(cleaned) as T;
+      } catch (parseErr) {
+        // 把 SyntaxError 转换为带 model 信息的明确错误，方便上层排查
+        throw new Error(`[generate] ${model} 返回内容不是合法 JSON: ${(parseErr as Error).message}; raw=${cleaned.slice(0, 200)}`);
+      }
     } catch (err) {
       lastErr = err;
       // dev-mode mock 返回值直接被 JSON.parse，model 不匹配返回 JSON 错误
@@ -261,12 +284,13 @@ function step2aPrompt(
   ],
   "tlDr": ["TL;DR 第1条(≤60字)", "第2条", "第3条"],
   "confidenceLegend": [
-    {"level": "A", "label": "A 极高", "color": "primary", "rule": "≥3 独立信源 + 一手官方链接"},
-    {"level": "B", "label": "B 高", "color": "primary", "rule": "2 独立信源，或 1 源 + 一手链接"},
-    {"level": "C", "label": "C 中", "color": "secondary", "rule": "单一信源，自洽但无二方印证"},
-    {"level": "D", "label": "D 存疑", "color": "accent", "rule": "多转载同源，或数字互相矛盾"}
+    {"level": "A", "label": "A 极高", "color": "primary", "rule": "≥3 个相互独立的信源，且可追溯到一手官方材料"},
+    {"level": "B", "label": "B 高", "color": "primary", "rule": "2 个独立信源，或 1 个信源 + 一手官方材料"},
+    {"level": "C", "label": "C 中", "color": "secondary", "rule": "单一信源报道；含「多家转载同一家独家」（转载数量 ≠ 独立信源数量）"},
+    {"level": "D", "label": "D 存疑", "color": "accent", "rule": "关键数字互相矛盾，或全部可溯源到同一原始信源且无官方确认"}
   ],
   "distribution": [
+    {"level": "A", "count": 0},
     {"level": "B", "count": 4},
     {"level": "C", "count": 5},
     {"level": "D", "count": 2}
@@ -276,7 +300,13 @@ function step2aPrompt(
     {"rank": 2, "title": "≤20字", "description": "60-100字"},
     {"rank": 3, "title": "≤20字", "description": "60-100字"}
   ]
-}`,
+}
+
+【R-7 强约束】（漏了会被自动降级）：
+- confidenceLegend 必须且只能 4 个（A/B/C/D 各 1）
+- distribution 必须且只能 4 个（A/B/C/D 各 1）；如果某个置信度档位没有条目，count 填 0
+- trends 必须且只能 3 个（rank=1/2/3）
+- tlDr 至少 2 条（建议 3 条）`,
     user: `本周数据：${snapshotText}\n\n今日入选 ${selectedCount} 条新闻的标题列表：\n${globalTitles.map((t, i) => `[${i}] ${truncate(t, 60)}`).join('\n')}\n\n输出 cover + overview + trends 这三块的 JSON。`,
   };
 }
@@ -312,7 +342,14 @@ function step2bItemPrompt(
 1. heroMetrics 只在有硬数据时填，否则空数组
 2. whyMatters 至少 100 字；为什么重要、为什么本期值得报道
 3. whyDoubtful 仅 direction="rumor" 才填 2-4 条，否则空数组
-4. primaryLinks 的 URL 必须是真实可达的链接，不要编造`,
+4. primaryLinks 的 URL 必须是真实可达的链接，不要编造
+5.【R-7 强约束】independentSources：单源新闻填 1，≥2 源填实际数；填 0 会被自动修复为 1
+   注：独立信源需排除聚合 / 转载 / 同集团——多个域名但都是同一独家转载，不算多个独立信源
+6.【R-7 强约束】confidenceLevel 必须是 A/B/C/D 之一；判定规则（按 ai-news-kit docs/03）：
+   - A：≥3 个相互独立的信源，且可追溯到一手官方材料（官网 / 论文 / 公告 / 官方报告）
+   - B：2 个独立信源，或 1 个信源 + 一手官方材料
+   - C：单一信源报道；含「多家转载同一家独家」（转载数量 ≠ 独立信源数量）
+   - D：关键数字互相矛盾，或全部可溯源到同一原始信源且无官方确认`,
     user: `标题：${s.title}\n方向：${s.direction} | 排名=${s.rank}\n来源：${s.source}\n摘要：${truncate(s.summary, 200)}\n链接：${s.url}\n${s.crossSources?.length ? `其他交叉来源：${s.crossSources.join('、')}` : '无其他交叉来源'}\n\n输出该条新闻的完整 JSON。`,
   };
 }
@@ -345,7 +382,9 @@ function step2cPrompt(
 要求：
 1. verificationTable.rows 数量等于今日入选条数（不多不少），按方向排序
 2. confidence 只能 A/B/C/D
-3. sourcesBlock 的 URL 必须是真实可达的链接（不要编造）`,
+3. sourcesBlock 的 URL 必须是真实可达的链接（不要编造）
+4.【R-7 强约束】primaryLink 必须是简短标记（≤15 字符）："✅ 官方" / "✅ 腾讯" / "✅ 一手" / "❌ 待补" / 等；
+   不要写完整 URL（超长会被截断）；也不要写 source 完整名称（超过 6 字就简写）`,
     user: `今日入选 ${selectedCount} 条新闻：\n${globalTitles.map((t, i) => `[${i}] ${truncate(t, 50)}`).join('\n')}\n\n输出 authors + verificationTable + sourcesBlock 三块的 JSON。`,
   };
 }
@@ -386,10 +425,10 @@ function buildFallbackContent(collected: CollectResult): DailyReportContent {
         '降级版基于抓取原文生成，覆盖率受限于采集质量',
       ],
       confidenceLegend: [
-        { level: 'A', label: 'A 极高', color: 'primary', rule: '≥3 独立信源' },
-        { level: 'B', label: 'B 高', color: 'primary', rule: '2 独立信源' },
-        { level: 'C', label: 'C 中', color: 'secondary', rule: '单一信源' },
-        { level: 'D', label: 'D 存疑', color: 'accent', rule: '矛盾或单源多转' },
+        { level: 'A', label: 'A 极高', color: 'primary', rule: '≥3 个相互独立的信源，且可追溯到一手官方材料' },
+        { level: 'B', label: 'B 高',   color: 'primary', rule: '2 个独立信源，或 1 个信源 + 一手官方材料' },
+        { level: 'C', label: 'C 中',   color: 'secondary', rule: '单一信源报道；含「多家转载同一家独家」' },
+        { level: 'D', label: 'D 存疑', color: 'accent', rule: '关键数字互相矛盾，或全部溯源到同一信源且无官方确认' },
       ],
       distribution: [
         { level: 'A', count: 0 },
@@ -507,14 +546,162 @@ function setPhase(date: string, phase: string): Promise<void> {
 // 主流程（幂等）
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Brief → DailyReportContent 适配器（draft 路径用）
+//   输入：machine draft Brief（来自 draft-brief.ts）
+//   输出：v4 schema 的 DailyReportContent，但每个 pick 加 " [机器草稿]" 标注
+//
+// 设计：保持 v4 schema 兼容，build-pptx / router / 前端不用为 draft 单独写路径
+// 唯一差别：degraded=true + reason 含 "机器草稿" 字样 + cover.subtitle 显式标注
+// ---------------------------------------------------------------------------
+
+import { parseBriefLoose, type Brief } from './brief-schema';
+
+function briefToV4(brief: Brief, reason: DraftReason, collectedDate: string): DailyReportContent {
+  const draftPicks = brief.picks.map((p, idx) => ({
+    rank: p.no,
+    title: p.title,
+    source: p.sources[0]?.name ?? '未知源',
+    url: p.sources[0]?.url ?? '',
+    publishedAt: p.publishedAt,
+    summary: p.event,
+    comment: '机器草稿：未做 LLM 判断，仅陈述事实',
+    category: p.topic,
+    direction: (p.topic === '具身智能' ? 'embodied' : 'coding') as DirectionKey,
+    confidenceLevel: p.lv as ConfidenceLevel,
+    independentSources: 1, // 草稿未做交叉验证
+    totalReposts: 0,
+    hasPrimaryLink: p.sources[0]?.isPrimary ?? false,
+    primaryLinks: p.sources.filter(s => s.isPrimary).map(s => ({ source: s.name, url: s.url })),
+    relatedSources: p.sources.slice(1).map(s => s.name),
+    heroMetrics: [],
+    whyMatters: null,
+    whyDoubtful: ['机器草稿：未做深度判断'],
+    comparison: null,
+    keyStats: [],
+    coverUrl: null,
+    bulletPoints: p.keyFacts,
+  }));
+
+  // 构造 v4 overview 需要的 confidenceLegend（4 项）
+  const confidenceLegend4 = brief.confidenceScale.map(s => ({
+    level: s.lv,
+    label: s.name,
+    rule: s.rule,
+    color: (s.lv === 'A' ? 'primary' : s.lv === 'B' ? 'secondary' : s.lv === 'C' ? 'accent' : 'accent') as 'primary' | 'secondary' | 'accent',
+  }));
+
+  // 置信度分布统计
+  const distCount = { A: 0, B: 0, C: 0, D: 0 };
+  for (const p of draftPicks) distCount[p.confidenceLevel]++;
+
+  return {
+    version: 4,
+    date: collectedDate,
+    generatedAt: new Date().toISOString(),
+    cover: {
+      title: 'AI 日报 · 机器草稿',
+      subtitle: `${collectedDate} · LLM 不可用，降级为机器草稿（${reason}）`,
+      emphasis: 'Draft Mode',
+      stats: [
+        { value: String(draftPicks.length), label: '条草稿', color: 'accent' as const },
+        { value: 'B', label: '评级上限', color: 'secondary' as const },
+        { value: '草稿', label: '未经人工核验', color: 'accent' as const },
+      ],
+    },
+    overview: {
+      intro: brief.headline,
+      methodNote: `机器草稿模式：${reason}。why/conflicts 留空，需要人工核验。`,
+      sources: [
+        { name: '采集源', description: '已采集新闻', icon: 'file-text', color: 'primary' as const },
+        { name: '机器处理', description: '未调 LLM', icon: 'cog', color: 'secondary' as const },
+        { name: '人工待核', description: '需人工核验', icon: 'user', color: 'accent' as const },
+        { name: '降级模式', description: '仅陈述事实', icon: 'info-circle', color: 'accent' as const },
+      ],
+      tlDr: [
+        '本份早报为机器草稿，未经 LLM 判断',
+        'why/conflicts 字段留空，需人工核验',
+        `触发原因：${reason}`,
+      ],
+      confidenceLegend: confidenceLegend4,
+      distribution: [
+        { level: 'A', count: distCount.A },
+        { level: 'B', count: distCount.B },
+        { level: 'C', count: distCount.C },
+        { level: 'D', count: distCount.D },
+      ],
+    },
+    items: draftPicks.length >= 3 ? draftPicks : [
+      ...draftPicks,
+      ...Array.from({ length: Math.max(0, 3 - draftPicks.length) }, (_, i) => ({
+        rank: draftPicks.length + i + 1,
+        title: '（暂无）',
+        source: '—',
+        url: '',
+        publishedAt: '—',
+        summary: '当日未采集到足够新闻',
+        comment: '',
+        category: 'AI Coding',
+        direction: 'coding' as DirectionKey,
+        confidenceLevel: 'D' as ConfidenceLevel,
+        independentSources: 0,
+        totalReposts: 0,
+        hasPrimaryLink: false,
+        primaryLinks: [],
+        relatedSources: [],
+        heroMetrics: [],
+        whyMatters: null,
+        whyDoubtful: [],
+        comparison: null,
+        keyStats: [],
+        coverUrl: null,
+        bulletPoints: [],
+      })),
+    ],
+    directions: [],
+    trends: [
+      { rank: 1, title: '待补充', description: '机器草稿未分析趋势' },
+      { rank: 2, title: '待补充', description: '需要人工核验后补全' },
+      { rank: 3, title: '待补充', description: '建议核查后再发布' },
+    ],
+    verificationTable: {
+      rows: draftPicks.slice(0, Math.max(5, draftPicks.length)).map((s, i) => ({
+        rank: String(i + 1),
+        topic: s.title.slice(0, 30),
+        direction: s.direction,
+        sources: '1',
+        primaryLink: s.hasPrimaryLink ? '✅ 原文' : '❌',
+        confidence: s.confidenceLevel,
+      })),
+      summary: '机器草稿：未做交叉验证',
+    },
+    authors: [
+      { name: '橘鸦Juya', status: 'warn', statusText: '草稿模式', count: null, description: '机器草稿模式', url: 'https://space.bilibili.com/285286947' },
+    ],
+    sources: {
+      skills: [],
+      videoAuthors: [],
+      crossSources: [],
+      officialLinks: [],
+    },
+  };
+}
+
 export async function generateDailyReport(
   now: Date = new Date(),
   windowHour = 8,
+  /** Batch 3：触发模式
+   *  - 'auto'  ：默认，走 LLM → 失败降级为草稿
+   *  - 'agent' ：强制走 LLM，失败 fallback（保留旧行为，cron 用）
+   *  - 'draft' ：用户显式选草稿，跳过 LLM
+   */
+  mode: 'auto' | 'agent' | 'draft' = 'auto',
 ): Promise<{
   date: string;
   status: string;
   degraded: boolean;
   phase?: string;
+  mode?: 'auto' | 'agent' | 'draft';
 }> {
   const date = beijingDateString(now);
   const t0 = Date.now();
@@ -523,8 +710,13 @@ export async function generateDailyReport(
   if (existing?.status === 'ready') {
     return { date, status: 'ready', degraded: existing.degraded, phase: 'done' };
   }
+  // BUG-F 修复（2026-09-13）：regenerate 事务里 deleteMany + create({phase:'pending', updatedAt=now()})
+  //   后立刻调 generate()。原逻辑用 status+updatedAt<10min 判并发 → 命中窗口 → 早返回 → regenerate 啥也没干，row 永远卡在 phase='pending'。
+  // 修复：phase='pending' 视为"regenerate 显式让位" → 接管；其它 phase（collect/select/...）才算"被别人占用"。
+  // 双重保险：cron 兜底时也能识别卡死的 pending → 主动接管。
   if (
     existing?.status === 'generating' &&
+    existing.phase !== 'pending' &&
     Date.now() - existing.updatedAt.getTime() < 10 * 60 * 1000
   ) {
     return { date, status: 'generating', degraded: false, phase: existing.phase ?? 'collect' };
@@ -557,17 +749,102 @@ export async function generateDailyReport(
         },
       });
       logger.info('daily report ready (fallback, no items)', { date, duration: Date.now() - t0 });
-      return { date, status: 'ready', degraded: true, phase: undefined };
-    } else {
+      return { date, status: 'ready', degraded: true, phase: undefined, mode };
+    }
+
+    // Batch 3：用户显式选 draft → 直接走草稿，跳过 LLM
+    if (mode === 'draft') {
+      const draft = buildDraftBrief({ news: collected.items, date, reason: 'USER_FORCED' });
+      const draftContent = briefToV4(draft, 'USER_FORCED', date);
+      const safe = enforceLimits(DailyReportContentSchema.parse(draftContent));
+      await prisma.dailyReport.update({
+        where: { date },
+        data: {
+          status: 'ready',
+          content: JSON.stringify(safe),
+          degraded: true,
+          phase: null,
+          error: '机器草稿模式（USER_FORCED），未调用 LLM',
+        },
+      });
+      logger.info('daily report ready (user-forced draft)', { date, duration: Date.now() - t0 });
+      return { date, status: 'ready', degraded: true, phase: undefined, mode };
+    }
+
+    try {
       const result = await generateWithLLM(collected, date);
       content = result.content;
       degraded = result.degraded;
       if (degraded && result.errorReason) {
         degradedReason = result.errorReason;
       }
+    } catch (llmErr) {
+      // Batch 3 升级：LLM 抛错（不是 degrade）→ 草稿降级（不是 fallback）
+      const llmMsg = (llmErr as Error).message;
+      logger.warn('daily report LLM failed, falling back to draft', { date, error: llmMsg });
+      const draft = buildDraftBrief({ news: collected.items, date, reason: 'LLM_FAILED' });
+      content = briefToV4(draft, 'LLM_FAILED', date);
+      degraded = true;
+      degradedReason = `LLM 调用失败（${llmMsg.slice(0, 200)}），已降级为机器草稿`;
     }
 
-    const safe = enforceLimits(DailyReportContentSchema.parse(content));
+    // C2 闭环：LLM 输出 schema 校验 —— 失败降级而不是 failed
+    //   - 之前：DailyReportContentSchema.parse(content) 抛错 → 整个生成流程进 failed 状态
+    //   - 现在：失败时用最简 fallback content 继续写库，标 degraded
+    // 这条比 C1 更靠前，因为 schema 不合法就跑不到 QA Gate
+    // C2 + R-7 闭环：先自动修复 LLM 常见 schema 违反 → 再 schema parse
+    //   - 修复器（postprocess.repairContent）处理 6 类常见违规：
+    //     distribution/confidenceLegend 元素数不够、independentSources≤0、
+    //     primaryLink 超长、trends 不为 3、tlDr <2
+    //   - 之前：LLM 偶尔违反 schema → 整个流程进 degraded（用户看到降级版）
+    //   - 现在：自动补全 → 大多数情况下能跑通真 LLM 文案版
+    let safe: DailyReportContent;
+    try {
+      const repaired = repairContent(content as DailyReportContent);
+      safe = enforceLimits(DailyReportContentSchema.parse(repaired));
+    } catch (parseErr) {
+      const parseMsg = (parseErr as Error).message;
+      logger.error('daily report schema parse failed (after repair), using fallback', {
+        date,
+        error: parseMsg,
+        stack: (parseErr as Error).stack?.split('\n').slice(0, 5).join('\n'),
+      });
+      // Batch 3 升级：schema parse 失败 → 草稿降级（不是 fallback）
+      const draft = buildDraftBrief({ news: collected.items, date, reason: 'VALIDATION_ERROR' });
+      const draftContent = briefToV4(draft, 'VALIDATION_ERROR', date);
+      safe = enforceLimits(DailyReportContentSchema.parse(draftContent));
+      degraded = true;
+      degradedReason = `LLM 输出 schema 不合法（${parseMsg.slice(0, 200)}），已回退到机器草稿`;
+    }
+
+    // C1 闭环：QA 守门员——把"PPT 跑出来了但很丑"变成可观测
+    //   - lint error > 0 → 升级 degraded = true + 把 reason 写进 error 字段
+    //   - warn > 3       → 轻度告警，reason 写入 error（不升级 degraded）
+    //   - 通过           → 不动
+    // 永远不阻断生成（用户看到 PPT 比看不到强）
+    setPhase(date, 'qa');
+    const qa = runLayoutQA(safe);
+    const layoutReason = upgradeDegradedReason(qa);
+    if (layoutReason) {
+      logger.warn('daily report layout QA failed', {
+        date,
+        errors: qa.issues.filter((i) => i.level === 'error').length,
+        warns: qa.issues.filter((i) => i.level === 'warn').length,
+        reason: layoutReason,
+        pageCount: qa.pageCount,
+        durationMs: qa.durationMs,
+      });
+      degraded = true;
+      degradedReason = degradedReason
+        ? `${degradedReason} ｜ ${layoutReason}`
+        : layoutReason;
+    } else {
+      logger.info('daily report layout QA passed', {
+        date,
+        pageCount: qa.pageCount,
+        durationMs: qa.durationMs,
+      });
+    }
 
     setPhase(date, 'persist');
     await prisma.dailyReport.update({
@@ -678,11 +955,24 @@ async function generateWithLLM(
         : { ...r.data, summary: itemsFor2b[r.index].summary },
     );
 
+    // BUG-G 修复（2026-09-13）：partC fallback 必须用 selected 构造 rows
+    //   - 之前：rows=[] → schema min(5) 失败 → 整个流程 degraded
+    //   - 现在：用 selected[i]（来自 step1）构造 rows，确保 ≥5 条（schema 限制）
     const partCFallback: WriteResultPartC = partC ?? {
       authors: [
         { name: '橘鸦Juya', status: 'warn', statusText: '⚠️ 数据暂不可用', count: null, description: '当前不可用', url: 'https://space.bilibili.com/285286947' },
       ],
-      verificationTable: { rows: [], summary: 'LLM 信源透明块暂不可用。' },
+      verificationTable: {
+        rows: selected.slice(0, Math.max(5, selected.length)).map((s, i) => ({
+          rank: String(i + 1),
+          topic: s.item.title ?? '',
+          direction: s.direction ?? 'coding',
+          sources: '1',  // fallback 阶段无法量化交叉验证
+          primaryLink: s.item.url ? '✅ 原文' : '❌',
+          confidence: 'C' as const,
+        })),
+        summary: 'LLM 信源透明块暂不可用，已用原始数据构造 fallback。',
+      },
       sourcesBlock: { skills: [], videoAuthors: [], crossSources: [], officialLinks: [] },
     };
 

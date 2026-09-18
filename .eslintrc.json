@@ -1,0 +1,19 @@
+{
+  "extends": ["next/core-web-vitals"],
+  "rules": {
+    "no-empty": ["error", { "allowEmptyCatch": false }],
+    "no-console": ["warn", { "allow": ["warn", "error"] }]
+  },
+  "overrides": [
+    {
+      "files": [
+        "src/lib/bootstrap-script.ts",
+        "next.config.js",
+        "tailwind.config.js"
+      ],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ]
+}

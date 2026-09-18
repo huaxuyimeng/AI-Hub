@@ -44,19 +44,28 @@ interface WallpaperItem {
   isActive: boolean;
   sizeBytes: number;
   contentType: string;
+  opacity: number;
   createdAt: string;
 }
 
-/** 读取当前是否为暗色（与 PageGradient 一致，避免与 theme context 的 race） */
+/** 读取当前是否为暗色（client-mount 后才同步真实值，避免 SSR/CSR hydration mismatch） */
 function useIsDark(): boolean {
-  if (typeof document === 'undefined') return false;
-  return document.documentElement.classList.contains('dark');
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains('dark'));
+  }, []);
+  return dark;
 }
 
 export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
-  const { theme, setPreset, setMode, setBgUrl, uploadBg } = useTheme();
+  const { theme, setPreset, setMode, setBgUrl, setBgOpacity, uploadBg } = useTheme();
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  // H-28 修复：<dialog> SSR 时输出 children，但 client 首帧 React 会因 dialog 的 a11y 行为
+  //          找不到 server 渲染的 <label>/<input> 节点 → hydration mismatch。
+  //          解决：用 mounted gate，让 <dialog> 只在 client 端首次 mount 后才挂载。
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const isDark = useIsDark(); // V-15：用于 PresetCard 预览跟随 dark/light
   const r2Ready = isR2ConfiguredClient();
   const toast = useToast();
@@ -102,15 +111,35 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
   async function handleBgUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
+
+    // 前端预校验（2026-09-10 用户反馈）：让 400 错误的真实原因立刻可见，
+    // 不必等网络往返。服务端 route.ts 仍会做权威校验（防止绕过）。
+    const PRE_ALLOWED = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    if (!PRE_ALLOWED.includes(f.type)) {
+      const ext = (f.name.split('.').pop() ?? '').toLowerCase();
+      const hint =
+        f.type === 'image/heic' || f.type === 'image/heif' || ext === 'heic' || ext === 'heif'
+          ? 'iPhone HEIC 格式不支持，请用「照片 → 分享 → 存储为 JPEG」后再上传'
+          : f.type === 'image/avif' || ext === 'avif'
+          ? 'AVIF 格式暂不支持，请另存为 PNG/JPG/WebP'
+          : `不支持的格式 (${f.type || '未知'})`;
+      toast.error(`「${f.name}」${hint}`);
+      e.target.value = '';
+      return;
+    }
+
     setUploading(true);
     try {
       const url = await uploadBg(f);
       if (url) {
         toast.success('背景图已保存');
+        setBgUrl(url); // H-28: 上传成功后立即同步到 theme provider，否则背景层不会实时刷新
         utils.wallpaper.list.invalidate();
       }
     } catch (err) {
-      toast.error((err as Error).message);
+      // 2026-09-10 调试：catch 到但 toast 没出现，加 log + 强制 throw 验证
+      console.error('[handleBgUpload] upload failed:', err);
+      toast.error((err as Error).message || '上传失败');
     } finally {
       setUploading(false);
       e.target.value = '';
@@ -119,9 +148,9 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
 
   async function handleRemoveActiveBg() {
     try {
-      const res = await fetch('/api/upload/bg', { method: 'DELETE' });
+      const res = await fetch('/api/upload/bg', { method: 'DELETE', signal: AbortSignal.timeout(10_000) });
+      const data = (await res.json().catch(() => ({}))) as { error?: string; ok?: boolean };
       if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(data.error || `删除失败 (${res.status})`);
       }
       setBgUrl(null);
@@ -153,6 +182,7 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
         {!compact && '主题'}
       </button>
 
+      {mounted && (
       <dialog
         ref={dialogRef}
         className="m-auto w-[calc(100vw-2rem)] max-w-2xl rounded-xl border surface-elevated p-0 shadow-2xl backdrop:bg-black/50 backdrop:backdrop-blur-sm animate-slide-down"
@@ -254,6 +284,8 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
                   uploading={uploading}
                   onUpload={handleBgUpload}
                   onRemoveActive={handleRemoveActiveBg}
+                  onSetBgUrl={setBgUrl}
+                  onSetBgOpacity={setBgOpacity}
                   askConfirm={askConfirm}
                 />
               </section>
@@ -271,6 +303,7 @@ export function ThemeSwitcher({ compact = false }: { compact?: boolean }) {
           </div>
         </div>
       </dialog>
+      )}
       {/* C-14 修复：ConfirmNode 必须放在 dialog 外层（useConfirm 用 state 控制渲染） */}
       <ConfirmNode />
     </>
@@ -348,6 +381,10 @@ function PresetCard({
 function MiniPreview({ preset, isDark }: { preset: ThemePreset; isDark: boolean }) {
   // V-15 修复：跟随 dark/light 切换（用 isDark 参数而非硬编码 .light）
   const t = isDark ? PRESETS[preset].dark : PRESETS[preset].light;
+  // H-34 修复：surface 用不透明值（去掉 / 0.x 透明通道），
+  //   解决透明 surface 透出卡片底色、文字对比度不足的问题
+  const surface = t.surface.replace(/\s*\/\s*[\d.]+\s*$/, '');
+  const mutedFg = t.mutedForeground.replace(/\s*\/\s*[\d.]+\s*$/, '');
   return (
     <div
       className="relative h-16 overflow-hidden rounded-md border"
@@ -355,15 +392,15 @@ function MiniPreview({ preset, isDark }: { preset: ThemePreset; isDark: boolean 
     >
       <div
         className="absolute inset-x-0 top-0 flex h-3.5 items-center gap-1 border-b px-1.5"
-        style={{ background: t.surface, borderColor: t.border }}
+        style={{ background: surface, borderColor: t.border }}
       >
         <span
           className="h-1.5 w-1.5 rounded-full"
-          style={{ background: t.mutedForeground }}
+          style={{ background: mutedFg }}
         />
         <span
           className="h-1.5 w-8 rounded-sm"
-          style={{ background: t.mutedForeground, opacity: 0.4 }}
+          style={{ background: mutedFg, opacity: 0.4 }}
         />
       </div>
       <div
@@ -376,7 +413,7 @@ function MiniPreview({ preset, isDark }: { preset: ThemePreset; isDark: boolean 
         />
         <div
           className="absolute left-1 bottom-1 h-0.5 w-6 rounded-sm"
-          style={{ background: t.mutedForeground, opacity: 0.5 }}
+          style={{ background: mutedFg, opacity: 0.5 }}
         />
       </div>
       <div
@@ -395,19 +432,25 @@ function WallpaperPanel({
   uploading,
   onUpload,
   onRemoveActive,
+  onSetBgUrl,
+  onSetBgOpacity,
   askConfirm,
 }: {
   r2Ready: boolean;
   uploading: boolean;
   onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onRemoveActive: () => void;
+  onSetBgUrl: (url: string) => void;
+  onSetBgOpacity: (opacity: number) => void;
   askConfirm: (opts: ConfirmOptions) => Promise<boolean>;
-}) {
-  const toast = useToast();
+}) {  const toast = useToast();
   const utils = trpc.useUtils();
   const { data: wallpapers = [], isLoading } = trpc.wallpaper.list.useQuery();
   const setActiveMut = trpc.wallpaper.setActive.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // H-31: 激活后立即同步 url → theme provider，背景层实时刷新
+      if (data?.url) onSetBgUrl(data.url);
+      if (typeof data.opacity === 'number') onSetBgOpacity(data.opacity);
       utils.wallpaper.list.invalidate();
       utils.preferences.get.invalidate();
       toast.success('已切换壁纸');
@@ -420,6 +463,15 @@ function WallpaperPanel({
       utils.preferences.get.invalidate();
       toast.info('已删除壁纸');
     },
+    onError: (e) => {
+      toast.error(e.message);
+    },
+  });
+  const setOpacityMut = trpc.wallpaper.setOpacity.useMutation({
+    onSuccess: (data) => {
+      onSetBgOpacity(data.opacity);
+      utils.wallpaper.list.invalidate();
+    },
     onError: (e) => toast.error(e.message),
   });
   const clearInactiveMut = trpc.wallpaper.clearInactive.useMutation({
@@ -427,7 +479,9 @@ function WallpaperPanel({
       utils.wallpaper.list.invalidate();
       toast.info(`已清空 ${res.deleted} 张历史壁纸`);
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => {
+      toast.error(e.message);
+    },
   });
 
   return (
@@ -496,21 +550,25 @@ function WallpaperPanel({
       )}
 
       {r2Ready && wallpapers.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {wallpapers.map((w) => (
-            <WallpaperThumb
-              key={w.id}
-              item={w}
-              onActivate={() => setActiveMut.mutate({ id: w.id })}
-              askConfirm={askConfirm}
-              onDelete={() => {
-                if (w.isActive) {
-                  onRemoveActive();
-                }
-                deleteMut.mutate({ id: w.id });
-              }}
-            />
-          ))}
+        <div className="space-y-3">
+          {/* 壁纸网格 */}
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            {wallpapers.map((w) => (
+              <WallpaperThumb
+                key={w.id}
+                item={w}
+                onActivate={() => setActiveMut.mutate({ id: w.id })}
+                // 二次点击取消应用（2026-09-10 用户反馈）：点击已激活的图 = 移除背景
+                onRemoveActive={onRemoveActive}
+                onSetOpacity={(opacity) => setOpacityMut.mutate({ id: w.id, opacity })}
+                askConfirm={askConfirm}
+                onDelete={() => {
+                  if (w.isActive) onRemoveActive();
+                  deleteMut.mutate({ id: w.id });
+                }}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -520,11 +578,16 @@ function WallpaperPanel({
 function WallpaperThumb({
   item,
   onActivate,
+  onRemoveActive,
+  onSetOpacity,
   onDelete,
   askConfirm,
 }: {
   item: WallpaperItem;
   onActivate: () => void;
+  // 二次点击取消应用（2026-09-10 用户反馈）：点击当前激活的图 = 移除背景
+  onRemoveActive: () => void;
+  onSetOpacity: (opacity: number) => void;
   onDelete: () => void;
   askConfirm: (opts: ConfirmOptions) => Promise<boolean>;
 }) {
@@ -539,16 +602,38 @@ function WallpaperThumb({
     >
       <button
         type="button"
-        onClick={onActivate}
+        onClick={() => (item.isActive ? onRemoveActive() : onActivate())}
         className="block aspect-video w-full bg-cover bg-center"
         style={{ backgroundImage: `url("${item.url}")` }}
-        aria-label={item.label || '切换到此壁纸'}
-        title={item.label || '点击切换'}
+        aria-label={item.label || (item.isActive ? '点击取消当前壁纸' : '切换到此壁纸')}
+        title={item.label || (item.isActive ? '点击取消' : '点击切换')}
       />
       {item.isActive && (
-        <div className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-medium text-primary-foreground">
-          当前
-        </div>
+        <>
+          <div className="absolute left-1 top-1 rounded bg-primary px-1.5 py-0.5 text-[9px] font-medium text-primary-foreground">
+            当前
+          </div>
+          {/* 2026-09-09 新增：激活壁纸支持透明度调节 */}
+          <div className="absolute inset-x-1 bottom-1 flex items-center gap-1">
+            <span className="text-[9px] text-white/60">透</span>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              defaultValue={Math.round(item.opacity * 100)}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                e.stopPropagation();
+                onSetOpacity(Number(e.target.value) / 100);
+              }}
+              className="h-1 flex-1 cursor-pointer accent-white"
+              title={`透明度 ${Math.round(item.opacity * 100)}%`}
+            />
+            <span className="w-5 text-right font-mono text-[9px] text-white/60">
+              {Math.round(item.opacity * 100)}
+            </span>
+          </div>
+        </>
       )}
       <button
         type="button"

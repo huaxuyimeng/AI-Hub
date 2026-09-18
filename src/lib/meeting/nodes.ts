@@ -27,21 +27,34 @@ import type { ChatMessage } from '../ai/router';
 /**
  * 累加单次 chatLC 调用产生的 usage 到 MeetingState.usageTotal。
  * 2026-09-17 Bug2 修复：替换 chatLC 内部 recordUsage，改在 router 层一次性聚合。
+ * 2026-09-18 Bug38 扩展：把 cachedInput 透传到 calculateCost 并累加到 state。
  */
 export function accumulateUsage(
   prev: MeetingState['usageTotal'],
   modelName: string,
   inputTokens: number,
   outputTokens: number,
+  cachedTokens: number = 0,
 ): MeetingState['usageTotal'] {
-  const base = prev ?? { inputTokens: 0, outputTokens: 0, costByModel: {} };
-  const cost = calculateCost(modelName, inputTokens, outputTokens, 0);
+  const base = prev ?? {
+    inputTokens: 0,
+    outputTokens: 0,
+    costByModel: {},
+    cachedTokens: 0,
+    cachedByModel: {},
+  };
+  const cost = calculateCost(modelName, inputTokens, outputTokens, cachedTokens);
   return {
     inputTokens: base.inputTokens + inputTokens,
     outputTokens: base.outputTokens + outputTokens,
     costByModel: {
       ...base.costByModel,
       [modelName]: (base.costByModel[modelName] ?? 0) + cost,
+    },
+    cachedTokens: base.cachedTokens + cachedTokens,
+    cachedByModel: {
+      ...base.cachedByModel,
+      [modelName]: (base.cachedByModel[modelName] ?? 0) + cachedTokens,
     },
   };
 }
@@ -200,11 +213,13 @@ async function invokeAndAccumulate(
   });
 
   // Bug2 修复：累加 usage 到 state（最终由 router 层一次性 recordUsage）
+  // Bug38 扩展：把 result.usage.cachedInput 透传到 accumulateUsage
   const usageTotal = accumulateUsage(
     state.usageTotal,
     p.model,
     result.usage.input,
     result.usage.output,
+    result.usage.cachedInput ?? 0,
   );
 
   return { transcripts: newTranscripts, usageTotal };

@@ -7,8 +7,11 @@
 // - 确认 / 取消按钮文案自定义
 // - ESC 关闭
 // - Focus trap（焦点自动落在取消按钮，避免误触）
+// - H-33 修复：用 createPortal 渲染到 document.body，绕过祖先 transform/filter 包含块
+//          （之前 fixed inset-0 被 sidebar 的 transform 锚定，弹窗跑到左下角）
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { IconAlertTriangle } from '@tabler/icons-react';
 
 interface ConfirmDialogProps {
@@ -34,6 +37,10 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   const cancelRef = useRef<HTMLButtonElement | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
+
+  // H-33: portal 只在 client mount 后才挂载，避免 SSR 报 document is not defined
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   // 打开时焦点放取消按钮（防误触）
   useEffect(() => {
@@ -71,20 +78,29 @@ export function ConfirmDialog({
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onCancel]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
       aria-describedby="confirm-desc"
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in"
+      // P0 流畅度：把背景层动画做成 GPU 友好的 fade + will-change
+      className="gpu fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      style={{
+        animation: 'analytics-fadeIn 140ms ease-out both',
+        willChange: 'opacity',
+      }}
       onClick={onCancel}
     >
       <div
         ref={dialogRef}
-        className="w-full max-w-md rounded-xl border surface-elevated p-5 shadow-2xl animate-slide-down"
+        className="gpu w-full max-w-md rounded-xl border surface-elevated p-5 shadow-2xl"
+        style={{
+          animation: 'analytics-modalIn 180ms cubic-bezier(0.16, 1, 0.3, 1) both',
+          willChange: 'transform, opacity',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-start gap-3">
@@ -108,7 +124,8 @@ export function ConfirmDialog({
             ref={cancelRef}
             type="button"
             onClick={onCancel}
-            className="rounded-md border bg-background px-4 py-1.5 text-sm font-medium transition hover:bg-accent"
+            // P0: 加 transition-colors，让 hover 反馈即时
+            className="gpu rounded-md border bg-background px-4 py-1.5 text-sm font-medium transition-colors duration-150 hover:bg-accent"
           >
             {cancelText}
           </button>
@@ -116,7 +133,7 @@ export function ConfirmDialog({
             type="button"
             onClick={onConfirm}
             className={
-              'rounded-md px-4 py-1.5 text-sm font-medium transition ' +
+              'gpu rounded-md px-4 py-1.5 text-sm font-medium transition-colors duration-150 ' +
               (destructive
                 ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
                 : 'bg-primary text-primary-foreground hover:bg-primary/90')
@@ -126,7 +143,8 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -137,8 +155,6 @@ export function ConfirmDialog({
  *   <button onClick={() => askConfirm({...}).then(ok => ok && trash.mutate())} />
  *   {ConfirmNode}
  */
-import { useCallback, useState } from 'react';
-
 export interface ConfirmOptions {
   title: string;
   description: string;

@@ -5,16 +5,18 @@
 const pkg = require('next/package.json');
 const major = parseInt(pkg.version.split('.')[0], 10);
 const prismaPkgs = ['@prisma/client', 'prisma'];
+// pptxgenjs v4 是 pure ESM，jszip 也是，Next.js 14 Webpack 无法在 server bundle 里正确 resolution
+const nativePkgs = ['pptxgenjs', 'jszip'];
 
 const nextConfig = major >= 15
   ? {
       // 15.x：顶层字段
-      serverExternalPackages: prismaPkgs,
+      serverExternalPackages: [...prismaPkgs, ...nativePkgs],
     }
   : {
       // 14.x：experimental 嵌套
       experimental: {
-        serverComponentsExternalPackages: prismaPkgs,
+        serverComponentsExternalPackages: [...prismaPkgs, ...nativePkgs],
       },
     };
 
