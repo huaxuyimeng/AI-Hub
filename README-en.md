@@ -39,24 +39,46 @@
 | Tailwind / CSS Vars | - | 6 preset themes + HSL DIY |
 | @tabler/icons-react | - | Unified icon library |
 
-### Backend
+### Backend / AI
 | Tech | Version | Note |
 |------|---------|------|
-| tRPC | 11 | Type-safe RPC |
-| Prisma | 6 | ORM + multi-tenant |
-| NextAuth.js | 5 | GitHub OAuth + dev default account |
-| LangChain | - | Streaming batching |
-| LangGraph | - | Multi-agent state machine |
-| LiteLLM | - | AI proxy + multi-provider |
+| tRPC | 11 | Type-safe RPC, end-to-end with frontend |
+| Prisma | 6 | ORM + multi-tenant + soft delete |
+| NextAuth.js | 4 | GitHub OAuth + dev default account |
+| LangChain Core | 0.3 | Streaming batching via custom adapter (`src/lib/ai/langchain-adapter`) |
+| LangGraph | 0.2 | Multi-agent meeting state machine (`src/lib/meeting/graph.ts`) |
+| OpenAI SDK | 4.65 | Direct calls + `ChatOpenAI` for smart routing |
+| Anthropic SDK | 0.123 | `ChatAnthropic` integration |
+| Google Generative AI | 0.24 | Gemini support |
+| Zod | 3.23 | Runtime validation (env, tRPC inputs, IR schemas) |
+| Superjson | 2.2 | tRPC transformer (Date / BigInt) |
+
+> Note: AI routing goes through **direct SDK calls** (OpenAI / Anthropic / Google Generative AI), not LiteLLM proxy. Multi-provider auto-fallback lives in `src/lib/ai/router.ts` and `src/lib/ai/key-resolver.ts`.
 
 ### Storage / Infrastructure
-| Tech | Note |
-|------|------|
-| PostgreSQL | Production |
-| SQLite | Development |
-| Cloudflare R2 | File storage (PPTX, avatars) |
-| Upstash Redis | Cache + rate limiting |
-| Cron Jobs | Daily briefings + cleanup |
+| Tech | Version | Note |
+|------|---------|------|
+| PostgreSQL | 14+ | Production database |
+| SQLite | - | Development fallback |
+| Cloudflare R2 SDK (`@aws-sdk/client-s3`) | 3.654 | File storage (PPTX, avatars) |
+| Upstash Redis | 1.34 | Cache + rate limiting + distributed lock |
+| OpenTelemetry | 0.53 | APM tracing (`auto-instrumentations-node`) |
+| Playwright | 1.62 | E2E testing |
+| pptxgenjs | 4.0 | PPTX generation for daily briefings |
+| tsx | 4.19 | TypeScript script runner for cron + tests |
+
+### Notable Internal Modules
+| Module | Path | Purpose |
+|--------|------|---------|
+| slide-engine | `src/lib/slide-engine/` | PPT IR + lint + render (PPTX/HTML) |
+| meeting | `src/lib/meeting/` | LangGraph multi-agent + streaming |
+| news | `src/lib/news/parsers/` | Multi-source adapters (RSS/HTML/API) |
+| bilibili | `src/lib/bilibili/` | WBI signature + Cookie + subtitle |
+| rankings | `src/lib/rankings/` | Weighted algorithm + scraper |
+| ai langchain-adapter | `src/lib/ai/langchain-adapter/` | Streaming batching + usage callback |
+| rag | `src/lib/rag/` | Retrieval-augmented generation |
+| multimodal | `src/lib/multimodal/` | Multi-modal result fusion |
+| observability | `src/lib/observability/` | Logging + distributed lock |
 
 ---
 
@@ -64,7 +86,7 @@
 
 AIHub is a personal-grade AI information platform that bundles **news aggregation / model rankings / Bilibili creator tracking / automated PPT briefings / multi-agent meetings** into one workbench.
 
-**Full Stack**: Next.js 14 (App Router) + React 18 + TypeScript 5. Backend is tRPC 11 (end-to-end type safety) + Prisma 6 ORM. Storage is PostgreSQL (dev fallback to SQLite) + Cloudflare R2 (files) + Upstash Redis (cache & rate-limit). AI routing via LiteLLM Proxy plus direct connections to DeepSeek / 智谱 / Anthropic / Kimi. Auth is NextAuth.js (GitHub OAuth + local dev default account). UI uses CSS-variable-based theme system (6 presets + HSL DIY) with `@tabler/icons-react`.
+**Full Stack**: Next.js 14 (App Router) + React 18 + TypeScript 5. Backend is tRPC 11 (end-to-end type safety) + Prisma 6 ORM. Storage is PostgreSQL (dev fallback to SQLite) + Cloudflare R2 (files) + Upstash Redis (cache & rate-limit, distributed lock). AI routing via **direct SDK calls** — `@langchain/core` 0.3 + `@langchain/anthropic` / `@langchain/openai` for streaming batching, plus raw `openai` / `@anthropic-ai/sdk` / `@google/generative-ai` SDKs for direct multi-provider access (DeepSeek / Anthropic / Gemini). Auth is NextAuth.js (GitHub OAuth + local dev default account). UI uses CSS-variable-based theme system (6 presets + HSL DIY) with `@tabler/icons-react`. E2E testing via Playwright; APM via OpenTelemetry.
 
 **Positioning**: Graduation-project MVP (live at https://github.com/huaxuyimeng/AI-Hub), also usable as a personal AI toolbox.
 

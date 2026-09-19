@@ -39,24 +39,46 @@
 | Tailwind / CSS 变量 | - | 6 套预设主题 + HSL DIY |
 | @tabler/icons-react | - | 统一图标库 |
 
-### 后端
+### 后端 / AI
 | 技术 | 版本 | 说明 |
 |------|------|------|
-| tRPC | 11 | 类型安全 RPC |
-| Prisma | 6 | ORM + 多租户 |
-| NextAuth.js | 5 | GitHub OAuth + 本地开发默认账号 |
-| LangChain | - | 流式批处理 |
-| LangGraph | - | 多智能体状态机 |
-| LiteLLM | - | AI 路由 + 多 Provider |
+| tRPC | 11 | 类型安全 RPC，前后端端到端 |
+| Prisma | 6 | ORM + 多租户 + 软删除 |
+| NextAuth.js | 4 | GitHub OAuth + 本地开发默认账号 |
+| LangChain Core | 0.3 | 流式批处理（自研适配器 `src/lib/ai/langchain-adapter`） |
+| LangGraph | 0.2 | 多智能体会议状态机（`src/lib/meeting/graph.ts`） |
+| OpenAI SDK | 4.65 | 直连调用 + `ChatOpenAI` 智能路由 |
+| Anthropic SDK | 0.123 | `ChatAnthropic` 集成 |
+| Google Generative AI | 0.24 | Gemini 支持 |
+| Zod | 3.23 | 运行时校验（env / tRPC 入参 / IR schema） |
+| Superjson | 2.2 | tRPC transformer（Date / BigInt） |
+
+> 说明：AI 路由走**直连 SDK**（OpenAI / Anthropic / Google Generative AI），不走 LiteLLM 代理。多 Provider 自动降级在 `src/lib/ai/router.ts` 与 `src/lib/ai/key-resolver.ts`。
 
 ### 存储 / 基础设施
-| 技术 | 说明 |
-|------|------|
-| PostgreSQL | 生产环境 |
-| SQLite | 开发环境 |
-| Cloudflare R2 | 文件存储（PPTX、头像） |
-| Upstash Redis | 缓存 + 速率限制 |
-| Cron Jobs | 每日早报 + 清理 |
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| PostgreSQL | 14+ | 生产数据库 |
+| SQLite | - | 开发退路 |
+| Cloudflare R2 SDK（`@aws-sdk/client-s3`） | 3.654 | 文件存储（PPTX、头像） |
+| Upstash Redis | 1.34 | 缓存 + 速率限制 + 分布式锁 |
+| OpenTelemetry | 0.53 | APM 链路追踪（`auto-instrumentations-node`） |
+| Playwright | 1.62 | E2E 测试 |
+| pptxgenjs | 4.0 | 每日早报 PPTX 生成 |
+| tsx | 4.19 | TypeScript 脚本运行器（cron + 测试） |
+
+### 主要内部模块
+| 模块 | 路径 | 职责 |
+|------|------|------|
+| slide-engine | `src/lib/slide-engine/` | PPT IR + lint + 渲染（PPTX/HTML） |
+| meeting | `src/lib/meeting/` | LangGraph 多智能体 + 流式 |
+| news | `src/lib/news/parsers/` | 多源适配器（RSS/HTML/API） |
+| bilibili | `src/lib/bilibili/` | WBI 签名 + Cookie + 字幕 |
+| rankings | `src/lib/rankings/` | 加权算法 + 爬虫 |
+| ai langchain-adapter | `src/lib/ai/langchain-adapter/` | 流式批处理 + 用量回调 |
+| rag | `src/lib/rag/` | 检索增强生成 |
+| multimodal | `src/lib/multimodal/` | 多模态结果融合 |
+| observability | `src/lib/observability/` | 日志 + 分布式锁 |
 
 ---
 
@@ -64,7 +86,7 @@
 
 AIHub 是一个个人级 AI 信息平台，把 **新闻聚合 / 模型排行 / B 站 UP 主追踪 / PPT 自动早报 / 多智能体会议** 五件事收拢在一个工作台里。
 
-**全量技术栈**：前端 Next.js 14 (App Router) + React 18 + TypeScript 5；后端 tRPC 11（端到端类型安全）+ Prisma 6 ORM；存储 PostgreSQL（开发退化为 SQLite）+ Cloudflare R2（文件）+ Upstash Redis（缓存/速率限制）；AI 路由走 LiteLLM Proxy，同时直连 DeepSeek / 智谱 / Anthropic / Kimi 多 Provider；鉴权用 NextAuth.js（GitHub OAuth + 本地开发默认账号）；UI 用基于 CSS 变量的主题系统（6 套预设 + HSL DIY）+ `@tabler/icons-react` 图标库。
+**全量技术栈**：前端 Next.js 14 (App Router) + React 18 + TypeScript 5；后端 tRPC 11（端到端类型安全）+ Prisma 6 ORM；存储 PostgreSQL（开发退化为 SQLite）+ Cloudflare R2（文件）+ Upstash Redis（缓存/速率限制/分布式锁）；AI 路由走**直连 SDK**——`@langchain/core` 0.3 + `@langchain/anthropic` / `@langchain/openai` 处理流式批处理，叠加原生 `openai` / `@anthropic-ai/sdk` / `@google/generative-ai` 直连多 Provider（DeepSeek / Anthropic / Gemini）；鉴权用 NextAuth.js（GitHub OAuth + 本地开发默认账号）；UI 用基于 CSS 变量的主题系统（6 套预设 + HSL DIY）+ `@tabler/icons-react` 图标库；E2E 用 Playwright；APM 用 OpenTelemetry。
 
 **定位**：毕业设计 MVP（已上线 https://github.com/huaxuyimeng/AI-Hub），可作为个人 AI 工具箱使用。
 
