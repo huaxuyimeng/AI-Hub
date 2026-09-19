@@ -117,6 +117,17 @@ aihub/
 | 用量统计 + 价格表 | ✅ | `src/lib/usage.ts` + `PRICING_TABLE` |
 | 数据互联（模型详情 → 相关新闻） | ✅ | `relatedModels` |
 
+## 增量交付（2026-09）
+
+| 批次 | 状态 | 关键变更 |
+|------|------|---------|
+| LangChain / LangGraph 接入 | ✅ | `src/lib/ai/langchain-adapter/`（5 文件） + `src/lib/ai/langchain-stream/`（流式批处理） |
+| Meeting Graph 拆分 | ✅ | `src/lib/meeting/{graph,nodes,state,index,types}.ts`（替代 meeting-graph.ts） |
+| Meeting SSE 流式 API | ✅ | `src/app/api/meeting/stream/route.ts` |
+| 缓存 token 计费 (BUG-38) | ✅ | ChatResult.usage.cachedInput + accumulateUsage 累计 |
+| refresh-terms N+1 优化 | ✅ | 单 findMany + createMany（带 P2002 兜底） |
+| Dead code 清理（2026-09-19） | ✅ | 删除 `src/lib/copy.ts`、`scripts/check-experts.ts`、`scripts/resolve-dup.cjs`（均无引用） |
+
 ## 开发命令
 
 | 命令 | 用途 |
@@ -128,6 +139,27 @@ aihub/
 | `pnpm test:usage` | 用量计费单测 |
 | `pnpm test:slides` | 早报 IR 单测 |
 | `pnpm slide:lint` | 早报 IR lint |
+| `npx tsx src/lib/meeting/__tests__/meeting-graph.test.ts` | Meeting Graph 状态机（47 cases） |
+| `npx tsx src/lib/ai/__tests__/langchain-stream.test.ts` | LangChain 流式批处理（20 cases） |
+| `npx tsx src/server/context.test.ts` | 多租户 + RBAC 上下文（admin/non-admin 隔离） |
+
+## 测试矩阵（最后验证 2026-09-19）
+
+| 套件 | 结果 |
+|---|---|
+| typecheck | ✅ 零错误 |
+| rankings | ✅ |
+| usage | ✅ |
+| slides | ✅ 59/59 |
+| meeting-graph | ✅ 47/47 |
+| langchain-stream | ✅ 20/20 |
+| server/context | ✅ P0 #12 防护 4/4 |
+| briefing/build-pptx-draft | ✅ |
+| briefing/badges-disclaimer | ✅ |
+| briefing/confidence-scale | ✅ |
+| briefing/text-similarity | ✅ |
+| briefing/postprocess | ✅ 16/16 |
+| usage/avatar/chat | ✅ 14+19 |
 
 ## 边界（MVP 不包含）
 
