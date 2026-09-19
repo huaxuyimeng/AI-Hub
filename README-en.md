@@ -68,17 +68,17 @@
 | tsx | 4.19 | TypeScript script runner for cron + tests |
 
 ### Notable Internal Modules
-| Module | Path | Purpose |
-|--------|------|---------|
-| slide-engine | `src/lib/slide-engine/` | PPT IR + lint + render (PPTX/HTML) |
-| meeting | `src/lib/meeting/` | LangGraph multi-agent + streaming |
-| news | `src/lib/news/parsers/` | Multi-source adapters (RSS/HTML/API) |
-| bilibili | `src/lib/bilibili/` | WBI signature + Cookie + subtitle |
-| rankings | `src/lib/rankings/` | Weighted algorithm + scraper |
-| ai langchain-adapter | `src/lib/ai/langchain-adapter/` | Streaming batching + usage callback |
-| rag | `src/lib/rag/` | Retrieval-augmented generation |
-| multimodal | `src/lib/multimodal/` | Multi-modal result fusion |
-| observability | `src/lib/observability/` | Logging + distributed lock |
+| Module | Path | Purpose | Doc |
+|--------|------|---------|-----|
+| slide-engine | `src/lib/slide-engine/` | PPT IR + lint + render (PPTX/HTML) | [`refactor/modules/slideEngine.md`](./docs/refactor/modules/slideEngine.md) |
+| meeting | `src/lib/meeting/` | LangGraph multi-agent + streaming | [`refactor/modules/` + `docs/AI模块/langchain系列/`](./docs/AI%E6%A8%A1%E5%9D%97/langchain%E7%B3%BB%E5%88%97/) |
+| news | `src/lib/news/parsers/` | Multi-source adapters (RSS/HTML/API) | [`refactor/modules/news.md`](./docs/refactor/modules/news.md) · [PRD](./docs/prd/modules/01-news-aggregator-prd.md) |
+| bilibili | `src/lib/bilibili/` | WBI signature + Cookie + subtitle | [`refactor/modules/bilibili.md`](./docs/refactor/modules/bilibili.md) |
+| rankings | `src/lib/rankings/` | Weighted algorithm + scraper | [`refactor/modules/rankings.md`](./docs/refactor/modules/rankings.md) · [PRD](./docs/prd/modules/02-rankings-prd.md) |
+| ai langchain-adapter | `src/lib/ai/langchain-adapter/` | Streaming batching + usage callback | [`docs/AI模块/langchain系列/`](./docs/AI%E6%A8%A1%E5%9D%97/langchain%E7%B3%BB%E5%88%97/) |
+| rag | `src/lib/rag/` | Retrieval-augmented generation | [`refactor/modules/rag.md`](./docs/refactor/modules/rag.md) |
+| multimodal | `src/lib/multimodal/` | Multi-modal result fusion | [`refactor/modules/multimodal.md`](./docs/refactor/modules/multimodal.md) |
+| observability | `src/lib/observability/` | Logging + distributed lock + alert | [`refactor/modules/observability.md`](./docs/refactor/modules/observability.md) |
 
 ---
 

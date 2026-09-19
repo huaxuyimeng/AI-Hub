@@ -68,17 +68,17 @@
 | tsx | 4.19 | TypeScript 脚本运行器（cron + 测试） |
 
 ### 主要内部模块
-| 模块 | 路径 | 职责 |
-|------|------|------|
-| slide-engine | `src/lib/slide-engine/` | PPT IR + lint + 渲染（PPTX/HTML） |
-| meeting | `src/lib/meeting/` | LangGraph 多智能体 + 流式 |
-| news | `src/lib/news/parsers/` | 多源适配器（RSS/HTML/API） |
-| bilibili | `src/lib/bilibili/` | WBI 签名 + Cookie + 字幕 |
-| rankings | `src/lib/rankings/` | 加权算法 + 爬虫 |
-| ai langchain-adapter | `src/lib/ai/langchain-adapter/` | 流式批处理 + 用量回调 |
-| rag | `src/lib/rag/` | 检索增强生成 |
-| multimodal | `src/lib/multimodal/` | 多模态结果融合 |
-| observability | `src/lib/observability/` | 日志 + 分布式锁 |
+| 模块 | 路径 | 职责 | 文档 |
+|------|------|------|------|
+| slide-engine | `src/lib/slide-engine/` | PPT IR + lint + 渲染（PPTX/HTML） | [`refactor/modules/slideEngine.md`](./docs/refactor/modules/slideEngine.md) |
+| meeting | `src/lib/meeting/` | LangGraph 多智能体 + 流式 | [`refactor/modules/` + `docs/AI模块/langchain系列/`](./docs/AI%E6%A8%A1%E5%9D%97/langchain%E7%B3%BB%E5%88%97/) |
+| news | `src/lib/news/parsers/` | 多源适配器（RSS/HTML/API） | [`refactor/modules/news.md`](./docs/refactor/modules/news.md) · [PRD](./docs/prd/modules/01-news-aggregator-prd.md) |
+| bilibili | `src/lib/bilibili/` | WBI 签名 + Cookie + 字幕 | [`refactor/modules/bilibili.md`](./docs/refactor/modules/bilibili.md) |
+| rankings | `src/lib/rankings/` | 加权算法 + 爬虫 | [`refactor/modules/rankings.md`](./docs/refactor/modules/rankings.md) · [PRD](./docs/prd/modules/02-rankings-prd.md) |
+| ai langchain-adapter | `src/lib/ai/langchain-adapter/` | 流式批处理 + 用量回调 | [`docs/AI模块/langchain系列/`](./docs/AI%E6%A8%A1%E5%9D%97/langchain%E7%B3%BB%E5%88%97/) |
+| rag | `src/lib/rag/` | 检索增强生成 | [`refactor/modules/rag.md`](./docs/refactor/modules/rag.md) |
+| multimodal | `src/lib/multimodal/` | 多模态结果融合 | [`refactor/modules/multimodal.md`](./docs/refactor/modules/multimodal.md) |
+| observability | `src/lib/observability/` | 日志 + 分布式锁 + 告警 | [`refactor/modules/observability.md`](./docs/refactor/modules/observability.md) |
 
 ---
 
