@@ -60,6 +60,16 @@
 
 ---
 
+## 一句话简介
+
+AIHub 是一个个人级 AI 信息平台，把 **新闻聚合 / 模型排行 / B 站 UP 主追踪 / PPT 自动早报 / 多智能体会议** 五件事收拢在一个工作台里。
+
+**全量技术栈**：前端 Next.js 14 (App Router) + React 18 + TypeScript 5；后端 tRPC 11（端到端类型安全）+ Prisma 6 ORM；存储 PostgreSQL（开发退化为 SQLite）+ Cloudflare R2（文件）+ Upstash Redis（缓存/速率限制）；AI 路由走 LiteLLM Proxy，同时直连 DeepSeek / 智谱 / Anthropic / Kimi 多 Provider；鉴权用 NextAuth.js（GitHub OAuth + 本地开发默认账号）；UI 用基于 CSS 变量的主题系统（6 套预设 + HSL DIY）+ `@tabler/icons-react` 图标库。
+
+**定位**：毕业设计 MVP（已上线 https://github.com/huaxuyimeng/AI-Hub），可作为个人 AI 工具箱使用。
+
+---
+
 ## 项目结构
 
 ```

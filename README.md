@@ -60,6 +60,16 @@
 
 ---
 
+## TL;DR
+
+AIHub is a personal-grade AI information platform that bundles **news aggregation / model rankings / Bilibili creator tracking / automated PPT briefings / multi-agent meetings** into one workbench.
+
+**Full Stack**: Next.js 14 (App Router) + React 18 + TypeScript 5. Backend is tRPC 11 (end-to-end type safety) + Prisma 6 ORM. Storage is PostgreSQL (dev fallback to SQLite) + Cloudflare R2 (files) + Upstash Redis (cache & rate-limit). AI routing via LiteLLM Proxy plus direct connections to DeepSeek / 智谱 / Anthropic / Kimi. Auth is NextAuth.js (GitHub OAuth + local dev default account). UI uses CSS-variable-based theme system (6 presets + HSL DIY) with `@tabler/icons-react`.
+
+**Positioning**: Graduation-project MVP (live at https://github.com/huaxuyimeng/AI-Hub), also usable as a personal AI toolbox.
+
+---
+
 ## Project Structure
 
 ```
