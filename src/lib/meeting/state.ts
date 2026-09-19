@@ -11,7 +11,7 @@
 //   - 新增 state 字段 → 同步更新 MeetingState / reducer / runMeetingGraph 初始值
 
 import { Annotation } from '@langchain/langgraph';
-import type { ParticipantConfig, TranscriptEntry } from './types';
+import type { MeetingState, ParticipantConfig, TranscriptEntry } from './types';
 
 // ─── Config helpers ────────────────────────────────────────────────────────
 
@@ -78,10 +78,19 @@ export const MeetingAnnotation = Annotation.Root({
    * 累计 usage（运行时，不写 DB）。由 callLLMNode / makeDecision / concludeNode
    * 累加；runMeetingGraph 结束后读出供 recordUsage(kind: 'meeting') 使用。
    * 2026-09-17 Bug2 修复引入。
+   * 2026-09-18 Bug38 扩展：新增 cachedTokens + cachedByModel 用于 prompt cache 计费。
+   *
+   * reducer 选「next ?? prev」与 currentIndex/round 同形：节点返回完整新对象时
+   * 用 next；节点不返回时回退 prev（配合 default 永远不为 undefined）。
    */
-  usageTotal: Annotation<{
-    inputTokens: number;
-    outputTokens: number;
-    costByModel: Record<string, number>;
-  } | undefined>(),
+  usageTotal: Annotation<NonNullable<MeetingState['usageTotal']>>({
+    reducer: (prev, next) => next ?? prev,
+    default: () => ({
+      inputTokens: 0,
+      outputTokens: 0,
+      costByModel: {},
+      cachedTokens: 0,
+      cachedByModel: {},
+    }),
+  }),
 });
