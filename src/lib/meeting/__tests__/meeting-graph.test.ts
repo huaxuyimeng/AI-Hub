@@ -30,7 +30,7 @@ import {
   buildErrorFallback,
 } from '../meeting-graph';
 import { MAX_MEETING_ROUNDS } from '../types';
-import type { ParticipantConfig } from '../types';
+import type { ParticipantConfig, TranscriptEntry } from '../types';
 
 // ── Test harness ──────────────────────────────────────────────────────────
 
@@ -194,30 +194,37 @@ async function runTests(): Promise<void> {
   // ── 9) callLLMNode 子函数：buildErrorFallback ────────────────────
   // 验证：catch 分支写错误条目 + 累加 errors
   console.log('\n[9] callLLMNode 子函数：buildErrorFallback...');
-  const errorState: any = {
+  const errorState: Pick<MeetingState, 'transcripts' | 'errors'> = {
     transcripts: { 'pid-A': [] },
     errors: [],
   };
   const errorResult = buildErrorFallback(pmParticipant, errorState, 'network timeout');
   assert(errorResult.transcripts !== undefined, '返回 transcripts');
   assert(errorResult.errors !== undefined, '返回 errors');
-  const errorEntries = (errorResult.transcripts! as any)['pid-A'];
+  const errorEntries = errorResult.transcripts?.['pid-A'] ?? [];
   assertEqual(errorEntries.length, 1, '1 条错误条目追加到 pid-A');
   assertEqual(errorEntries[0].role, 'assistant', '错误条目 role = assistant');
   assert(errorEntries[0].content.includes('[发言失败]'), '错误条目含 [发言失败] 前缀');
   assert(errorEntries[0].content.includes('network timeout'), '错误条目含 error 详情');
   assert(errorEntries[0].speaker === '产品经理', 'speaker = role');
-  assertEqual((errorResult.errors! as string[]).length, 1, 'errors 累加 1 条');
-  assert((errorResult.errors! as string[])[0].includes('产品经理'), 'errors 含 role');
-  assert((errorResult.errors! as string[])[0].includes('network timeout'), 'errors 含 error');
+  assertEqual(errorResult.errors?.length ?? 0, 1, 'errors 累加 1 条');
+  assert((errorResult.errors?.[0] ?? '').includes('产品经理'), 'errors 含 role');
+  assert((errorResult.errors?.[0] ?? '').includes('network timeout'), 'errors 含 error');
 
   // 错误条目追加到已有 entries
-  const errorState2: any = {
-    transcripts: { 'pid-A': [{ role: 'assistant', content: '之前的发言', model: 'm', speaker: 'pm', timestamp: 't0' }] },
+  const priorEntry: TranscriptEntry = {
+    role: 'assistant',
+    content: '之前的发言',
+    model: 'm',
+    speaker: 'pm',
+    timestamp: 't0',
+  };
+  const errorState2: Pick<MeetingState, 'transcripts' | 'errors'> = {
+    transcripts: { 'pid-A': [priorEntry] },
     errors: [],
   };
   const errorResult2 = buildErrorFallback(pmParticipant, errorState2, 'rate limit');
-  const errorEntries2 = (errorResult2.transcripts! as any)['pid-A'];
+  const errorEntries2 = errorResult2.transcripts?.['pid-A'] ?? [];
   assertEqual(errorEntries2.length, 2, '新错误条目追加到末尾（共 2 条）');
   assertEqual(errorEntries2[0].content, '之前的发言', '原条目不变');
   assert(errorEntries2[1].content.includes('[发言失败]'), '新条目是错误条目');

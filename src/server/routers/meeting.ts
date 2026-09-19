@@ -207,88 +207,102 @@ export const meetingRouter = router({
       });
       if (!meeting) throw new TRPCError({ code: 'NOT_FOUND' });
 
-      // 标记 RUNNING
-      await prismaRaw.meeting.update({
-        where: { id: meeting.id },
+      // 原子抢占 RUNNING 状态（Bug24 同款修复）
+      // 原代码用 findFirst → update，会被双击/并发穿透产生两个并行 run
+      // 用 updateMany + where status=ACTIVE，count=0 即被别人抢了
+      const claim = await prismaRaw.meeting.updateMany({
+        where: { id: meeting.id, status: 'ACTIVE', deletedAt: null },
         data: { status: 'RUNNING' },
       });
-
-      // 串行调每个参与者
-      const allTranscripts: Array<{ participantId: string; transcript: TranscriptEntry[] }> = [];
-      for (const p of meeting.participants) {
-        const priorContext = allTranscripts
-          .map((t) => t.transcript.map((e) => `${e.speaker ?? 'AI'}: ${e.content}`).join('\n'))
-          .join('\n\n');
-
-        const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
-          { role: 'system', content: p.systemPrompt },
-          {
-            role: 'user',
-            content: priorContext
-              ? `会议主题：${meeting.topic}\n\n前面的参与者已经发表了以下观点：\n\n${priorContext}\n\n请你基于以上内容，给出你的专业观点（200-400 字）。`
-              : `会议主题：${meeting.topic}\n\n你是第一个发言者，请给出你的专业观点（200-400 字）。`,
-          },
-        ];
-
-        try {
-          const resp = await chat(p.model, ctx.tenantId, messages, {
-            temperature: 0.7,
-            maxTokens: 600,
-          });
-
-          const entry: TranscriptEntry = {
-            role: 'assistant',
-            content: resp.content,
-            model: p.model,
-            speaker: p.role,
-            timestamp: new Date().toISOString(),
-          };
-
-          // 写回 transcript
-          const existing = (p.transcript as unknown as TranscriptEntry[]) ?? [];
-          await prismaRaw.meetingParticipant.update({
-            where: { id: p.id },
-            data: { transcript: [...existing, entry] as unknown as object },
-          });
-          allTranscripts.push({ participantId: p.id, transcript: [entry] });
-
-          // 记录 usage
-          const cost = calculateCost(p.model, resp.usage.input, resp.usage.output, 0);
-          await recordUsage({
-            tenantId: ctx.tenantId,
-            inputTokens: resp.usage.input,
-            outputTokens: resp.usage.output,
-            cost,
-            kind: 'meeting',
-          });
-        } catch (err) {
-          logger.warn('[meeting] participant failed', {
-            meetingId: meeting.id,
-            participantId: p.id,
-            model: p.model,
-            error: (err as Error).message,
-          });
-          // 继续下一个参与者
-          const entry: TranscriptEntry = {
-            role: 'assistant',
-            content: `[发言失败] ${(err as Error).message}`,
-            model: p.model,
-            speaker: p.role,
-            timestamp: new Date().toISOString(),
-          };
-          const existing = (p.transcript as unknown as TranscriptEntry[]) ?? [];
-          await prismaRaw.meetingParticipant.update({
-            where: { id: p.id },
-            data: { transcript: [...existing, entry] as unknown as object },
-          });
-        }
+      if (claim.count === 0) {
+        throw new TRPCError({ code: 'CONFLICT', message: '会议已被其他请求抢占' });
       }
 
-      // 状态切到 COMPLETED（即使部分失败也认为会议结束）
-      await prismaRaw.meeting.update({
-        where: { id: meeting.id },
-        data: { status: 'COMPLETED' },
-      });
+      try {
+        // 串行调每个参与者
+        const allTranscripts: Array<{ participantId: string; transcript: TranscriptEntry[] }> = [];
+        for (const p of meeting.participants) {
+          const priorContext = allTranscripts
+            .map((t) => t.transcript.map((e) => `${e.speaker ?? 'AI'}: ${e.content}`).join('\n'))
+            .join('\n\n');
+
+          const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+            { role: 'system', content: p.systemPrompt },
+            {
+              role: 'user',
+              content: priorContext
+                ? `会议主题：${meeting.topic}\n\n前面的参与者已经发表了以下观点：\n\n${priorContext}\n\n请你基于以上内容，给出你的专业观点（200-400 字）。`
+                : `会议主题：${meeting.topic}\n\n你是第一个发言者，请给出你的专业观点（200-400 字）。`,
+            },
+          ];
+
+          try {
+            const resp = await chat(p.model, ctx.tenantId, messages, {
+              temperature: 0.7,
+              maxTokens: 600,
+            });
+
+            const entry: TranscriptEntry = {
+              role: 'assistant',
+              content: resp.content,
+              model: p.model,
+              speaker: p.role,
+              timestamp: new Date().toISOString(),
+            };
+
+            // 写回 transcript
+            const existing = (p.transcript as unknown as TranscriptEntry[]) ?? [];
+            await prismaRaw.meetingParticipant.update({
+              where: { id: p.id },
+              data: { transcript: [...existing, entry] as unknown as object },
+            });
+            allTranscripts.push({ participantId: p.id, transcript: [entry] });
+
+            // 记录 usage
+            const cost = calculateCost(p.model, resp.usage.input, resp.usage.output, 0);
+            await recordUsage({
+              tenantId: ctx.tenantId,
+              inputTokens: resp.usage.input,
+              outputTokens: resp.usage.output,
+              cost,
+              kind: 'meeting',
+            });
+          } catch (err) {
+            logger.warn('[meeting] participant failed', {
+              meetingId: meeting.id,
+              participantId: p.id,
+              model: p.model,
+              error: (err as Error).message,
+            });
+            // 继续下一个参与者
+            const entry: TranscriptEntry = {
+              role: 'assistant',
+              content: `[发言失败] ${(err as Error).message}`,
+              model: p.model,
+              speaker: p.role,
+              timestamp: new Date().toISOString(),
+            };
+            const existing = (p.transcript as unknown as TranscriptEntry[]) ?? [];
+            await prismaRaw.meetingParticipant.update({
+              where: { id: p.id },
+              data: { transcript: [...existing, entry] as unknown as object },
+            });
+          }
+        }
+
+        // 状态切到 COMPLETED（即使部分失败也认为会议结束）
+        await prismaRaw.meeting.update({
+          where: { id: meeting.id },
+          data: { status: 'COMPLETED' },
+        });
+      } catch (err) {
+        // 抢占了 RUNNING 但中途崩溃 → 回退到 ACTIVE 避免会议永远卡住
+        await prismaRaw.meeting.update({
+          where: { id: meeting.id },
+          data: { status: 'ACTIVE' },
+        });
+        throw err;
+      }
 
       return { ok: true, completedParticipants: allTranscripts.length };
     }),
@@ -302,9 +316,6 @@ export const meetingRouter = router({
         include: { participants: { orderBy: { order: 'asc' } } },
       });
       if (!meeting) throw new TRPCError({ code: 'NOT_FOUND' });
-      if (!meeting.conclusion) {
-        // 必须先 run
-      }
 
       // 拼所有发言
       const allSpeeches = meeting.participants
