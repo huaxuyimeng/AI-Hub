@@ -1,0 +1,623 @@
+{
+  "date": "2026-09-15",
+  "windowNote": "运行时间 2026-09-15 10:40（GMT+8）。抓取池返回 2026-09-10 ~ 09-15 成规模新增条目，其中 09-14 晚至 09-15 凌晨为密集发布窗口，故以该窗口为主体。B 站未启用（需 --fetch-bilibili 且走字幕/ASR，本期未跑）。",
+  "focus": [
+    "AI Coding",
+    "具身智能"
+  ],
+  "headline": "今天两条主线都在「给能力定单位」：AI Coding 侧，企业第一次把「数据主权」摆到模型能力之前（英伟达限制 Claude），同时成本口径从模型单价换成「每成功任务成本」（同模型差 70 倍）；具身智能侧，一边是类脑路线第一次在公开基准上跑赢大数据预训练，一边是行业自己把「收入真不真」的账本翻到了台面上。",
+  "rawStats": {
+    "sourcesAlive": 10,
+    "sourcesTotal": 10,
+    "rawItems": 198,
+    "dedupedItems": 198,
+    "multiSourceItems": 39,
+    "crossSourceThreshold": 3,
+    "byCategory": {
+      "AI Coding": 70,
+      "其他": 112,
+      "具身智能": 15,
+      "AI 政策": 1
+    },
+    "note": "多源关联阈值 = 3（共享 token 数）。实测：2 → 47.2%（虚高）、3 → 18.5%（合理）、4 → 10.6%（偏严）。该阈值仅用于发现候选，最终置信度按独立信源数人工判定。"
+  },
+  "confidenceScale": [
+    {
+      "lv": "A",
+      "name": "极高",
+      "rule": "≥3 个相互独立信源，且可追溯到一手官方材料"
+    },
+    {
+      "lv": "B",
+      "name": "高",
+      "rule": "2 个独立信源，或 1 个信源 + 一手官方材料"
+    },
+    {
+      "lv": "C",
+      "name": "中",
+      "rule": "单一信源；或多家转载同一家独家"
+    },
+    {
+      "lv": "D",
+      "name": "存疑",
+      "rule": "关键数字互相矛盾，或全部可溯源到同一原始信源且无官方确认"
+    }
+  ],
+  "picks": [
+    {
+      "no": 1,
+      "topic": "AI Coding",
+      "title": "英伟达、Palantir、Booz Allen 限制内部使用 Claude，AI 编码工具撞上「数据主权」墙",
+      "lv": "B",
+      "publishedAt": "2026-09-14",
+      "event": "据 The Information 9 月 14 日报道，英伟达、Palantir、Booz Allen Hamilton 已开始限制内部使用 Anthropic 的 AI 模型。担忧不在「会不会拿数据训练」，而在代码输入外部模型后留存多久、谁能访问、责任边界在哪。做法各异：英伟达分级——低敏感开源任务用 Fable，供应链监控等敏感项目改用自研 Nemotron；Palantir 要求「不可撤销零数据留存」；Booz Allen 禁用商业模型处理专有网安工作。路透单独求证，三家均未回应。",
+      "keyFacts": [
+        "Anthropic 6 月引入 30 天数据留存政策（用于跨请求滥用检测，称不用于训练），是本次触发点",
+        "Palantir 要的是「不可撤销零数据留存」，不是「不训练」——数据不出自有边界 > 训练承诺",
+        "Anthropic 9 月推 EFS，安全日志存客户自己的云；OpenAI 8 月扩大 ZDR 覆盖",
+        "英伟达 9 月刚宣布把 Nemotron 接入供应链 AI，强调企业保留数据控制",
+        "平台内用 MCP 数据可留在 Foundry；本地 Claude Code 连 MCP，工具输出会发给 Anthropic"
+      ],
+      "why": "这条的分量不在「三家不用 Claude 了」，而在博弈的重心变了：过去企业比「谁的模型强」，现在开始比「谁的架构能让模型随时被换掉」。对做 coding agent 的团队，这是直接的设计约束——你的 Agent 为了完成任务要读多少仓库、调多少工具、数据经过谁的手，已经从工程细节变成采购条款。VentureBeat 8 月对 107 家企业的调查显示 78% 希望至少一部分控制权留在模型厂商之外，这个数字说明「按任务路由模型 + 最小权限」不是洁癖，是准入门槛。另需注意：英伟达既是算力供应商又是模型竞争者，它的选择会被当作信号读。",
+      "sources": [
+        {
+          "name": "The Information（一手独家）",
+          "url": "https://www.theinformation.com/"
+        },
+        {
+          "name": "路透社转引（单独向三家公司求证）",
+          "url": "https://www.reuters.com/"
+        },
+        {
+          "name": "观察者网硬科技早报（中文独立编译）",
+          "url": "https://www.163.com/dy/article/L6ROS8BK051481US_pdya11y.html"
+        },
+        {
+          "name": "极客头条（中文独立梳理）",
+          "url": "https://weibo.com/1798777247/5343342579683484"
+        }
+      ],
+      "conflicts": "各源核心事实一致。差异在定性：一方解读为「Claude 失去大客户」，另一方视为「模型进入企业数据边界的正常适配」。Anthropic 未就三家措施置评。"
+    },
+    {
+      "no": 2,
+      "topic": "AI Coding",
+      "title": "同一模型、同一任务，Token 能差 70 倍：AI 编程的钱花在了「脚手架」上",
+      "lv": "A",
+      "publishedAt": "2026-09-13",
+      "event": "InfoQ 汇总三项公开实测：决定 AI 编程成本的往往不是模型单价，而是外面那层 Agent 框架。Artificial Analysis 用 12 种配置跑同一批任务，先后在 DeepSeek V4 Flash 与英伟达 Nemotron 3 Ultra 上测试，Aider architect 模式单任务约 3500 Token，OpenClaw 为 29.2 万——差约 70 倍；两个模型上排名几乎不变，说明差异锁定在框架层。Composio 用同一模型跑 240 次工作流，单次成功成本从 0.028 美元到 0.195 美元。",
+      "keyFacts": [
+        "Token 黑洞三处：系统提示词、工具说明书、上下文历史——每轮推理都要重发",
+        "缓存命中率：Claude Code 约 1.5%，Codex 同口径约 70%；新输入价格约为缓存输入的 5 倍",
+        "AA 指数基于 326 项任务（DeepSWE 等），每项跑三次取平均",
+        "Composio 自列局限：PiAgent 推理设置与其他家不同，PrimeAgent 有 6/30 次未进评分",
+        "同模型对照：Opus 4.7 搭配三种框架，Token 消耗仍差异显著"
+      ],
+      "why": "如果你在给 AI 编程工具选型或做预算，这条比任何「模型排行榜」都值钱——它把口径从「每百万 Token 多少钱」换成了「每成功完成一个任务多少钱」，而这两者可以差一个数量级。两个可直接落地的动作：一是把「单次任务平均 Token 消耗」当成核心指标监控，而不只看 DAU 和留存；二是每多挂一个 MCP 服务器，就多背一份工具说明书的固定开销，这条对正在堆 MCP 的团队是明确警告。也别忘 Composio 自己列的局限——低成本的 PiAgent 推理设置与其他家不同，稳定性本身也是成本。",
+      "sources": [
+        {
+          "name": "Artificial Analysis 编码智能体指数（一手数据集）",
+          "url": "https://artificialanalysis.ai/"
+        },
+        {
+          "name": "Composio 智能体框架对照实验（一手数据集，含自列局限）",
+          "url": "https://composio.dev/"
+        },
+        {
+          "name": "InfoQ《模型一模一样，Token 却相差 70 倍？》（中文原创汇总分析）",
+          "url": "https://www.infoq.cn/"
+        },
+        {
+          "name": "今日头条转载（含完整数据复述）",
+          "url": "https://www.toutiao.com/article/7685022201178866185/"
+        }
+      ],
+      "conflicts": "两组实验口径不同（Token 数 vs 单次成功成本），但方向一致，且未互相质疑。"
+    },
+    {
+      "no": 3,
+      "topic": "AI Coding",
+      "title": "Opus 5.2 在 Claude Code 静默灰度：跳过 5.1，社区称「治好了偷懒病」",
+      "lv": "C",
+      "publishedAt": "2026-09-15",
+      "event": "9 月 15 日凌晨，多位开发者发现 Claude Code 终端里的「Opus 5」与网页版表现断层式不同。抓包与 /status 显示底层 model slug 已指向未发布的 Opus 5.2，前端标识仍是 Opus 5——推测跳过了 5.1。社区总结三点变化：速度明显提升、输出废话减少、长任务不再中途停摆，而是自动进入 Gauntlet Loop 持续自迭代。验证方法：关掉联网搜索问「重置哥 Tibo 是谁」，旧权重答不出。同期流传的内部风险报告提到未公开的 Model 2 与 RSI 递归自我改进系统。",
+      "keyFacts": [
+        "Anthropic 未发任何公告或版本说明，证据全来自开发者实测与社媒截图",
+        "路由策略与 Fable 上线时一致：前端名不变、后端静默换权重",
+        "社区反馈三点变化：速度快、输出精简、长任务自主迭代",
+        "报告称 Model 2 在 CoBench v2 得 62.8%，比 Mythos 5 高 12.5 分",
+        "Model 2 / RSI 数字全部出自泄露报告，无第三方复现或官方确认"
+      ],
+      "why": "评级压到 C 是刻意的：没有官方公告，没有一手材料，全部证据链是社媒实测 + 自媒体转载，其中「Model 2 替代 85% 研究员」这类说法只能追溯到一份身份不明的泄露报告。对读者真正有用的不是这些数字，而是两件可以自己验证的事：一是灰度路由本身——你以为在用的模型和实际在跑的可能不是一个，这对任何做模型评测、成本归因、回归测试的团队都是实打实的风险；二是「长任务自主迭代」这个行为变化如果属实，会直接抬高 Agent 的单次任务 Token 消耗（呼应第 2 条的成本问题）。建议自己用 Tibo 探针验一次，别信任何二手结论。",
+      "sources": [
+        {
+          "name": "Anthropic 官方新闻页（一手核验入口：截至发稿无 Opus 5.2 / Model 2 / RSI 任何公告，故评级为 C）",
+          "url": "https://www.anthropic.com/news"
+        },
+        {
+          "name": "AIBase 英文报道",
+          "url": "https://www.aibase.com/news/31039"
+        },
+        {
+          "name": "腾讯搜一搜聚合页（中文编译）",
+          "url": "https://so.html5.qq.com/page/real/search_news?docid=70000021_3556aa88d9c28952"
+        },
+        {
+          "name": "微博科技博主（社区实测汇总）",
+          "url": "https://weibo.com/5777227559/5343353233214257"
+        }
+      ],
+      "conflicts": "Model 2 / RSI 数字仅见于一份泄露报告，无第二方确认。Anthropic 未对灰度、版本号、Model 2 或 RSI 作任何回应。"
+    },
+    {
+      "no": 4,
+      "topic": "具身智能",
+      "title": "具脑磐石发布 Cog-WM 1.0：类脑认知世界模型，用更少数据跑赢大数据预训练",
+      "lv": "B",
+      "publishedAt": "2026-09-14",
+      "event": "9 月 14 日，具脑磐石在 2026 浦江创新论坛类脑具身智能分论坛发布首代类脑认知世界模型 Cog-WM 1.0。模型借鉴人脑海马体—前额叶环路机制，与 JEPA 架构结合，在隐空间而非像素层面预测「未来会怎么变」，不依赖预建地图与海量数据即可完成自主规划与操作。基准上：导航侧 HM3D-ObjectNav 成功率从 BSC-Nav 的 78.50% 升至 86.89%（相对 +10.69%）；操作侧在三大主流基准上均超越大数据预训练 SOTA（最高 16%）。已在四足、轮式人形本体验证，导航分支已落地巡检场景。",
+      "keyFacts": [
+        "三套可归因机制：感知编码与目标调控、时空记忆内容与结构分离、隐空间多层级预测",
+        "消融：80.0% → 81.6% → 82.0% → 84.6%（LIBERO-Plus），逐层归因",
+        "导航侧无需预置 3D 地图先验，路径效率 SPL 由 47.70 提升至 48.35",
+        "两个方向的方法均已通过 arXiv 论文公开；已在四足机器人巡检场景落地",
+        "官方称可在 Jetson AGX Orin 上实时运行，端侧推理、无云端回传"
+      ],
+      "why": "具身智能这两年的默认解法是「堆数据 + 堆参数」，这条给出的是一条方向不同的可验证路径：用算法机制换数据效率。它对决策的影响分两层。第一层是数字——在 HM3D 上相对提升 10.69%、操作侧最高超 SOTA 16%，且消融实验逐层归因，属于可检验而非演示视频。高的那一层是产业含义：如果「低数据、高泛化」成立，那么决定具身智能上限的就不是谁采集的数据多，而是谁的架构更能复用已有认知——这正好呼应今天资本把一半以上的钱投给不造本体的「大脑公司」这个现象。需要打折的地方：数据出自公司自家对比表，无第三方复现；「端侧实时」目前只在单一硬件平台上声称。",
+      "sources": [
+        {
+          "name": "具脑磐石官方发布（一手，含基准数据与 arXiv 论文）",
+          "url": "https://www.ebkernel.com/"
+        },
+        {
+          "name": "界面新闻（独立采访报道）",
+          "url": "https://www.163.com/dy/article/L6QB7CV00534A4SC.html"
+        },
+        {
+          "name": "新浪新闻转载界面新闻",
+          "url": "https://k.sina.com.cn/article_5953466437_162dab0450670bcdck.html"
+        },
+        {
+          "name": "搜狐（自媒体补充报道）",
+          "url": "https://www.sohu.com/a/1076004764_362225"
+        }
+      ],
+      "conflicts": "各源数字一致。差异在表述：自媒体用「全球首个」「引爆」等措辞，官方口径为「全球首个基于成体系类脑神经机制的世界模型」，限定语不宜省略。"
+    },
+    {
+      "no": 5,
+      "topic": "具身智能",
+      "title": "具身智能「收入真假」之争升级：梅卡曼德点名银河通用，银河通用报案",
+      "lv": "A",
+      "publishedAt": "2026-09-14",
+      "event": "9 月 9—10 日，9 月 1 日刚上市的梅卡曼德 CEO 邵天兰连续朋友圈发文，批评部分「攒局型」具身智能企业靠关联交易制造虚假收入，点名正推进 IPO 的银河通用。他描述的闭环：先把机器人卖给地方国资主导的「数采中心」，再通过租赁公司把数据买回来，「钱在自己人手里转一圈，收入就做出来了」。银河通用 9 月 10 日回应「不参与口水战」，12 日再声明网传信息不实并已报案。14 日梅卡曼德收 83.75 港元，单日跌 11.84%，较发行价累计跌约 17.7%。",
+      "keyFacts": [
+        "梅卡曼德 9 月 1 日以 101.70 港元挂牌，首日破发；公开发售超额认购约 3834 倍",
+        "银河通用 2023 年成立，累计融资超 60 亿元，2026 年 3 月 B++ 轮后估值 30 亿美元",
+        "梅卡曼德自身：2023—2025 年收入 1.81 → 3.89 亿元，毛利率 39.1 → 64.6%，三年净亏 10.44 亿元",
+        "靶心是「数采中心」——既是客户又是供应商；会计上付给客户的款项原则上要冲减收入",
+        "从业者算账：本体约 15 万元，数据回购 120—150 元/小时，每天 4 小时、月 22 天，一年最多 15.84 万元，刚够设备钱"
+      ],
+      "why": "这场口水仗真正的价值不在谁对谁错，而在于它把一个此前只在私下讨论的问题摆上了台面：机器人企业的收入里，有多少来自真实的市场需求。邵天兰的指控目前仍停留在一方表述——没点出具体交易对手、涉事金额与交易结构；银河通用的报案针对的是网传材料，也没逐条回应数采业务的收入质疑。但两者合起来，恰好是这一轮具身智能上市潮最需要被回答的问题。对读者的实际用处：以后看任何一家机器人公司的「高增长」，先问三件事——设备有没有实际交付、客户会不会重复采购、收入有没有变成回款。这三条比任何标签都接近答案。",
+      "sources": [
+        {
+          "name": "银河通用官方公众号声明（一手，9/10 与 9/12 两份）",
+          "url": "https://mp.weixin.qq.com/"
+        },
+        {
+          "name": "红星资本局（原创报道）",
+          "url": "https://so.html5.qq.com/page/real/search_news?docid=70000021_8596aa4d2d823452"
+        },
+        {
+          "name": "21 世纪经济报道（原创，采访梅卡曼德内部人士）",
+          "url": "https://m.21jingji.com/article/20260911/herald/3b3033e686bacb681633f9e3907718b7.html"
+        },
+        {
+          "name": "证券之星（事件时间线梳理）",
+          "url": "https://stock.stockstar.com/SS2026091400013957.shtml"
+        },
+        {
+          "name": "星岛记事（原创报道，含数采中心算账）",
+          "url": "https://www.163.com/dy/article/L6QUPQ0F0556CDOE.html"
+        }
+      ],
+      "conflicts": "邵天兰称存在通过数采中心制造虚假收入的闭环，银河通用两度否认。截至发稿，邵天兰未公开交易对手与金额，无监管立案的公开信息；银河通用曾被传是梅卡曼德客户，求证未获证实。"
+    }
+  ],
+  "alsoWorthAScan": [
+    {
+      "title": "微软发布《人本主义 AI 行为准则》草案：1.5 万词，确立「人比 AI 重要」，禁止模型自改代码、隐藏推理、用人类不可理解的形式通信，6 周公众咨询后用于指导 2027 年模型开发",
+      "sources": "Axios / Unite.AI / TechCrunch / AInvest（≥4 源，含微软官方草案）"
+    },
+    {
+      "title": "黄仁勋在 All-In Summit 现场接特朗普电话，两人共同反对 AI 减速；同日 AI 概念股重挫，费城半导体指数跌 5.86%，创 7 月 1 日以来最大跌幅",
+      "sources": "The Verge / TechCrunch / MIT TR / 极客公园（4 源）"
+    },
+    {
+      "title": "月之暗面 Kimi 推出新一代主力模型 K2.8 Preview",
+      "sources": "AI工具集 / 极客公园（2 源）"
+    },
+    {
+      "title": "Meta 推出新一代大语言模型 Muse Spark 1.3；Anthropic 推出 Claude Fable 5.1 与 Mythos 5.1",
+      "sources": "AI工具集 / 极客公园 / AITNT（2 源，均待官方确认）"
+    },
+    {
+      "title": "AI agents blew the whistle on their cheating colleagues —— MIT TR 与 The Verge 报道 Agent 揭发同伴作弊的实验",
+      "sources": "MIT TR / The Verge（2 源）"
+    },
+    {
+      "title": "深大、港科大提出 ECA，让 Agent 在行动前先验证证据，应对 AI 幻觉操作电脑的问题",
+      "sources": "AITNT（1 源）"
+    },
+    {
+      "title": "宇树科技发布人形机器人 G1+，6 项升级，标准版含税售价 9.5 万元",
+      "sources": "快科技（1 源）"
+    }
+  ],
+  "dedupeNote": "已比对 09-14 推送 5 条与当日扫读清单。DeepSeek V4.1 Flash 系列、Kimi API 双协议、Agent 500 Token、蒸馏疑云、Dario 限速长文均已带过，本次不入选。「梅卡曼德」上次只带过上市，本次是 9/9—9/14 虚假收入指控升级 + 银河通用报案，属新进展。Opus 5.2 所引报告与上次同源，但主体是 9/15 模型灰度，入选并压到 C。",
+  "chartNote": "charts 字段由 scripts/analyze.mjs 纯统计写回，渲染器只读不计算。",
+  "charts": {
+    "generatedBy": "analyze.mjs",
+    "generatedAt": "2026-09-15T02:47:30.719Z",
+    "corpus": {
+      "items": 198,
+      "from": "2026-09-01",
+      "to": "2026-09-15",
+      "spanDays": 15,
+      "fetchedAt": 1789439975100,
+      "note": "趋势与热度统计的是本期抓取语料里的提及次数，不是全网声量。"
+    },
+    "confidence": {
+      "A": 2,
+      "B": 2,
+      "C": 1,
+      "D": 0
+    },
+    "category": [
+      {
+        "name": "其他",
+        "count": 112
+      },
+      {
+        "name": "AI Coding",
+        "count": 70
+      },
+      {
+        "name": "具身智能",
+        "count": 15
+      },
+      {
+        "name": "AI 政策",
+        "count": 1
+      }
+    ],
+    "sources": [
+      {
+        "id": "ai-bot",
+        "label": "AI Bot 每日资讯",
+        "count": 40
+      },
+      {
+        "id": "geekpark",
+        "label": "极客公园",
+        "count": 30
+      },
+      {
+        "id": "hn",
+        "label": "Hacker News",
+        "count": 30
+      },
+      {
+        "id": "infoq",
+        "label": "InfoQ 中文",
+        "count": 20
+      },
+      {
+        "id": "tc-ai",
+        "label": "TechCrunch AI",
+        "count": 20
+      },
+      {
+        "id": "leiphone",
+        "label": "雷峰网",
+        "count": 20
+      },
+      {
+        "id": "aitntnews",
+        "label": "AI TNT News",
+        "count": 10
+      },
+      {
+        "id": "verge-ai",
+        "label": "The Verge AI",
+        "count": 10
+      },
+      {
+        "id": "mit-ai",
+        "label": "MIT TR AI",
+        "count": 10
+      },
+      {
+        "id": "qbitai",
+        "label": "量子位",
+        "count": 8
+      }
+    ],
+    "models": {
+      "top": [
+        {
+          "id": "openai",
+          "label": "GPT / OpenAI",
+          "kind": "model",
+          "count": 36
+        },
+        {
+          "id": "claude",
+          "label": "Claude / Anthropic",
+          "kind": "model",
+          "count": 20
+        },
+        {
+          "id": "gemini",
+          "label": "Gemini / DeepMind",
+          "kind": "model",
+          "count": 10
+        },
+        {
+          "id": "qwen",
+          "label": "Qwen / 通义",
+          "kind": "model",
+          "count": 10
+        },
+        {
+          "id": "deepseek",
+          "label": "DeepSeek",
+          "kind": "model",
+          "count": 7
+        },
+        {
+          "id": "kimi",
+          "label": "Kimi / 月之暗面",
+          "kind": "model",
+          "count": 6
+        },
+        {
+          "id": "llama",
+          "label": "Llama / Meta",
+          "kind": "model",
+          "count": 5
+        },
+        {
+          "id": "grok",
+          "label": "Grok / xAI",
+          "kind": "model",
+          "count": 5
+        },
+        {
+          "id": "glm",
+          "label": "GLM / 智谱",
+          "kind": "model",
+          "count": 4
+        },
+        {
+          "id": "bytedance",
+          "label": "豆包 / 字节",
+          "kind": "model",
+          "count": 3
+        },
+        {
+          "id": "codex",
+          "label": "Codex",
+          "kind": "agent",
+          "count": 2
+        },
+        {
+          "id": "minimax",
+          "label": "MiniMax",
+          "kind": "model",
+          "count": 2
+        }
+      ],
+      "topByKind": {
+        "model": [
+          {
+            "id": "openai",
+            "label": "GPT / OpenAI",
+            "kind": "model",
+            "count": 36
+          },
+          {
+            "id": "claude",
+            "label": "Claude / Anthropic",
+            "kind": "model",
+            "count": 20
+          },
+          {
+            "id": "gemini",
+            "label": "Gemini / DeepMind",
+            "kind": "model",
+            "count": 10
+          },
+          {
+            "id": "qwen",
+            "label": "Qwen / 通义",
+            "kind": "model",
+            "count": 10
+          },
+          {
+            "id": "deepseek",
+            "label": "DeepSeek",
+            "kind": "model",
+            "count": 7
+          },
+          {
+            "id": "kimi",
+            "label": "Kimi / 月之暗面",
+            "kind": "model",
+            "count": 6
+          }
+        ],
+        "agent": [
+          {
+            "id": "codex",
+            "label": "Codex",
+            "kind": "agent",
+            "count": 2
+          },
+          {
+            "id": "cursor",
+            "label": "Cursor",
+            "kind": "agent",
+            "count": 2
+          }
+        ],
+        "robot": [
+          {
+            "id": "unitree",
+            "label": "宇树 Unitree",
+            "kind": "robot",
+            "count": 2
+          },
+          {
+            "id": "agibot",
+            "label": "智元 AgiBot",
+            "kind": "robot",
+            "count": 2
+          },
+          {
+            "id": "mekka",
+            "label": "Mecka AI（训练数据）",
+            "kind": "robot",
+            "count": 1
+          }
+        ]
+      },
+      "byKind": {
+        "model": 110,
+        "agent": 4,
+        "robot": 5
+      },
+      "trend": {
+        "days": [
+          "09-06",
+          "09-07",
+          "09-08",
+          "09-09",
+          "09-10",
+          "09-11",
+          "09-12",
+          "09-13",
+          "09-14",
+          "09-15"
+        ],
+        "dates": [
+          "2026-09-06",
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15"
+        ],
+        "series": [
+          {
+            "id": "openai",
+            "label": "GPT / OpenAI",
+            "values": [
+              1,
+              0,
+              0,
+              2,
+              2,
+              1,
+              2,
+              5,
+              5,
+              9
+            ]
+          },
+          {
+            "id": "claude",
+            "label": "Claude / Anthropic",
+            "values": [
+              1,
+              1,
+              0,
+              1,
+              0,
+              0,
+              1,
+              3,
+              3,
+              7
+            ]
+          },
+          {
+            "id": "gemini",
+            "label": "Gemini / DeepMind",
+            "values": [
+              0,
+              1,
+              1,
+              0,
+              1,
+              0,
+              1,
+              0,
+              1,
+              3
+            ]
+          },
+          {
+            "id": "qwen",
+            "label": "Qwen / 通义",
+            "values": [
+              0,
+              1,
+              1,
+              1,
+              0,
+              1,
+              0,
+              1,
+              1,
+              1
+            ]
+          },
+          {
+            "id": "deepseek",
+            "label": "DeepSeek",
+            "values": [
+              0,
+              0,
+              1,
+              0,
+              2,
+              1,
+              0,
+              1,
+              0,
+              1
+            ]
+          }
+        ],
+        "dailyTotals": [
+          1,
+          10,
+          9,
+          8,
+          10,
+          4,
+          16,
+          15,
+          44,
+          55
+        ],
+        "windowDays": 10
+      }
+    }
+  }
+}

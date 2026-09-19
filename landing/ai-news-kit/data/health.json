@@ -1,0 +1,125 @@
+{
+  "sources": {
+    "aitntnews": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 37,
+      "lastMs": 474,
+      "lastError": null,
+      "lastAt": 1789489969901,
+      "unhealthy": false
+    },
+    "ai-bot": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 40,
+      "lastMs": 413,
+      "lastError": null,
+      "lastAt": 1789489969902,
+      "unhealthy": false
+    },
+    "qbitai": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 10,
+      "lastMs": 414,
+      "lastError": null,
+      "lastAt": 1789489969902,
+      "unhealthy": false
+    },
+    "infoq": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 20,
+      "lastMs": 509,
+      "lastError": null,
+      "lastAt": 1789489969902,
+      "unhealthy": false
+    },
+    "geekpark": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 30,
+      "lastMs": 1675,
+      "lastError": null,
+      "lastAt": 1789489969902,
+      "unhealthy": false
+    },
+    "leiphone": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 20,
+      "lastMs": 1240,
+      "lastError": null,
+      "lastAt": 1789489969902,
+      "unhealthy": false
+    },
+    "tc-ai": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 20,
+      "lastMs": 604,
+      "lastError": null,
+      "lastAt": 1789489969902,
+      "unhealthy": false
+    },
+    "mit-ai": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 10,
+      "lastMs": 680,
+      "lastError": null,
+      "lastAt": 1789489969902,
+      "unhealthy": false
+    },
+    "verge-ai": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 10,
+      "lastMs": 775,
+      "lastError": null,
+      "lastAt": 1789489969902,
+      "unhealthy": false
+    },
+    "hn": {
+      "okStreak": 7,
+      "emptyStreak": 0,
+      "failStreak": 0,
+      "total": 7,
+      "lastOkAt": 1789489969902,
+      "lastCount": 30,
+      "lastMs": 1215,
+      "lastError": null,
+      "lastAt": 1789489969902,
+      "unhealthy": false
+    }
+  },
+  "updatedAt": 1789489969904
+}

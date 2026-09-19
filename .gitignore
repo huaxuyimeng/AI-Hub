@@ -54,3 +54,8 @@ src/**/CLAUDE.md
 ARCHITECTURE.md
 # landing 内部重复备份不进公开仓库
 *.dup-backup
+# Cursor 自动生成的系统级清理工具与本地备份（与项目无关）
+.backup-pre-conflict-cleanup/
+staged.patch
+C盘清理/
+ai-hub-landing/

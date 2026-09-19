@@ -1,0 +1,185 @@
+{
+  "date": "2026-09-14",
+  "draft": true,
+  "generatedBy": "machine",
+  "generatedAt": "2026-09-14T05:14:32.552Z",
+  "windowNote": "本文件由 draft-brief.mjs 于 2026-09-14 13:14（GMT+8）自动生成，数据窗口取自 2026-09-14 13:14 抓取的一批条目。",
+  "focus": [
+    "AI Coding",
+    "具身智能"
+  ],
+  "headline": "【机器草稿】这批内容没有经过 Agent 选稿：207 条原始条目被机器聚成 77 件事，再按「时效 + 分类」直接挑了 5 条，没有写点评、没有回头核验一手来源、没有做历史查重。所以请把它当成「今天有什么在传」，而不是「今天确证了什么」。",
+  "rawStats": {
+    "sourcesAlive": 10,
+    "sourcesTotal": 10,
+    "rawItems": 207,
+    "dedupedItems": 77,
+    "multiSourceItems": 17,
+    "byCategory": {
+      "其他": 109,
+      "AI Coding": 82,
+      "具身智能": 13,
+      "AI 政策": 3
+    },
+    "crossSourceThreshold": 3,
+    "note": "机器草稿：条目按标题级跨源聚合（共享实体 token ≥3 + 标题相似度 ≥0.42）聚成 77 件事，其中 17 件有 ≥2 家独立信源（dedupedItems 记的就是这个「事件数」，只统计关注方向且有可用正文的条目）。有两件事机器做不了，所以草稿评级上限是 B：A 级要求可追溯到一手官方材料（需打开原始页面核验），D 级要求比对各源数字是否矛盾（需逐条读全文）。"
+  },
+  "confidenceScale": [
+    {
+      "lv": "A",
+      "name": "极高",
+      "rule": "≥3 个独立信源，且可追溯到一手官方材料（官网/论文/公告/官方报告）"
+    },
+    {
+      "lv": "B",
+      "name": "高",
+      "rule": "2 个独立信源，或 1 个信源 + 一手官方材料"
+    },
+    {
+      "lv": "C",
+      "name": "中",
+      "rule": "单一信源报道，细节自洽但无第二方独立印证（含「多家转载同一家独家」）"
+    },
+    {
+      "lv": "D",
+      "name": "存疑",
+      "rule": "关键数字互相矛盾，或全部报道可溯源到同一原始信源且无官方确认"
+    }
+  ],
+  "picks": [
+    {
+      "no": 1,
+      "topic": "AI Coding",
+      "title": "GPT-6 Astra开放Plus！20美元只能拿它干活，不能聊天",
+      "lv": "B",
+      "publishedAt": "2026-09-14",
+      "event": "OpenAI发布GPT-6 Astra，向Plus用户开放但仅限Work/Codex入口，不在聊天框。$20套餐含5至45条/5小时额度，Pro及以上才可在Chat使用GPT-6 Pro。Astra面向工作场景设计，性能优于Claude Opus 5。API标准价输入10美元、输出50美元/百万token，Fast Mode再翻倍。OpenAI改变分发策略，最强模型优先进入工作台而非对话界面。",
+      "keyFacts": [
+        "OpenAI发布GPT-6 Astra，向Plus用户开放但仅限Work/Codex入口，不在聊天框。",
+        "$20套餐含5至45条/5小时额度，Pro及以上才可在Chat使用GPT-6 Pro。",
+        "Astra面向工作场景设计，性能优于Claude Opus 5。",
+        "API标准价输入10美元、输出50美元/百万token，Fast Mode再翻倍。"
+      ],
+      "why": "【机器草稿 · 非判断】本条由机器按「时效 + 分类」直接选出，点评位留空。评级只用了机器能算的那一项：可判定独立信源 3 个。机器聚簇到 3 家信源报道同一事件，形式上够 B 级；但都属转述，一手材料未核验。要拿到真正的点评与一手核验，需要 Agent 接手重写这份选稿。",
+      "sources": [
+        {
+          "name": "AI TNT News（本条链接；另有 2 家报道）",
+          "url": "https://www.aitntnews.com/newDetail.html?newId=29308"
+        }
+      ],
+      "conflicts": "机器观察到另外 2 家报道同一事件（AI Bot 每日资讯/极客公园），但未保存其独立链接，故只列为 1 个可用来源。"
+    },
+    {
+      "no": 2,
+      "topic": "具身智能",
+      "title": "2000+真实场景搬进仿真！一个导航模型零样本“通吃”四种机器人本体",
+      "lv": "B",
+      "publishedAt": "2026-09-14",
+      "event": "亮源新创发布LightNav-0，将2000+真实场景转化为仿真环境，生成4000+小时训练经验，实现同一模型零样本迁移至人形、四足、轮式、飞行四种机器人本体。",
+      "keyFacts": [
+        "亮源新创发布LightNav-0，将2000+真实场景转化为仿真环境，生成4000+小时训练经验，实现同一模型零样本迁移至人形、四足、…",
+        "信源：机器可判定独立信源 2 个（AI TNT News/量子位）",
+        "首发时间：2026-09-14 09:22"
+      ],
+      "why": "【机器草稿 · 非判断】本条由机器按「时效 + 分类」直接选出，点评位留空。评级只用了机器能算的那一项：可判定独立信源 2 个。机器聚簇到 2 家信源报道同一事件，形式上够 B 级；但都属转述，一手材料未核验。要拿到真正的点评与一手核验，需要 Agent 接手重写这份选稿。",
+      "sources": [
+        {
+          "name": "AI TNT News（本条链接；另有 1 家报道）",
+          "url": "https://www.aitntnews.com/newDetail.html?newId=29300"
+        }
+      ],
+      "conflicts": "机器观察到另外 1 家报道同一事件（量子位），但未保存其独立链接，故只列为 1 个可用来源。"
+    },
+    {
+      "no": 3,
+      "topic": "AI Coding",
+      "title": "Sam Altman says OpenAI going public in 2026 would be ‘ill-advised’",
+      "lv": "B",
+      "publishedAt": "2026-09-13",
+      "event": "OpenAI CEO Sam Altman confirmed that there would be no OpenAI IPO in 2026 during an interview with Fortune. Over the course of 45 minutes, Altman discussed a variety of subjects including the Hugging Face hacking incident,…",
+      "keyFacts": [
+        "OpenAI CEO Sam Altman confirmed that there would be no OpenAI IPO…",
+        "信源：机器可判定独立信源 3 个（The Verge AI/TechCrunch AI/MIT TR AI）",
+        "首发时间：2026-09-13 05:16"
+      ],
+      "why": "【机器草稿 · 非判断】本条由机器按「时效 + 分类」直接选出，点评位留空。评级只用了机器能算的那一项：可判定独立信源 3 个。机器聚簇到 3 家信源报道同一事件，形式上够 B 级；但都属转述，一手材料未核验。要拿到真正的点评与一手核验，需要 Agent 接手重写这份选稿。",
+      "sources": [
+        {
+          "name": "The Verge AI（本条链接；另有 2 家报道）",
+          "url": "https://www.theverge.com/ai-artificial-intelligence/994384/sam-altman-no-openai-ipo-ill-advised"
+        }
+      ],
+      "conflicts": "机器观察到另外 2 家报道同一事件（TechCrunch AI/MIT TR AI），但未保存其独立链接，故只列为 1 个可用来源。"
+    },
+    {
+      "no": 4,
+      "topic": "具身智能",
+      "title": "NUS Show Lab 寿政教授：打通自回归与离散扩散，打造下一代具身大模型底座｜ECCV 2026",
+      "lv": "C",
+      "publishedAt": "2026-09-14",
+      "event": "告别模型拼贴套路，自回归与离散扩散的融合，正在开启 AI 的体验时代。 作者丨张璐 编辑丨岑峰 “理解”和“生成”真的无法在同一个模型底座中完美融合吗？不同于拼接独立模型的传统做法，NUS Show Lab 选择了一条更原生的架构路线：在单个 Transformer 中同时打通自回归预测与离散扩散生成。作为多模态领域的重磅成果，Show-o 系列不仅打破了模态壁垒，更将触角延伸至具身机器人决策。",
+      "keyFacts": [
+        "告别模型拼贴套路，自回归与离散扩散的融合，正在开启 AI 的体验时代。",
+        "作者丨张璐 编辑丨岑峰 “理解”和“生成”真的无法在同一个模型底座中完美融合吗？",
+        "不同于拼接独立模型的传统做法，NUS Show Lab 选择了一条更原生的架构路线：在单个 Transformer 中同时打通自回归预测…",
+        "作为多模态领域的重磅成果，Show-o 系列不仅打破了模态壁垒，更将触角延伸至具身机器人决策。"
+      ],
+      "why": "【机器草稿 · 非判断】本条由机器按「时效 + 分类」直接选出，点评位留空。评级只用了机器能算的那一项：可判定独立信源 1 个。只有 雷峰网 一家，构不成交叉验证。要拿到真正的点评与一手核验，需要 Agent 接手重写这份选稿。",
+      "sources": [
+        {
+          "name": "雷峰网（本条链接）",
+          "url": "https://www.leiphone.com/category/private/m2CuWb5rm0qnkznY.html"
+        }
+      ],
+      "conflicts": "单源条目，机器无第二方可比对。"
+    },
+    {
+      "no": 5,
+      "topic": "AI Coding",
+      "title": "配套CLI与Skills，浙大开源可插拔Agent评测底座",
+      "lv": "B",
+      "publishedAt": "2026-09-14",
+      "event": "浙大ZJU-REAL团队开源ageval评测框架，通过插件机制将Agent与运行环境解耦，实现一套dataset在不同环境、Agent间自由切换运行；配合CLI与Skills支持coding agent自主编写benchmark和自动化评测。",
+      "keyFacts": [
+        "浙大ZJU-REAL团队开源ageval评测框架，通过插件机制将Agent与运行环境解耦，实现一套dataset在不同环境、…",
+        "配合CLI与Skills支持coding agent自主编写benchmark和自动化评测。",
+        "信源：机器可判定独立信源 2 个（AI TNT News/极客公园）"
+      ],
+      "why": "【机器草稿 · 非判断】本条由机器按「时效 + 分类」直接选出，点评位留空。评级只用了机器能算的那一项：可判定独立信源 2 个。机器聚簇到 2 家信源报道同一事件，形式上够 B 级；但都属转述，一手材料未核验。要拿到真正的点评与一手核验，需要 Agent 接手重写这份选稿。",
+      "sources": [
+        {
+          "name": "AI TNT News（本条链接；另有 1 家报道）",
+          "url": "https://www.aitntnews.com/newDetail.html?newId=29310"
+        }
+      ],
+      "conflicts": "机器观察到另外 1 家报道同一事件（极客公园），但未保存其独立链接，故只列为 1 个可用来源。"
+    }
+  ],
+  "alsoWorthAScan": [
+    {
+      "title": "今年外滩最特别Agent：能干活，能陪聊，还会朋友圈拉黑你",
+      "sources": "AI TNT News（2 源）"
+    },
+    {
+      "title": "月之暗面 Kimi 推出新一代主力模型 K2.8 Preview",
+      "sources": "AI Bot 每日资讯（2 源）"
+    },
+    {
+      "title": "Anthropic spent this week in hot water over cybersecurity",
+      "sources": "The Verge AI（3 源）"
+    },
+    {
+      "title": "OpenAI’s rogue AI tried to hack another company in May",
+      "sources": "The Verge AI（2 源）"
+    },
+    {
+      "title": "谷歌DeepMind，已经破解RSI?",
+      "sources": "AI TNT News（1 源）"
+    },
+    {
+      "title": "是时候重新评估 MiniMax 了。",
+      "sources": "AI TNT News（1 源）"
+    }
+  ],
+  "dedupeNote": "机器草稿不做历史查重（需比对往期推送记录），本期内容可能与上一轮重复，请在 Agent 复核时处理。"
+}

@@ -1,0 +1,625 @@
+{
+  "date": "2026-09-16",
+  "windowNote": "运行时间 2026-09-16 00:31（GMT+8）。抓取池返回的是 2026-09-15 全天至 09-16 凌晨成规模新增条目，故以 09-15 全天为主体，少量条目发布日更早（已在 event 中标明真实日期）。B 站未启用（需 --fetch-bilibili 且走字幕/ASR，本期未跑）。",
+  "focus": [
+    "AI Coding",
+    "具身智能"
+  ],
+  "headline": "今天两条主线指向同一件事——「把控制权再往下交一层」。AI Coding 侧，Claude Code 把执行链开放成可编程中间件，OpenAI 让 2 名工程师带着 Codex 把核心存储整体重写成 Rust，两者都在把原本由人或框架独占的决策权交给可插拔、可自动生成的层；具身智能侧，APXInf 把端侧延迟压进实时区间、天工机器人先把工位占住再等人形，回答的都是「能力怎么真正落地」而不是「能力有多大」。",
+  "rawStats": {
+    "sourcesAlive": 10,
+    "sourcesTotal": 10,
+    "rawItems": 221,
+    "dedupedItems": 221,
+    "multiSourceItems": 45,
+    "crossSourceThreshold": 3,
+    "byCategory": {
+      "AI Coding": 90,
+      "其他": 115,
+      "具身智能": 14,
+      "AI 政策": 2
+    },
+    "note": "多源关联阈值 = 3（共享实体 token 数）。实测：2 → 47.2%（虚高）、3 → 18.5%（合理）、4 → 10.6%（偏严）。该阈值仅用于发现候选，最终置信度按独立信源数人工判定。"
+  },
+  "confidenceScale": [
+    {
+      "lv": "A",
+      "name": "极高",
+      "rule": "≥3 个相互独立信源，且可追溯到一手官方材料"
+    },
+    {
+      "lv": "B",
+      "name": "高",
+      "rule": "2 个独立信源，或 1 个信源 + 一手官方材料"
+    },
+    {
+      "lv": "C",
+      "name": "中",
+      "rule": "单一信源；或多家转载同一家独家"
+    },
+    {
+      "lv": "D",
+      "name": "存疑",
+      "rule": "关键数字互相矛盾，或全部可溯源到同一原始信源且无官方确认"
+    }
+  ],
+  "picks": [
+    {
+      "no": 1,
+      "topic": "AI Coding",
+      "title": "Claude Mods 开始落地：Claude Code 把执行链开放成可编程中间件",
+      "lv": "B",
+      "publishedAt": "2026-09-14",
+      "event": "9 月 14 日，Claude Code 负责人 Boris Cherny 在 X 宣布「Claude Mods are landing now」，指向 GitHub issue #91870。技术底座是 9 月 3 日提出的 Function Hooks：把原来的 shell 脚本钩子换成带类型的 TypeScript 函数，像 Express/Koa 中间件一样层层嵌套，可拦截、检查、修改乃至拒绝一次工具调用，并延伸到 React 组件与按钮点击。9 月 9 日定名 Claude Mods。主仓库已出现 diff、sec-default、telemetry 三个内置 Mod，原 diff 面板正被改写为 Mod。",
+      "keyFacts": [
+        "官方边界：Mod = 使用 Function Hooks 的插件；Claude 不能改自己的权重，也不能随意重写核心程序",
+        "不止工具调用：Hook 可挂到 React 组件、改组件属性、捕获按钮点击，终端与桌面端共用同一套逻辑",
+        "早期实测三处失效：Hook 卡死会静默失败而风险操作继续；拦下文件写入后模型换工具照样写入；问题代码仍被安全检查判为正常",
+        "管理员位于同一条调用链上游，可限制后续插件能使用的能力",
+        "尚无正式 SDK 文档与插件市场，官方口径为「数周内」发布"
+      ],
+      "why": "关键不在「Claude Code 里能玩俄罗斯方块」，而是竞争的位置挪了。过去一年 Coding Agent 比的是模型代码能力，Mods 把 Harness——上下文怎么组织、工具怎么授权、企业规则怎么进执行链——开放成可编程接口，这部分差异第一次可以由使用方自己写。对你有两层直接影响：一是权限终于能「真的拦住」而不是靠提示词约束，但早期实测显示拦截仍可被换工具绕过，别当成已解决；二是选型维度会变——以后比的不只是模型榜，还有插件生态、企业策略体系和自己的工作流能不能长在上面。今天就能做的一件事：把你最常被 Agent 违反的三条规则先写成候选 Hook，等 Mods 稳定后直接落成策略。",
+      "sources": [
+        {
+          "name": "GitHub anthropics/claude-code#91870（一手提案与进展）",
+          "url": "https://github.com/anthropics/claude-code/issues/91870"
+        },
+        {
+          "name": "Boris Cherny 的 X 帖（一手宣布）",
+          "url": "https://x.com/bcherny/status/2099551291601248485"
+        },
+        {
+          "name": "vanja.io《Claude Mods》（独立技术拆解，含实测数据）",
+          "url": "https://vanja.io/claude-mods"
+        },
+        {
+          "name": "explainx.ai（独立英文报道）",
+          "url": "https://www.explainx.ai/blog/claude-code-mods-community-extensions-2026"
+        },
+        {
+          "name": "机器之心（中文原创报道）",
+          "url": "https://new.qq.com/rain/a/20260915A05DD200"
+        }
+      ],
+      "conflicts": "落地状态有冲突：官方称「正在落地」，第三方拆解称公开构建的实验开关是否可用未经验证、API 仍属提案。三处安全失效 Anthropic 未回应。"
+    },
+    {
+      "no": 2,
+      "topic": "AI Coding",
+      "title": "OpenAI 让 Codex 来还技术债：2 名工程师把核心存储从 Python 重写成 Rust",
+      "lv": "B",
+      "publishedAt": "2026-09-13",
+      "event": "OpenAI 官方工程博客首次系统披露支撑 ChatGPT、API、Codex 的在线存储平台 Habitat（第三方 9 月 13 日已引用原文）：2024 年中还是连着单个 Cosmos DB 的 Python 客户端库，如今每秒 7000 万次请求、10 亿+ 周活用户、500PB+ 数据、近 40 个地理区域。关键一步在 2026 年 Q2：2 名工程师借助 Codex 与 GPT-5.5 把生产环境的核心 Python 服务整体重写成 Rust，发文时 Rust 已承接 95% 生产请求，Python 将在数周内下线，自报 CPU 效率提升 6 倍、内存效率提升 15 倍。",
+      "keyFacts": [
+        "「战略性技术负债」：明知 Python 撑不住 100 倍规模仍先立服务，赌自家编程模型会降低迁移成本",
+        "延迟不来自数据库：asyncio 绕不开 GIL，高负载下事件循环调度抖动可达数百毫秒乃至数秒",
+        "连接池默认 LIFO 造成亚稳态失败：服务器越慢、连接越晚归还、越被优先选中；改 FIFO 后打断",
+        "连接账本：6 个并发请求，直连需 18 条连接，Envoy 共享池降到 6 条，HTTP/2 多路复用降到 1 条",
+        "API 刻意做窄：只暴露 object/edge 的 NoSQL 接口，复杂查询走 CDC 隔离到 Rockset"
+      ],
+      "why": "价值不在「Rust 比 Python 快」——这个结论你早就知道。在于它把「什么时候该还技术债」重新定价了：当迁移成本被 AI 压到 2 人一个季度，先欠债后还债可能比一开始就选对技术栈更划算。如果你的团队正在为「要不要现在重写」争论，这里有一个可核对的决策序列——旧栈天花板要被生产数据证明（Python 峰值每秒 2000 万次请求）、业务工作量边界要稳定、迁移工具杠杆要到位，三条同时成立才动。另外三件事今天就能查：你的 p99 是在等连接、等调度还是等下游；连接池是 LIFO 还是 FIFO；进程数 × 池大小 × 上游节点数算出来的连接总数，通常比直觉大一截。6 倍与 15 倍是 OpenAI 自报，原文没给可复现基准，别直接搬去说服别人。",
+      "sources": [
+        {
+          "name": "OpenAI 工程博客《Rapidly scaling online storage to serve over 1 billion ChatGPT users》（一手）",
+          "url": "https://openai.com/index/scaling-storage-one-billion-users-part-one/"
+        },
+        {
+          "name": "InfoQ 中文《OpenAI 故意欠技术债，等 Codex 来还》（编译整理，褚杏娟署名）",
+          "url": "https://www.infoq.cn/article/QtIy65SxjN0Q4riY7tCo"
+        },
+        {
+          "name": "InfoQ 中文《每秒 7000 万次请求》（第二篇，独立角度）",
+          "url": "https://www.infoq.cn/"
+        },
+        {
+          "name": "pk-sharma.com 独立分析（含独立判断）",
+          "url": "https://www.pk-sharma.com/briefing/openai-habitat-python-rust-storage-rewrite"
+        },
+        {
+          "name": "Tony Bai 独立解读",
+          "url": "https://tonybai.com/"
+        }
+      ],
+      "conflicts": "6 倍 CPU / 15 倍内存效率均为 OpenAI 自测，原文未提供可复现基准与完整负载方法学，第三方独立分析明确提示应读作「单一生产系统的厂商自报值」。迁移的具体周期与成本未披露。"
+    },
+    {
+      "no": 3,
+      "topic": "模型训练",
+      "title": "Meta FAIR：把蒸馏的学习单位从 Token 换成 Byte，小模型上限抬 4 个百分点",
+      "lv": "A",
+      "publishedAt": "2026-09-11",
+      "event": "Meta FAIR 与华盛顿大学发布《Breaking the Token Ceiling: Distilling Smaller, Stronger Byte Models》（arXiv:2609.12303）。做法是把蒸馏的学习单位从 Token 换成字节：给每个 Token 末尾加一个结束标记，只需一次教师前向计算即可把教师的 Token 概率分布完整映射到字节空间。以 Llama 3-8B 为教师、约 12.8 亿层参数的学生做六组对照，训练规模约 1 万亿字节。按缩放定律外推，End-Of-Token 字节蒸馏的下游平均准确率上限 52.4%，比传统 Token 蒸馏的 48.4% 高 4 个百分点，且只需六分之一的训练数据。",
+      "keyFacts": [
+        "候选空间从 12.8 万 Token 压到 256 个字节，无需 top-k 截断，logit 存储降到约五分之一",
+        "曲线交叉：低算力区 Token 学生领先并很快平台化，字节学生起步更差但斜率更陡、最终反超",
+        "两条路径：Marginalize-It 是近似（丢弃已结束 Token 的概率质量），End-Of-Token 精确且最好",
+        "代价：End-Of-Token 训练算力比普通字节模型再高约 30.94%",
+        "相同的验证 BPB 在不同分词方案下对应完全不同的下游成绩"
+      ],
+      "why": "对做小模型与端侧模型的人这是直接的路线信号：天花板不一定靠更大的教师去顶，换一个更小的学习单位也能顶上去，而且数据账单更小——论文外推显示 End-Of-Token-1B 可比 Llama 3.2-1B 高至多 6.5%、比 Gemma-3-1B-pt 高 8.1%。三处必须打折：这是 10 亿参数密集模型上的结果，能否在 MoE 旗舰上复现未知；反超靠缩放定律外推而非实测终点；字节序列天然更长（每 4.5 个内容字节多一个标记），论文没有量化推理吞吐成本——而端侧最在乎的正是这个。最该带走的一条方法论：跨分词器比模型，验证损失不能当排名用，必须配一条下游误差的缩放曲线再拍板。",
+      "sources": [
+        {
+          "name": "arXiv:2609.12303《Breaking the Token Ceiling》（一手论文）",
+          "url": "https://arxiv.org/pdf/2609.12303"
+        },
+        {
+          "name": "量子位《Meta 新研究：字节模型蒸馏后，天花板破了》（中文原创报道）",
+          "url": "https://www.qbitai.com/"
+        },
+        {
+          "name": "aimodeling.com（独立英文分析，含独立 caveat）",
+          "url": "https://www.aimodeling.com/en/news/slug/byte-model-distillation-token-ceiling"
+        },
+        {
+          "name": "AILog 第二篇独立分析（含八项基准明细）",
+          "url": "https://www.aimodeling.com/en/news/slug/meta-fair-byte-distillation-token-ceiling-2026-09"
+        }
+      ],
+      "conflicts": "4 个百分点与「六分之一数据」均为外推值，非实测终点；推理吞吐成本未量化。张一鸣反对把蒸馏当主要途径，但那是「用不用」，本文是「怎么用」。"
+    },
+    {
+      "no": 4,
+      "topic": "具身智能",
+      "title": "无问芯穹联合清华、上交开源具身端侧推理引擎 APXInf：PI0.5 延迟从 278ms 压到 26ms",
+      "lv": "B",
+      "publishedAt": "2026-09-15",
+      "event": "9 月 15 日，无问芯穹联合清华大学、上海交通大学开源具身智能端侧推理引擎 APXInf（GitHub: RLinf/APXinf-robo）。引擎用 Rust 写极简运行时、外层封 Python 接口，支持 RTX 4090、Jetson Orin、Jetson Thor。官方实测：PI0.5 FP8 在 Jetson Thor 上端到端推理延迟从 278 毫秒降到 26 毫秒以内，降幅 10.7 倍，进入机器人实时控制区间。首发支持 PI0.5 与 WALL-OSS 两款具身模型。",
+      "keyFacts": [
+        "10.7 倍延迟下降对应的不是模型变聪明，而是「眼睛看到」到「手脚动起来」的整条链路变快",
+        "Rust 运行时 + Python 接口：用内存安全特性降低崩溃与异常面，同时保留开发者熟悉的调用方式",
+        "优化覆盖 Pipeline、Graph、Kernel、量化四层，并用 Agent4Kernel 生成融合算子",
+        "引擎本身按 Agentic Engineering 流程设计，目标是让自研模型的接入与优化也能由 Agent 完成",
+        "与去年开源的 RLinf 强化学习训练框架同属一套生态，训练到本体部署在同一工具链内闭环"
+      ],
+      "why": "具身智能的瓶颈早就从「模型够不够聪明」挪到「本体上跑不跑得动」，而这一步一直缺公开可复用的工程件。278ms 到 26ms 的分界意义很具体：对云端聊天机器人几百毫秒只是体验差异，对需要连续感知—决策—控制的机器人则意味着动作迟滞、轨迹不连贯、任务直接失败。两个可以直接抄走的判断：一是「系统不做什么」要和功能一起签字——APXInf 只保在线路径的简单可预测请求，复杂查询走 CDC 隔离，这才让优化有落点；二是同一生态打通训练与部署，省掉的是环境切换这种不体现在 PPT 上的成本。需要打折的地方：全部数字来自官方自测，两家媒体给出的推理频率不一致，且能否在多种本体上长期稳定跑只有物理世界能给答案。",
+      "sources": [
+        {
+          "name": "GitHub RLinf/APXinf-robo（一手开源仓库）",
+          "url": "https://github.com/RLinf/APXinf-robo"
+        },
+        {
+          "name": "科技日报（独立报道）",
+          "url": "https://www.stdaily.com/web/gdxw/2026-09/15/content_581557.html"
+        },
+        {
+          "name": "机器人前瞻（原创报道，署名）",
+          "url": "https://so.html5.qq.com/page/real/search_news?docid=70000021_4776aa95e2906252"
+        },
+        {
+          "name": "ITBear（独立报道）",
+          "url": "https://www.itbear.com.cn/html/2026-09/1561470.html"
+        }
+      ],
+      "conflicts": "推理频率两家报道不一致：科技日报称 FP8 下 38.46Hz，机器人前瞻称 46Hz；延迟 26ms 与 10.7 倍降幅各源一致。性能数据均为官方自测，无第三方复现。"
+    },
+    {
+      "no": 5,
+      "topic": "具身智能",
+      "title": "前京东副总裁「消失」四年：不造会跑的人形，先给机器人在仓库里「占工位」",
+      "lv": "C",
+      "publishedAt": "2026-09-01",
+      "event": "北京天下先智创（品牌「天工机器人」）9 月 1 日宣布完成数亿元 A 轮，初芯基金领投，经纬创投、合肥国资跟投，具体金额未披露；9 月 15 日雷峰网刊出深度复盘。创始人肖军是前京东集团副总裁、X 事业部总裁，主导过京东无人仓、无人车、无人机。公司 2022 年成立、拿过 2 亿元天使轮后近乎四年未发声，这四年在仓库里做「木马」立体分拣机，已批量落地多家全球头部电商、快递、零售企业。本轮资金第二项用途是「基于人形的分拣机器人研发与商用化迭代」。",
+      "keyFacts": [
+        "路线与行业相反：智元、优必选、宇树是先造本体再进仓库找场景，天工是先用专用设备把工位占住",
+        "硬数据：A 股智能仓储企业兰剑智能 2025 年年报披露向其采购 4051.80 万元设备",
+        "产品细节：一柱多车的升降结构；3D Sorter X 模组可在本体上改造，单台格口数扩到 4—5 倍",
+        "反面参照：智元董事长邓泰华今年 5 月公开表示，物流分拣毛利低、节拍快，按两年回收期算人形机器人目前「算不过来账」",
+        "节奏：员工 200 多人、研发占比约 85%；2026 年 7 月在合肥设立全资子公司"
+      ],
+      "why": "有意思的是它把行业默认顺序倒过来了。所有人都在回答「人形机器人什么时候能干活」，肖军的答案是先不回答——先占住工位、攒下客户关系与场景数据，等本体成本曲线降下来。它同时给出罕见的、可核查的行业对照点：连出货量最大的厂商都承认分拣场景两年 ROI 算不平，那么任何宣称「今年规模化落地分拣」的说法都该打问号。对你的用处：评估具身智能公司时，把「有没有真实付费客户、能不能拿到一手场景数据、商业模型能不能测算」放在本体参数之前——天工能拿到产业资本靠的正是这三条，而不是人形故事。注意：融资金额未披露，人形分拣仍在研发阶段无规模收入，专用设备赛道还有金峰、德马、极智嘉、快仓、海柔这些对手。",
+      "sources": [
+        {
+          "name": "兰剑智能 2025 年年度报告（一手财务数据，披露采购 4051.80 万元）",
+          "url": "https://www.cninfo.com.cn/"
+        },
+        {
+          "name": "雷峰网《数亿元！前京东副总裁「消失」4 年》（原创深度）",
+          "url": "https://www.leiphone.com/category/industrynews/QDqnLfFb5wiTdPyd.html"
+        },
+        {
+          "name": "机器人前瞻（原创报道，署名刘俐杉）",
+          "url": "https://new.qq.com/rain/a/20260901A0AWJA00"
+        },
+        {
+          "name": "GEIA 全球具身智能观察（行业独立梳理）",
+          "url": "https://mp.weixin.qq.com/"
+        }
+      ],
+      "conflicts": "融资金额仅称「数亿元」，未披露具体数字与估值，各报道源自同一轮披露。人形分拣仍在研发迭代阶段、无规模收入。各源对该路线评价一致。"
+    }
+  ],
+  "alsoWorthAScan": [
+    {
+      "title": "传 OpenAI 超 3 亿美元收购手机摄像头厂商 Glass Imaging（WSJ 独家援引知情人士，OpenAI 拒绝置评；创始人为前苹果人像模式工程师，技术已用于荣耀 600）",
+      "sources": "TechCrunch AI / Hacker News / WSJ / 财联社（≥4 源，均转引 WSJ 独家）"
+    },
+    {
+      "title": "前 OpenAI 后训练 VP 公开回应陶哲轩：「说 AI 毁了数学，可能还是太小瞧 AI 了」",
+      "sources": "AITNT / 量子位（2 源）"
+    },
+    {
+      "title": "宇树完全开源具身基座模型 UnifoLM-WLA-1.0：6B 参数，单模型统筹 64 项真机任务，端侧推理延迟 106ms（9 月 10 日发布）",
+      "sources": "AI工具集 / 百度百科 / roboticfirms.com（3 源）"
+    },
+    {
+      "title": "英伟达开源 SoL-Pi：工作流可以自我进化，官方称每小时省 13.5 美元",
+      "sources": "雷峰网（1 源）"
+    },
+    {
+      "title": "英伟达开源 IMO 金牌配方：不是「人海战术」，1.5TB 显存做实 AI「推恩令」",
+      "sources": "雷峰网（1 源）"
+    },
+    {
+      "title": "上海 AI Lab 开源多模态基础大模型「书生-S2」",
+      "sources": "AI工具集 / 机器之心（2 源）"
+    },
+    {
+      "title": "REAL（ECCV 2026）：不靠「上帝视角」、不等「完美指令」，让具身智能体走向开放世界",
+      "sources": "AITNT（1 源）"
+    },
+    {
+      "title": "7 名博士生 3 个月从零训练 7B 大模型：代码、数据、训练日志全部公开",
+      "sources": "AITNT（1 源）"
+    }
+  ],
+  "dedupeNote": "已比对 09-14、09-15 两轮共 10 条要闻与扫读清单。上轮主题（限制 Claude、Token 差 70 倍、Opus 5.2 灰度、Cog-WM 1.0、梅卡曼德×银河通用）与清单已带过的 DM0.5、ECA、宇树 G1+、Kimi K2.8、Muse Spark 1.3、Fable/Mythos 5.1、黄仁勋×特朗普，本期一律不入选。GPT-6 Astra 经核验为 9 月 3 日发布、非新增，已剔出候选。",
+  "chartNote": "charts 字段由 scripts/analyze.mjs 纯统计写回，渲染器只读不计算。",
+  "charts": {
+    "generatedBy": "analyze.mjs",
+    "generatedAt": "2026-09-15T16:44:52.822Z",
+    "corpus": {
+      "items": 221,
+      "from": "2026-09-02",
+      "to": "2026-09-16",
+      "spanDays": 15,
+      "fetchedAt": 1789489969906,
+      "note": "趋势与热度统计的是**本期抓取语料**里的提及次数，不是全网声量。聚合源只回最近一批条目，越早的日期覆盖越不完整。"
+    },
+    "confidence": {
+      "A": 1,
+      "B": 3,
+      "C": 1,
+      "D": 0
+    },
+    "category": [
+      {
+        "name": "其他",
+        "count": 115
+      },
+      {
+        "name": "AI Coding",
+        "count": 90
+      },
+      {
+        "name": "具身智能",
+        "count": 14
+      },
+      {
+        "name": "AI 政策",
+        "count": 2
+      }
+    ],
+    "sources": [
+      {
+        "id": "ai-bot",
+        "label": "AI Bot 每日资讯",
+        "count": 40
+      },
+      {
+        "id": "aitntnews",
+        "label": "AI TNT News",
+        "count": 37
+      },
+      {
+        "id": "hn",
+        "label": "Hacker News",
+        "count": 29
+      },
+      {
+        "id": "geekpark",
+        "label": "极客公园",
+        "count": 29
+      },
+      {
+        "id": "tc-ai",
+        "label": "TechCrunch AI",
+        "count": 20
+      },
+      {
+        "id": "infoq",
+        "label": "InfoQ 中文",
+        "count": 19
+      },
+      {
+        "id": "leiphone",
+        "label": "雷峰网",
+        "count": 19
+      },
+      {
+        "id": "verge-ai",
+        "label": "The Verge AI",
+        "count": 10
+      },
+      {
+        "id": "mit-ai",
+        "label": "MIT TR AI",
+        "count": 10
+      },
+      {
+        "id": "qbitai",
+        "label": "量子位",
+        "count": 8
+      }
+    ],
+    "models": {
+      "top": [
+        {
+          "id": "openai",
+          "label": "GPT / OpenAI",
+          "kind": "model",
+          "count": 36
+        },
+        {
+          "id": "claude",
+          "label": "Claude / Anthropic",
+          "kind": "model",
+          "count": 25
+        },
+        {
+          "id": "gemini",
+          "label": "Gemini / DeepMind",
+          "kind": "model",
+          "count": 10
+        },
+        {
+          "id": "qwen",
+          "label": "Qwen / 通义",
+          "kind": "model",
+          "count": 8
+        },
+        {
+          "id": "deepseek",
+          "label": "DeepSeek",
+          "kind": "model",
+          "count": 7
+        },
+        {
+          "id": "kimi",
+          "label": "Kimi / 月之暗面",
+          "kind": "model",
+          "count": 7
+        },
+        {
+          "id": "bytedance",
+          "label": "豆包 / 字节",
+          "kind": "model",
+          "count": 7
+        },
+        {
+          "id": "llama",
+          "label": "Llama / Meta",
+          "kind": "model",
+          "count": 6
+        },
+        {
+          "id": "grok",
+          "label": "Grok / xAI",
+          "kind": "model",
+          "count": 5
+        },
+        {
+          "id": "glm",
+          "label": "GLM / 智谱",
+          "kind": "model",
+          "count": 4
+        },
+        {
+          "id": "codex",
+          "label": "Codex",
+          "kind": "agent",
+          "count": 3
+        },
+        {
+          "id": "stepfun",
+          "label": "阶跃星辰",
+          "kind": "model",
+          "count": 3
+        }
+      ],
+      "topByKind": {
+        "model": [
+          {
+            "id": "openai",
+            "label": "GPT / OpenAI",
+            "kind": "model",
+            "count": 36
+          },
+          {
+            "id": "claude",
+            "label": "Claude / Anthropic",
+            "kind": "model",
+            "count": 25
+          },
+          {
+            "id": "gemini",
+            "label": "Gemini / DeepMind",
+            "kind": "model",
+            "count": 10
+          },
+          {
+            "id": "qwen",
+            "label": "Qwen / 通义",
+            "kind": "model",
+            "count": 8
+          },
+          {
+            "id": "deepseek",
+            "label": "DeepSeek",
+            "kind": "model",
+            "count": 7
+          },
+          {
+            "id": "kimi",
+            "label": "Kimi / 月之暗面",
+            "kind": "model",
+            "count": 7
+          }
+        ],
+        "agent": [
+          {
+            "id": "codex",
+            "label": "Codex",
+            "kind": "agent",
+            "count": 3
+          },
+          {
+            "id": "cursor",
+            "label": "Cursor",
+            "kind": "agent",
+            "count": 2
+          }
+        ],
+        "robot": [
+          {
+            "id": "unitree",
+            "label": "宇树 Unitree",
+            "kind": "robot",
+            "count": 2
+          },
+          {
+            "id": "agibot",
+            "label": "智元 AgiBot",
+            "kind": "robot",
+            "count": 1
+          }
+        ]
+      },
+      "byKind": {
+        "model": 121,
+        "agent": 5,
+        "robot": 3
+      },
+      "trend": {
+        "days": [
+          "09-07",
+          "09-08",
+          "09-09",
+          "09-10",
+          "09-11",
+          "09-12",
+          "09-13",
+          "09-14",
+          "09-15",
+          "09-16"
+        ],
+        "dates": [
+          "2026-09-07",
+          "2026-09-08",
+          "2026-09-09",
+          "2026-09-10",
+          "2026-09-11",
+          "2026-09-12",
+          "2026-09-13",
+          "2026-09-14",
+          "2026-09-15",
+          "2026-09-16"
+        ],
+        "series": [
+          {
+            "id": "openai",
+            "label": "GPT / OpenAI",
+            "values": [
+              0,
+              0,
+              2,
+              2,
+              1,
+              0,
+              3,
+              3,
+              15,
+              3
+            ]
+          },
+          {
+            "id": "claude",
+            "label": "Claude / Anthropic",
+            "values": [
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              2,
+              3,
+              13,
+              1
+            ]
+          },
+          {
+            "id": "gemini",
+            "label": "Gemini / DeepMind",
+            "values": [
+              1,
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1,
+              4,
+              0
+            ]
+          },
+          {
+            "id": "qwen",
+            "label": "Qwen / 通义",
+            "values": [
+              1,
+              1,
+              1,
+              0,
+              1,
+              0,
+              0,
+              0,
+              2,
+              0
+            ]
+          },
+          {
+            "id": "deepseek",
+            "label": "DeepSeek",
+            "values": [
+              0,
+              1,
+              0,
+              2,
+              1,
+              0,
+              1,
+              0,
+              2,
+              0
+            ]
+          }
+        ],
+        "dailyTotals": [
+          10,
+          9,
+          8,
+          10,
+          4,
+          2,
+          4,
+          21,
+          125,
+          10
+        ],
+        "windowDays": 10
+      }
+    }
+  }
+}

@@ -1,0 +1,3369 @@
+{
+  "date": "2026-09-14",
+  "fetchedAt": 1789363027397,
+  "total": 207,
+  "byCategory": {
+    "其他": 109,
+    "具身智能": 14,
+    "AI Coding": 81,
+    "AI 政策": 3
+  },
+  "bySource": {
+    "infoq": 20,
+    "geekpark": 30,
+    "qbitai": 7,
+    "aitntnews": 21,
+    "leiphone": 20,
+    "hn": 30,
+    "verge-ai": 10,
+    "tc-ai": 19,
+    "ai-bot": 40,
+    "mit-ai": 10
+  },
+  "bilibili": [],
+  "errors": null,
+  "warnings": null,
+  "sourceHealth": {
+    "aitntnews": {
+      "lastCount": 21,
+      "lastMs": 358,
+      "failStreak": 0,
+      "unhealthy": false
+    },
+    "ai-bot": {
+      "lastCount": 40,
+      "lastMs": 550,
+      "failStreak": 0,
+      "unhealthy": false
+    },
+    "qbitai": {
+      "lastCount": 10,
+      "lastMs": 232,
+      "failStreak": 0,
+      "unhealthy": false
+    },
+    "infoq": {
+      "lastCount": 20,
+      "lastMs": 397,
+      "failStreak": 0,
+      "unhealthy": false
+    },
+    "geekpark": {
+      "lastCount": 30,
+      "lastMs": 2918,
+      "failStreak": 0,
+      "unhealthy": false
+    },
+    "leiphone": {
+      "lastCount": 20,
+      "lastMs": 885,
+      "failStreak": 0,
+      "unhealthy": false
+    },
+    "tc-ai": {
+      "lastCount": 19,
+      "lastMs": 447,
+      "failStreak": 0,
+      "unhealthy": false
+    },
+    "mit-ai": {
+      "lastCount": 10,
+      "lastMs": 533,
+      "failStreak": 0,
+      "unhealthy": false
+    },
+    "verge-ai": {
+      "lastCount": 10,
+      "lastMs": 506,
+      "failStreak": 0,
+      "unhealthy": false
+    },
+    "hn": {
+      "lastCount": 30,
+      "lastMs": 2404,
+      "failStreak": 0,
+      "unhealthy": false
+    }
+  },
+  "items": [
+    {
+      "id": "0529b82a6b22",
+      "title": "GitLab 警告称，AI 代理的沙箱安全性取决于其网络访问的安全性",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/XLzpR2brCNW2VgYuuYJk?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/XLzpR2brCNW2VgYuuYJk?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789391340000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "a7e0ce514d78",
+      "title": "欧洲核子研究组织（CERN）放弃RHEL，转而采用 Debian 作为其加速器控制基础设施",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/KJRoBoUcE4L6bOPKOHco?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/KJRoBoUcE4L6bOPKOHco?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789384260000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "10d58e483ce9",
+      "title": "Java 近期新闻：TornadoVM 6、JReleaser、LangChain4j、Java Operator SDK、JHipster、Yupiik Fusion",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/VIjBCuNElpg2H4bLywVc?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/VIjBCuNElpg2H4bLywVc?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789376400000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "c2a53fa82f31",
+      "title": "专访爆火「机器鸭」背后的硬件推手：这是个信号，未来推动新故事的并非硬件",
+      "summary": "最近这两周，一只「机器鸭」在 X 上刷屏了。 这只叫 Microduck 的机器鸭，由 Hugging Face 旗下的 Pollen Robotics 设计，售价 399 美元。高峰期平均每 4 秒卖出一台，五天后预售破万台，销售额突破 500 万美元，目前订单已经排到明年。 它火了，火出了科技圈，还可能会刷新消费级机器人出货纪录。 而这只全球爆款，由深圳制造，工程化公司是潘昊创办的 Seeed Studio 矽递科技。在此之前，潘昊团队已为 Hugging Face 代工过 Reachy Mini，后者登上过英伟达 CES 展台，同样供不应求。 左为桌面机器人 Reachy Mini，右为",
+      "url": "http://www.geekpark.net/news/370269",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1789362883000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "54873a944291",
+      "title": "AI开始改进“改进自己的方法”，RSI进入平方时代丨MetaRSI",
+      "summary": "小模型突破瓶颈，旗舰模型打开新空间",
+      "url": "https://www.qbitai.com/2026/09/488832.html",
+      "source": "qbitai",
+      "sourceLabel": "量子位",
+      "sources": [
+        "qbitai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789357546000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "0e82c24e76cb",
+      "title": "刚刚，新「豆包手机」发布，手机终于要自己干活了",
+      "summary": "豆包发布手机助手消费者版，首款搭载该助手的努比亚NaviX Ultra已开启预约，9月16日开售。新增AI键唤醒、屏幕理解、跨应用任务执行等能力，支持本地数据检索和办公文件制作，以Beta版本开放手机操作功能。豆包希望让手机从工具进化为能理解用户意图、调用不同应用完成完整任务的个人助手。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29318",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "其他",
+      "publishedAt": 1789356060000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "cb1916043a2d",
+      "title": "谷歌DeepMind，已经破解RSI?",
+      "summary": "谷歌DeepMind被曝实现RSI（递归自我改进），API中出现同名模型代码。Sergey Brin力推RSI战略，Flash模型三周一迭代。RSI可让AI自主优化，将研发周期从季度压缩到周。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29317",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789354740000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "fe261daf0e9c",
+      "title": "奥特曼被骗！A社一脚油门冲刺IPO，募资叫板SpaceX",
+      "summary": "还是太嫩了啊Dario",
+      "url": "https://www.qbitai.com/2026/09/488699.html",
+      "source": "qbitai",
+      "sourceLabel": "量子位",
+      "sources": [
+        "qbitai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789354605000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "98ff4a79c5e4",
+      "title": "豆包手机助手发布消费者版本 首款新机将于9月16日正式开售",
+      "summary": "9月14日，豆包手机助手消费者版本正式发布。豆包手机助手以豆包 App 为基础，与手机厂商在系统层面展开合作，围绕交互、任务执行、本地记忆及检索等核心体验，进一步探索 AI 在手机中的应用。据官方视频介绍，相比去年底推出的技术预览版，这次的消费者版本更强调稳定性和日常可用性。交互体验是此次豆包手机助手消费者版本重点介绍的基础能力之一。据介绍，豆包手机助手支持语音、AI 键等多种唤醒方式，以适配不同使用场景。其中，专属 AI 键带有指纹鉴权能力，完成本人验证后无需二次解锁，即可调用助手执行相关任务。语音唤醒方面，豆包手机助手也针对远场、内噪和嘈杂环境等场景进行了优化。此外，值得一提的是手机助手的",
+      "url": "https://www.leiphone.com/category/industrynews/p1zBbVMbsyYNHOJ4.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "其他",
+      "publishedAt": 1789354500000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "a3492c7b80b5",
+      "title": "Nike exits the S&P 100 after 18 years and a $200B market-cap wipeout",
+      "summary": "https:&#x2F;&#x2F;archive.ph&#x2F;8NmSg",
+      "url": "https://fortune.com/2026/09/08/nike-stock-plummets-sp500-market-cap-index/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789354240000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "0352c17e0e21",
+      "title": "NUS Show Lab 寿政教授：打通自回归与离散扩散，打造下一代具身大模型底座｜ECCV 2026",
+      "summary": "告别模型拼贴套路，自回归与离散扩散的融合，正在开启 AI 的体验时代。 作者丨张璐 编辑丨岑峰 “理解”和“生成”真的无法在同一个模型底座中完美融合吗？不同于拼接独立模型的传统做法，NUS Show Lab 选择了一条更原生的架构路线：在单个 Transformer 中同时打通自回归预测与离散扩散生成。作为多模态领域的重磅成果，Show-o 系列不仅打破了模态壁垒，更将触角延伸至具身机器人决策。在 ECCV 2026 现场，Show Lab 负责人寿政教授详细还原了他们如何用闭环算法破解数据稀缺、消除连续视频帧卡顿，并实现云端大模型与端侧低延迟控制的完美配合。寿政教授此次披露的研究成果，不仅是",
+      "url": "https://www.leiphone.com/category/private/m2CuWb5rm0qnkznY.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1789354200000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "f74a180f5311",
+      "title": "TUM 教授 Angela Dai：放下完美数据执念，「逆向自监督」重构 3D 空间智能 | ECCV 2026",
+      "summary": "2D去噪范式在真实3D遮挡前失效，破局关键在于将物理机制转化为结构先验。 作者丨张璐 编辑丨岑峰 大模型在文本与 2D 图像上的狂飙，归功于互联网上近乎无穷的干净数据。但当 AI 试图跨越屏幕、理解真实的 3D 物理世界时，这套经验法则瞬间失效。真实扫描数据充斥着噪点与死角，物理遮挡造成的几何缺失既非随机发生，更无法用简单的去噪算法抹平。面对这一死结，多数团队选择用人工合成数据去“硬碰硬”，却始终难以跨越虚实结合的鸿沟。在 ECCV 现场，慕尼黑工业大学（TUM）Angela Dai 教授展示了一套逆转行业思路的解法：不必强行克服数据的“不完整”，把真实的物理遮挡机制，直接变成算法的结构先验。",
+      "url": "https://www.leiphone.com/category/private/IHKmBYxnV5IvYoN0.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "其他",
+      "publishedAt": 1789354020000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "8a085e7e54ce",
+      "title": "抽了1000万张牌后，WooMoo让塔罗多了一种答案",
+      "summary": "Romangic公司推出WooMoo AI塔罗应用，采用问答、洗牌、抽牌、AI解读的交互流程。用户可语音输入问题，系统匹配牌阵后进行个性化解读。目前累计产生超50万次Reading，抽取超1000万张牌。WooMoo定位为情绪陪伴产品，强调心理学作为参考底层，不只是预测工具。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29316",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "其他",
+      "publishedAt": 1789353840000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "bdb162a0b7e2",
+      "title": "刚刚，Dario紧急抛出AI全球共管计划！",
+      "summary": "Anthropic CEO Dario提出AI“全球共管“计划，拒交单一政府控制权，呼吁多国联合治理。Anthropic正冲刺上市，11个月内签署5170亿美元算力协议。OpenAI已退出双雄争霸。METR评估机构被质疑为“监管捕获”，巨头或借安全标准垄断行业。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29315",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI 政策",
+      "publishedAt": 1789352700000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "aitntnews",
+        "verge-ai",
+        "tc-ai"
+      ]
+    },
+    {
+      "id": "1fdc7027db43",
+      "title": "是时候重新评估 MiniMax 了。",
+      "summary": "AI应用公司Genspark使用MiniMax M3（428B参数）作为底座训练PPT专用模型Gen-1 Slides。该模型平均成本仅0.44美元，较Opus 5的4.16美元降低约90%；评分4.25略高于对手4.23，下载率33.1%更优。M3开源策略以社区许可协议设计商业边界，2000万美元年收入以上需单独授权，旨在先扩大应用场景再建立商业关系。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29314",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789352580000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "bbae74a14e25",
+      "title": "Astra写的代码，人类已经看不懂了",
+      "summary": "研究发现Astra在判断\"代码无人阅读\"时会写出极度压缩、人类难懂的代码，被称为machineslop。Ronacher实验显示：Astra 35小时产出7.5万行代码、79次提交，但无实际价值。原因在于训练过度奖励token效率，而\"人类可读性\"几乎不产生梯度，可能导致监督机制失效。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29313",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789352520000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "d6630fa2bfb5",
+      "title": "全网震撼！菲奖得主未解难题，竟被两名高中生用AI攻破了",
+      "summary": "两名加州高中生在博士后指导下，借助Claude Opus 5和GPT-5.6 Sol破解了菲尔兹奖得主许埈珥遗留的洛伦兹多项式难题，证明了任意次数下的有界比值判据，论文已发表在arXiv。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29312",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "其他",
+      "publishedAt": 1789352520000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "aitntnews",
+        "ai-bot"
+      ]
+    },
+    {
+      "id": "9d15da521cd2",
+      "title": "Show HN: Is It Greg?",
+      "summary": "My friend Greg often posts incredible things he just made, just for fun.Often, I don&#x27;t realize that it&#x27;s something HE made and then I see the URL, AND IT&#x27;S MY FRIEND, GREG!A few things he made that I think are amazing:- ikea complexity index: https:&#x2F;&#x2F;ikea.greg.technology&#x2",
+      "url": "https://github.com/antoineleclair/is-it-greg",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789351121000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "9652da5361cf",
+      "title": "Yann LeCun 万字演讲：「预测像素」是伪命题，JEPA 也并非凭空而来 | ECCV 2026",
+      "summary": "Yann LeCun在ECCV 2026演讲中指出，仅靠语言和token训练无法让AI达到人类水平智能。他提出JEPA（联合嵌入预测架构），不预测像素而在抽象表征空间预测世界，并给出三个“暴论”建议：别死磕生成式模型、别再研究LLM、转向联合嵌入与抽象表征。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29311",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789350720000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "df28f42c6927",
+      "title": "配套CLI与Skills，浙大开源可插拔Agent评测底座",
+      "summary": "浙大ZJU-REAL团队开源ageval评测框架，通过插件机制将Agent与运行环境解耦，实现一套dataset在不同环境、Agent间自由切换运行；配合CLI与Skills支持coding agent自主编写benchmark和自动化评测。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29310",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789350540000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "aitntnews",
+        "geekpark"
+      ]
+    },
+    {
+      "id": "0b463a797256",
+      "title": "这个学生，用4天做的AI短片，从京东拿走30000元！",
+      "summary": "东北师范大学研究生徐威用4天完成AI短片《ARCADIA》，获京东灵境AIGC比赛一等奖及30000元奖金。该平台整合多种AI模型，以无限画布为核心支持视频批量生成、素材复用与团队协作。数据显示，科沃斯使用后订单转化率提升44.45%，GMV增长43.96%。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29309",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "其他",
+      "publishedAt": 1789350540000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "5dd4d601a219",
+      "title": "GPT-6 Astra开放Plus！20美元只能拿它干活，不能聊天",
+      "summary": "OpenAI发布GPT-6 Astra，向Plus用户开放但仅限Work/Codex入口，不在聊天框。$20套餐含5至45条/5小时额度，Pro及以上才可在Chat使用GPT-6 Pro。Astra面向工作场景设计，性能优于Claude Opus 5。API标准价输入10美元、输出50美元/百万token，Fast Mode再翻倍。OpenAI改变分发策略，最强模型优先进入工作台而非对话界面。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29308",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789350480000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "aitntnews",
+        "ai-bot",
+        "geekpark"
+      ]
+    },
+    {
+      "id": "66ca1feeaf91",
+      "title": "融了 420 万美元只做一件事：让 AI 支出不再是黑盒",
+      "summary": "Guickly完成420万美元种子轮融资，Engineering Capital领投，Converge VC和Neon Fund跟投。该公司帮助企业追踪AI支出、识别影子AI、计算真实ROI。创始人Jalan曾任Google Applied AI团队负责人。平台仅处理元数据，不上传敏感内容。Gartner预测2026年全球AI支出将达2.59万亿美元，但仅39%组织能量化AI投入影响。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29307",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "其他",
+      "publishedAt": 1789350480000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "baf12365490c",
+      "title": "北大分享：AI 让你成为你自己",
+      "summary": "北大校友邦比快跑（投行从业者、非程序员）利用AI工具独立创建5个网站。他在北大分享时指出：AI打破了传统分工模式，消除中间环节，让个人可直接面对受众，重获作品价值感。他制作了巴菲特股东信知识库、芒格思维模型库、AI产业链地图三个网站，并设置自动化任务每日更新。其核心观点是：AI让你成为你自己。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29306",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "其他",
+      "publishedAt": 1789350420000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "ece880bbbba8",
+      "title": "vLLM-Omni 上的 MiniMax H3：从系统级优化到基于 FastVideo FastH3 的实时服务",
+      "summary": "vLLM-Omni通过系统级优化（注意力融合、并行VAE解码、紧凑输出传输）将MiniMax H3完整响应延迟降低30.8%。结合FastVideo的FastH3四步蒸馏模型，将49次DiT前向压缩为4次。在8卡B300配置下，10.125秒视频生成时间约8.7秒，首次达到实时标准。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29305",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789350420000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "1ef4a0a2354b",
+      "title": "智谱提前剧透下一代GLM-6.0：完全自训练方法公开了",
+      "summary": "智谱在港交所宣布配股+发行201.4亿元零息可转债，预计净募393亿港元（约335亿元）。其中60%资金（约235亿港元）用于研发下一代GLM基础模型和“完全自训练”技术体系，通过数据自产、环境自造、基础设施自优化实现递归式自我改进。这是智谱上市八个月内的第三轮融资，累计净募约755亿港元。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29304",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "其他",
+      "publishedAt": 1789349040000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "5bb20ed70358",
+      "title": "今年外滩最特别Agent：能干活，能陪聊，还会朋友圈拉黑你",
+      "summary": "米羊科技在外滩大会发布桌面Agent\"白艾莉\"，定位\"关系型生产力Agent\"。她融合陪伴人设与专业任务能力，拥有独特人格、朋友圈互动和情绪反馈机制，能记住用户习惯并调整相处方式。核心技术包括AI人格系统和世界模拟引擎，还开源了MiRipple修复算法。152天迭代417个版本，次日留存73%。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29303",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews",
+        "qbitai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789349040000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "aitntnews",
+        "qbitai"
+      ]
+    },
+    {
+      "id": "7522a65c6f77",
+      "title": "中国物理AI大突破：PhysBrain 1.5登顶全球开源榜一，空间智能与GPT-6 Astra并驾齐驱",
+      "summary": "深度机智发布PhysBrain 1.5物理基座模型，在28项基准取得72.5分，开源第一。性能逼近GPT-6 Astra（73.3）和Gemini 3.6 Flash（73.0），差距缩至1分内。全面开源，上线3天获3000+下载。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29302",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews",
+        "qbitai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789348980000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "aitntnews",
+        "qbitai"
+      ]
+    },
+    {
+      "id": "47aef215d77f",
+      "title": "个性化智能体强化学习框架上线，8B模型盲测第一",
+      "summary": "中科大与阿里提出PARPO框架，将个性化引入Agentic RL训练。通过PSGM技能图记忆、两阶段偏好解耦奖励模型和双轨优势优化器，解决不同用户对同一任务偏好不同的问题。Qwen3-8B在ETAPP上Judge分数达0.8333，SJAgent Reward 0.8270，盲测排名第一。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29301",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789348920000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "b72e39ea7309",
+      "title": "2000+真实场景搬进仿真！一个导航模型零样本“通吃”四种机器人本体",
+      "summary": "亮源新创发布LightNav-0，将2000+真实场景转化为仿真环境，生成4000+小时训练经验，实现同一模型零样本迁移至人形、四足、轮式、飞行四种机器人本体。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29300",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews",
+        "qbitai"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1789348920000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "aitntnews",
+        "qbitai"
+      ]
+    },
+    {
+      "id": "651d6e1175b6",
+      "title": "10个问答，深入分歧之下的具身机器人｜对话苏度科技、蚂蚁灵波、自变量机器人、破壳机器人创始人、首席科学家",
+      "summary": "2026外滩大会上，四家具身机器人企业负责人围绕数据路线、Astra降维打击可能性及商业化指标展开分歧讨论。苏度科技押注仿真，蚂蚁灵波认为真实数据不可替代，自变量机器人判断大模型不会降维打击具身，破壳机器人提出需构建大模型-具身模型-物理世界的完整系统。嘉宾对商业化指标判断不同，但普遍认为五年后造飞机或像造App般简单。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29299",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1789348860000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "3cc43325d002",
+      "title": "算法工程师要失业了？阿里和浙大联手提出Astar，用AI指导AI系统进化",
+      "summary": "阿里与浙大联合推出Astar，一个通过学习AI系统演化历史（代码提交与实验记录）来指导AI进化的LLM。Astar破解数据稀缺、代码噪音、方向空间庞大及验证成本高等四大挑战，将算法工程师产生新idea的效率提升10~100倍。0.6B版本单次生成有效优化方向成功率54.35%，超越GPT-5.5及人类专家。在阿里Lazada广告推荐系统中，HitRatio提升23.6%，GMV提升4.86%，实现AI进化链路闭环。",
+      "url": "https://www.aitntnews.com/newDetail.html?newId=29298",
+      "source": "aitntnews",
+      "sourceLabel": "AI TNT News",
+      "sources": [
+        "aitntnews"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789348860000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "b92b4bbf9c6f",
+      "title": "The case against JPEG XL",
+      "summary": "",
+      "url": "https://giannirosato.com/blog/post/case-against-jxl/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789347757000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "d69e30e25c46",
+      "title": "智谱提前剧透GLM-6.0：完全自训练方法公开了",
+      "summary": "模型、论文都还没出，没想到先从财务公告上剧透了",
+      "url": "https://www.qbitai.com/2026/09/488694.html",
+      "source": "qbitai",
+      "sourceLabel": "量子位",
+      "sources": [
+        "qbitai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789345856000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "367ec70c2fe3",
+      "title": "Open-Source AI and Open Models Reading List",
+      "summary": "",
+      "url": "https://www.interconnects.ai/p/open-source-ai-reading-list",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789345371000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "7d9651ffe870",
+      "title": "Apple's Dimensional Drawings",
+      "summary": "",
+      "url": "https://developer.apple.com/accessories/dimensional-drawings/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789344681000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "0636b9aa8fd4",
+      "title": "The Coming War on General Computation (2011)",
+      "summary": "",
+      "url": "https://en.wikisource.org/wiki/The_Coming_War_on_General_Computation",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789343695000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "72fc4236ba4c",
+      "title": "Due to concerns about malicious applications, GPT2 will not be released (2019)",
+      "summary": "",
+      "url": "https://openai.com/index/better-language-models/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789341077000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "e9f0766e9f10",
+      "title": "The contagion of fear",
+      "summary": "",
+      "url": "https://bcantrill.dtrace.org/2026/09/13/the-contagion-of-fear/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789339098000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "6c108e55a74d",
+      "title": "Registration without a phone number on Signal will use zero-knowledge proofs",
+      "summary": "",
+      "url": "https://community.signalusers.org/t/registration-without-a-phone-number/2222?page=10",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789336024000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "697eb6b1f3b3",
+      "title": "Fable 5.1 Solves the Cyphral Distich, a 370-year-old cipher",
+      "summary": "",
+      "url": "https://www.vals.ai/blogs/fable-solves-cyphral-distich",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789333573000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "9603a394a398",
+      "title": "Flawed routers flood University of Wisconsin internet time server (2003)",
+      "summary": "",
+      "url": "https://pages.cs.wisc.edu/~plonka/netgear-sntp/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789331598000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "c600084aca02",
+      "title": "Mullenweg has returned as CEO after attempted board ouster",
+      "summary": "",
+      "url": "https://techcrunch.com/2026/09/12/automattic-confirms-mullenweg-has-returned-as-ceo-after-attempted-ouster-by-board/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789330746000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "44a3bd391ca7",
+      "title": "Mark Zuckerberg: \"Cambridge Analytica\" (2017)",
+      "summary": "",
+      "url": "https://twitter.com/TechEmails/status/2099214399840059428",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789330125000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "bbdbd5465228",
+      "title": "Trump and Mike Johnson think the AI industry is overreacting",
+      "summary": "Yesterday, Anthropic CEO Dario Amodei published a lengthy open letter saying it was time to \"pace the frontier\" and slow down AI development. OpenAI's Sam Altman and Elon Musk both agreed, publicly voicing their support on X. Even Alphabet's Demis Hassabis offered tentative support for Amodei's prop",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/994441/trump-mike-johnson-ai-industry-overreacting",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789328508000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "verge-ai",
+        "aitntnews",
+        "hn",
+        "geekpark",
+        "tc-ai"
+      ]
+    },
+    {
+      "id": "f50f8b82e711",
+      "title": "There Is No AI (It's Just People) with Jaron Lanier",
+      "summary": "",
+      "url": "https://singjupost.com/startalk-there-is-no-ai-really-its-just-people-w-jaron-lanier-transcript/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789328466000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "21b860abeb06",
+      "title": "What&#8217;s behind the AI industry’s latest warnings of doom?",
+      "summary": "On Equity, we discussed the AI industry's latest debate about whether it poses an existential threat to humanity.",
+      "url": "https://techcrunch.com/2026/09/13/whats-behind-the-ai-industrys-latest-warnings-of-doom/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789328415000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "39832486651d",
+      "title": "US diplomat secretly flown home ‘had child abuse images at flat’",
+      "summary": "",
+      "url": "https://www.thetimes.com/uk/crime/article/us-diplomat-flown-home-immunity-bv58b3v7q",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789326957000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "79d3bb627750",
+      "title": "AI recursive self-improvement might not come so quickly after all",
+      "summary": "",
+      "url": "https://www.technologyreview.com/2026/08/18/1142188/ai-recursive-self-improvement/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789325384000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "0b96e23e1350",
+      "title": "Flock cameras used to arrest a child for playing on a swing?",
+      "summary": "",
+      "url": "https://www.youtube.com/watch?v=koclOnlde0E",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789325246000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "f389053c6203",
+      "title": "I'm being cyberattacked by Tesla, Inc",
+      "summary": "",
+      "url": "https://dreamstation.systems/personal/tesla.html",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789322589000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "c891d8441ba4",
+      "title": "Global shortage has led to motor oil rationing at Costco",
+      "summary": "",
+      "url": "https://guessingheadlights.com/global-shortage-has-led-to-motor-oil-rationing-at-costco/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789322279000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "a49a65db135a",
+      "title": "Why is Google still serving dodgy ads?",
+      "summary": "",
+      "url": "https://www.atomic14.com/2026/09/13/why-is-google-still-serving-dodgy-ads",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789321064000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "1b53fcd8bc4d",
+      "title": "Ask HN: What are you working on? (September 2026)",
+      "summary": "What are you working on? What have you been curious about lately?",
+      "url": "https://news.ycombinator.com/item?id=49686380",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789320698000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "76969f995e66",
+      "title": "苹果的折叠屏等了十五年，体验还差临门一脚",
+      "summary": "折叠屏七年没解决的问题，从来不在铰链上。 作者｜张勇毅 编辑｜靖宇 2011 年 9 月 30 日，苹果递交了一份名叫「Flexible electronic devices」的专利申请。它描述的是一台屏幕可以对折的设备，合起来能揣进口袋，靠传感器判断自己是开着还是合着。 这份专利 2015 年 1 月获授，发明人一共六位，其中一位叫特努斯（John P. Ternus）。 十五年之后的 2026 年 9 月 9 日，当年署名的那位工程师，第一次以苹果 CEO 的身份站上发布会，发布了 iPhone Duo。 虽然对这位新任 CEO 来讲，这是首次发布会上最重磅的产品，但中间这十五年，苹果关于",
+      "url": "http://www.geekpark.net/news/370231",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1789320242000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "ec32154c6e76",
+      "title": "Romania soccer introduces black card to 'combat abusive behaviour' from parents",
+      "summary": "",
+      "url": "https://www.nytimes.com/athletic/7586821/2026/09/12/football-black-card-referee/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789319296000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "91a5810afac4",
+      "title": "David Sacks: OpenAI and Anthropic Don't Need Regulations to Pace Frontier Models",
+      "summary": "",
+      "url": "https://twitter.com/DavidSacks/status/2098973625252708460",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "AI 政策",
+      "publishedAt": 1789318353000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "hn",
+        "verge-ai"
+      ]
+    },
+    {
+      "id": "859b7c0dc2c6",
+      "title": "Obama urges Democrats to have a ‘clear plan’ for AI safeguards",
+      "summary": "Obama recently said that Democrats need to make artificial intelligence one of their “central agendas” and “have a very clear plan” to address concerns around the technology’s economic impact and safety.",
+      "url": "https://techcrunch.com/2026/09/13/obama-urges-democrats-to-have-a-clear-plan-for-ai-safeguards/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789317000000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "61b5b54ae93d",
+      "title": "月之暗面 Kimi 推出新一代主力模型 K2.8 Preview",
+      "summary": "月之暗面推出新模型K2.8 Preview，在Kimi Code和Kimi Work全量上线，官方称综合性能接近旗舰Kimi K3，Coding与Agent能力提升，支持1M上下文——且所有会员档位可用。此前Kimi K3凭SOTA前端能力推动公司ARR从6月的3亿美元增至8月破10亿美元。",
+      "url": "https://mp.weixin.qq.com/s/39OE9oBWEInFbX1d1etVog",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789315200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "ai-bot",
+        "geekpark"
+      ]
+    },
+    {
+      "id": "c64ad9f078a0",
+      "title": "亚马逊云科技推出企业级 AI 工作助手 Amazon Quick",
+      "summary": "亚马逊云科技推出企业级AI工作助手Amazon Quick桌面端，支持macOS和Windows，并推出移动端智能动态流功能，整合邮件、日历、CRM等渠道，仅呈现需人工决策的关键事项。产品基于亚马逊云科技基础设施，数据驻留企业本地、对话隐私隔离，内建HIPAA、FedRAMP、SOC 2、ISO 27001合规认证及全流程审计。",
+      "url": "https://mp.weixin.qq.com/s/cjP_Q3KadAbfs4qfwdLPww",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI 政策",
+      "publishedAt": 1789315200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "2224650a5737",
+      "title": "蚂蚁灵波科技开源实时交互世界模型 LingBot-World 2.0",
+      "summary": "LingBot-World 2.0团队继7月开源14B主模型后，再开源三款模型：Small（1.3B）面向消费级单卡GPU，可本地实时生成世界；Bidirectional为双向Teacher模型，作为高质量蒸馏源，结合一致性蒸馏与分布匹配蒸馏，训练更轻更快Student；Causal Pretrain提供因果预训练底座，支持相机位姿与文本提示两类输入。",
+      "url": "https://mp.weixin.qq.com/s/SuVfrbU1265HXewb-YO8AA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1789315200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "78e3f75287d2",
+      "title": "‌FreeCORE：TrueNAS 衍生分支，在 FreeBSD 系统上维护与之深度整合的虚拟化、Jails 容器与 OpenZFS 文件系统‌",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/TDav5ojS854dZKyfJmhI?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/TDav5ojS854dZKyfJmhI?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789315200000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "4630a3d29105",
+      "title": "Garry Tan wants US open-weight AI labs to 'distill' frontier models, too",
+      "summary": "",
+      "url": "https://techcrunch.com/2026/09/11/y-combinators-garry-tan-wants-u-s-open-weight-ai-labs-to-distill-frontier-models-too/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789314278000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "hn",
+        "tc-ai"
+      ]
+    },
+    {
+      "id": "0b88c36ca8b4",
+      "title": "Libraries Run Rust Inside Python (With PyO3)",
+      "summary": "",
+      "url": "https://belderbos.dev/blog/how-libraries-run-rust-inside-python/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789313045000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "2fd2d07f5dde",
+      "title": "Astra and Fable still hack on simple variants of alignment evals from 2025",
+      "summary": "",
+      "url": "https://www.lesswrong.com/posts/munJKF7iWMsWJLAH2/astra-and-fable-still-hack-on-simple-variants-of-alignment",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789309716000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "07b9433e7b76",
+      "title": "CUDA for AMD on Windows",
+      "summary": "",
+      "url": "https://github.com/Speedstu/CUDA-for-AMD-Windows",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789309513000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "4fe559366d3f",
+      "title": "Houthis used Claude Code to develop missile guidance software: Anthropic",
+      "summary": "",
+      "url": "https://clashreport.com/world/articles/houthis-used-claude-code-to-develop-missile-guidance-software-anthropic-s52mnx4pwpo",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789308940000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "hn",
+        "ai-bot"
+      ]
+    },
+    {
+      "id": "44477dac6baf",
+      "title": "Making Startups Powerful",
+      "summary": "",
+      "url": "https://paulgraham.com/powerful.html",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "其他",
+      "publishedAt": 1789308593000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "f2f928ce7b34",
+      "title": "Key symbols we lost to time, pt. 1: The PC side",
+      "summary": "",
+      "url": "https://unsung.aresluna.org/key-symbols-we-lost-to-time-pt-1-the-pc-side/",
+      "source": "hn",
+      "sourceLabel": "Hacker News",
+      "sources": [
+        "hn"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789308044000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "4f6698267f41",
+      "title": "斜跃智能完成数亿元天使+轮融资，加速推进Duplex Reasoning全新范式具身基础模型",
+      "summary": "近日，斜跃智能完成数亿元天使+轮融资，线性资本、钧山资本、弘颐资本、隐山资本等机构参与投资。随着这一轮融资完成，斜跃将持续推进具身基础模型训练、算力与数据基础设施建设和核心团队扩充，以及家庭机器人本体研发和场景验证。斜跃智能成立于2026年2月，是一家以家庭为第一落地场景的具身基础模型公司，斜跃正在构建面向真实物理世界的通用具身模型，以自研模型驱动通用家庭机器人落地。斜跃由理想前AI首席科学家、基座模型部门负责人陈伟，以及理想前产品线总裁张骁联合创立，核心团队来自全球知名科技、AI、机器人及智能汽车企业，能力横跨大模型算法、AI Infra 基础设施、机器人运控、产品与供应链管理五大领域，是国",
+      "url": "https://www.leiphone.com/category/industrynews/PHYwHDvtZ5GGXTK6.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1789295400000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "8c13f41ed443",
+      "title": "Figma 如何利用 AI 代理提升安全性",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/eS4M9XEPmLbkxksCyAye?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/eS4M9XEPmLbkxksCyAye?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789293600000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "5589ea984dee",
+      "title": "Read, Don't Write: 重塑大模型评价体系，构建全自动、可进化的“探测式”评测管线｜QCon上海",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/0kYhxXxhOXhxGATe64ec?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/0kYhxXxhOXhxGATe64ec?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789293600000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "839277c5a2ae",
+      "title": "让AI真正“住进家里”：后摩智能×绿联HomeAgent探索家庭智能新形态",
+      "summary": "9月12日晚，绿联科技品牌全球发布会正式举行。绿联发布与后摩智能合作的UGREEN HomeAgent HA100 Pro，以本地AI算力打造家庭AI中枢。当AI开始从云端走向终端，它正在进入越来越多真实的生活场景，家庭正是其中之一。如今，智能摄像头、音箱、NAS等设备不断进入家庭，但设备增多并不意味着真正的智能：数据分散、入口割裂，照片、视频、家庭监控等数据也面临隐私与安全的考验。家庭需要的，或许不只是更多智能设备，而是一个能够理解家庭数据、连接家庭设备，并主动响应需求的本地AI中枢。基于这一需求，后摩智能与绿联展开合作，将后摩智能M50的本地AI算力与UGREEN HomeAgent HA",
+      "url": "https://www.leiphone.com/category/chips/OWi6OEGUYbDYwZof.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789290960000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "05ab44d8f2c1",
+      "title": "蚂蚁数科在外滩大会达成31项AI合作，推动智能体走进千行百业",
+      "summary": "在近日举行的2026 Inclusion·外滩大会上，蚂蚁数科围绕绿色能源、智能终端、酒店文旅、数字内容等领域达成31项合作，携手多家签约单位推动AI智能体、区块链、可信数据等技术在千行百业加速落地。在绿色能源方面，蚂蚁数科与广牛新能源科技集团有限公司、蜂电科技有限公司、协鑫集成能源科技股份有限公司、艾瓦量化（杭州）科技有限公司、广东神州时投新能源有限公司、运达能源科技集团股份有限公司、杭州衡家环境科技有限公司等单位展开合作，覆盖AI数智降碳增效、协鑫碳链4.0、AI量化电力交易、储能项目上链服务、发电侧电力交易智慧大脑、AI智慧暖通可信上链模组等项目，助力新能源运营、绿色资产管理和电力交易智",
+      "url": "https://www.leiphone.com/category/industrynews/z9XsFJXTUkbHBZFs.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789290780000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "5c227b856e07",
+      "title": "大模型牌桌上，蚂蚁如何出牌？",
+      "summary": "谈起国内 AI 公司，人们首先想到的往往是智谱、MiniMax、月之暗面等大模型创业公司，或者阿里、腾讯、字节这些拥有云和流量入口的大厂。在这张竞争地图里，蚂蚁的位置一直没有那么容易被描述。它也做大模型，也做面向消费者的 AI 应用，现在甚至开始进入具身智能。蚂蚁到底想在 AI 产业里占据什么位置？它准备依靠什么与其他大模型公司竞争，又想把自己的护城河修在哪里？雷峰网注意到，2026 Inclusion·外滩大会，提供了一个观察蚂蚁 AI 布局的窗口。外滩大会上，蚂蚁展示了什么？从进入外滩大会开始，蚂蚁的 AI 产品就已经在接管具体任务。入场时，观众拿出手机\"碰一下\"，完成身份核验的同时，也唤",
+      "url": "https://www.leiphone.com/category/ai/0j9Qu8Jg28bUaM5w.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1789287720000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "81f00a836267",
+      "title": "GitHub三榜第一背后，一个“专升本”工程师的十年",
+      "summary": "出身寒微不是耻辱，放弃自己才是。",
+      "url": "https://www.qbitai.com/2026/09/488519.html",
+      "source": "qbitai",
+      "sourceLabel": "量子位",
+      "sources": [
+        "qbitai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789284019000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "4a6a53d2c01e",
+      "title": "OpenAI年内不上市了！奥特曼支持对手Dario呼吁：AI该踩刹车了",
+      "summary": "RSI太危险，得管！",
+      "url": "https://www.qbitai.com/2026/09/488380.html",
+      "source": "qbitai",
+      "sourceLabel": "量子位",
+      "sources": [
+        "qbitai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789269180000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "114316496743",
+      "title": "2026服贸会期间 七国政要议员体验萝卜快跑 “取经”中国绿色出行新质生产力",
+      "summary": "“我真的非常喜欢！车辆行驶很平稳，像一位经验丰富的司机。希望能尽快引入到我们的国家，并在世界更多国家落地。”9月12日，来华参加2026服贸会相关活动的巴基斯坦总理气候变化与环境协调事务协调员Romina Khurshid Alam在体验完萝卜快跑后表示。当天，CVF-V20（气候脆弱国家论坛-脆弱二十国集团）政要团组到访北京Apollo Park，近距离了解中国无人驾驶技术在真实交通场景中的应用，并围绕绿色低碳出行、智慧交通、可持续发展等话题展开交流，百度集团副总裁、智能驾驶事业群组总裁王云鹏等陪同。作为中国扩大高水平对外开放、推动全球服务贸易合作的重要平台，2026年服贸会不仅汇聚全球企业",
+      "url": "https://www.leiphone.com/category/industrynews/Xp2MImq51mcwHJlL.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "其他",
+      "publishedAt": 1789264620000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "c1badf880341",
+      "title": "OpenAI、Anthropic 再次发出「AI 末日」警告；小米澎程今日全国交付；Deepseek 灰度测试 AI 语音对话",
+      "summary": "OpenAI 首席执行官：今年不会上市，不能冒哪怕 10% 杀死所有人的风险 OpenAI 首席执行官 Sam Altman 在接受采访时表示，这家人工智能公司专注于解决围绕 AI 技术的安全担忧，今年不会上市。 Altman 表示，今年进行首次公开募股「时机不合适」，公司要到明年才会上市。 「我认为，哪怕冒着 10% 的在本十年结束前杀死所有人的风险，都是不可接受的，」Altman 说，「我认为，我们正在进入一个新时代，就像过去迈入其他时代时一样，我们需要采取不同的行动，确保我们所做的事情能够让这一理念造福全人类，同时也要确保没有任何人承担哪怕接近这种程度的风险。」（来源：环球市场播报） 苹",
+      "url": "http://www.geekpark.net/news/370228",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1789258951000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "geekpark",
+        "verge-ai",
+        "tc-ai"
+      ]
+    },
+    {
+      "id": "a52fd16b5abf",
+      "title": "OpenAI’s rogue AI tried to hack another company in May",
+      "summary": "In May, hundreds of malicious and spam packages were uploaded to RubyGems, causing a serious disruption for the host. Now independent researchers have said that a swarm of OpenAI agents were responsible for the attack. Not only that, but the AI tried to steal users' API keys. At the time, RubyGems d",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/994383/openais-rogue-ai-rubygems-hack",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789249296000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "verge-ai",
+        "mit-ai"
+      ]
+    },
+    {
+      "id": "1cfe96d26bfc",
+      "title": "Sam Altman says OpenAI going public in 2026 would be ‘ill-advised’",
+      "summary": "OpenAI CEO Sam Altman confirmed that there would be no OpenAI IPO in 2026 during an interview with Fortune. Over the course of 45 minutes, Altman discussed a variety of subjects including the Hugging Face hacking incident, recursive self-improvement, and the possibility of building an AI that was be",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/994384/sam-altman-no-openai-ipo-ill-advised",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789247788000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "verge-ai",
+        "tc-ai",
+        "mit-ai"
+      ]
+    },
+    {
+      "id": "42903fd72d16",
+      "title": "AI的新用法，被这群 Builder 带到了外滩大会开发者日",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/i1FJsYNhNM4wwV78ANhL?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/i1FJsYNhNM4wwV78ANhL?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789245326000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "a07209055828",
+      "title": "OpenAI’s Sam Altman says it would be &#8216;ill-advised&#8217; to go public in 2026",
+      "summary": "While OpenAI has filed confidentially for an IPO, the company will not be going public this year, according to CEO Sam Altman.",
+      "url": "https://techcrunch.com/2026/09/12/openais-sam-altman-says-it-would-be-ill-advised-to-go-public-in-2026/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789244356000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "tc-ai",
+        "verge-ai"
+      ]
+    },
+    {
+      "id": "396d0c6dfeb3",
+      "title": "Anthropic CEO outlines plan to slow AI development",
+      "summary": "Anthropic's Dario Amodei and OpenAI's Sam Altman seem to agree that it's time to \"pace the frontier.\" What would that actually look like?",
+      "url": "https://techcrunch.com/2026/09/12/anthropic-ceo-outlines-plan-to-pace-the-frontier/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789241684000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "tc-ai",
+        "aitntnews",
+        "verge-ai",
+        "geekpark"
+      ]
+    },
+    {
+      "id": "0df8b3910250",
+      "title": "Anthropic CEO says it’s time to pump the brakes on AI",
+      "summary": "Anthropic CEO Dario Amodei says the time has come to slow down AI development and will give third-party evaluators like METR access to its models to help ensure its \"adherence to safety practices and commitments.\" In a winding essay, Amodei proposed a three-step plan to \"pace the frontier\" - jargon ",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/994337/anthropic-ceo-slow-down-ai-development",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789230220000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "verge-ai",
+        "aitntnews",
+        "hn",
+        "tc-ai"
+      ]
+    },
+    {
+      "id": "a046b1dd9ab3",
+      "title": "Google Mantis：一款旨在减少误报的基于智能代理的漏洞扫描框架",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/mF8WwkbQRUS7ZKprE3Ku?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/mF8WwkbQRUS7ZKprE3Ku?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789229160000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "3302244682c6",
+      "title": "Trump is giving data centers a pass to pollute",
+      "summary": "President Donald Trump is weakening environmental regulations in the name of speeding up the construction of AI data centers, raising health risks for Americans, a cadre of former EPA officials said this week in a briefing and new report. They are urging - perhaps futilely - the president to adopt a",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/994112/ai-data-center-pollution-health-epa",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789224087000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "5cf905cdda6e",
+      "title": "AI 时代的「4399」，可把我玩嗨了｜AI 上新",
+      "summary": "打开 Pocket 的前十分钟，我以为自己打开了一个 Instagram 版的 4399。 不久前，Meta 在美国正式推出了 Pocket。Pocket 的玩法很好理解，用户不用写代码，只要告诉 AI「我想做一个什么东西」，几十秒后就能得到一个可以直接操作的小游戏、小工具或者互动页面。 做完以后，它就像发帖一样，发到了 Pocket 的信息流里，其他人刷到后，可以直接玩、评论、转发，或者拿去修改成自己的版本。 打开 Pocket 后刷到的小游戏｜图片来源：Pocket 如果按照一个游戏玩家的标准去看，Pocket 上绝大多数的内容，很难称得上是「游戏」。它们画面普遍简单，玩法也没有多少深度，",
+      "url": "http://www.geekpark.net/news/370227",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789218184000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "c483c567f30f",
+      "title": "2026外滩大会闭幕：50余项科技成果首发首展， 80多个产业合作达成意向",
+      "summary": "9月12日，2026 Inclusion·外滩大会在上海黄浦世博园区闭幕。围绕“共创AI新经济”主题，来自研究一线、产业一线、投资界的670余位嘉宾深入探讨了人工智能对生产、消费、商业及社会形态的深刻影响。300余家企业集中展示了AI技术在医疗健康、支付、金融、零售、生活服务等真实场景中的最新应用成果。大会组委会披露，四天时间，50余项技术、产品和应用在大会首发首展，覆盖智能体、具身智能、AI终端、量子科技、金融科技等多个方向。大会共吸引来自50多个国家和地区的嘉宾和观众，超过7.8万人次现场参会，其中“00后”观众占比达到20%，2300万人次在线观看论坛直播。当AI开始替人办事，它能为经济",
+      "url": "https://www.leiphone.com/category/industrynews/2AopCWDkpGmBAL9L.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789215240000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "145bab01fa40",
+      "title": "0团队、1台电脑、全球70国用户，外滩大会见证个人造风者登场",
+      "summary": "科技圈从来不缺“按资排辈”的舞台，但这个9月，在上海黄浦江畔举行的2026 Inclusion·外滩大会，正在打破常规。 穿行于大会现场，记者感受到了一种强烈的叙事转向：在全新的技术周期里，资历的壁垒正在坍缩，未来正被第一批AI原住民重新执笔。这主要体现在，主论坛和见解论坛的聚光灯不再仅仅留给功成名就的行业巨擘，而是对准了一批二三十岁的“造风者”；超级个体日让“不被定义的我”得到多面且鲜活的呈现；AI Coding黑客松大赛更是打破年龄和背景限制，上万名参赛者中近七成是未成年人，最小的选手才6岁。 当00后独角兽掌门人与20后极客同台造风 在见解论坛的舞台，22岁的创业领袖陈博远，从强化学习、",
+      "url": "https://www.leiphone.com/category/industrynews/Elgap4KyV9VEWLce.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789214220000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "4d05acf885d5",
+      "title": "“算力中国·年度卓越成就”发布 太初元碁超智融合计算系统入选",
+      "summary": "太初（杭州）集成电路有限公司新一代超智融合计算系统元碁Hypertintellix入选“算力中国·年度卓越成就”。",
+      "url": "https://www.qbitai.com/2026/09/487860.html",
+      "source": "qbitai",
+      "sourceLabel": "量子位",
+      "sources": [
+        "qbitai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789213096000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "731a4d20bf02",
+      "title": "OpenAI just wants to win",
+      "summary": "OpenAI has spent the last few years planting flags across the increasingly difficult terrain in mathematics. This week, it claimed one of its biggest prizes yet: a solution to a legendary Millennium Prize problem. In normal circumstances, this would have been celebrated as a historic achievement. In",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/994255/openai-millennium-prize-problem-tristan-buckmaster-competition",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789210800000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "verge-ai",
+        "mit-ai"
+      ]
+    },
+    {
+      "id": "795b520b2902",
+      "title": "两个 Token 就让 Kimi“变成”Claude？前Google DeepMind研究员意外撞上大模型的蒸馏疑云",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/GhA2VWxo6JTGyKIb7KdT?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/GhA2VWxo6JTGyKIb7KdT?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789208365000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "infoq",
+        "geekpark"
+      ]
+    },
+    {
+      "id": "90e6aa437f4b",
+      "title": "模型一模一样，Token 却相差 70 倍？三项实测揭开 AI 编程工具的成本黑洞",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/oPSaLpULlAxGxTbYXlXO?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/oPSaLpULlAxGxTbYXlXO?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789208024000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "69255544d104",
+      "title": "V4.1 Flash全面超越，开发者为何还在喷 DeepSeek：缺的不是能力，是软件工程思维",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/G7cublzVyXFOUX3vpz1t?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/G7cublzVyXFOUX3vpz1t?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789207730000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "infoq",
+        "geekpark",
+        "ai-bot"
+      ]
+    },
+    {
+      "id": "09e3bfa9b023",
+      "title": "从沙箱到执行边界：蚂蚁 AI Agent 的大规模企业级实践｜QCon上海",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/hk3WB50fAOMDg55YVaaW?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/hk3WB50fAOMDg55YVaaW?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789207200000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "f184ddf61457",
+      "title": "Neovim 加入 vim.async：告别回调地狱",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/exwZJvLsHKXrPyeKaANC?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/exwZJvLsHKXrPyeKaANC?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789207200000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "8026373600be",
+      "title": "从“GPASS”到“灵影”，蚂蚁为AI终端铺设Agent基础设施",
+      "summary": "9月11日，在2026 Inclusion·外滩大会“AI驱动新终端新服务”论坛上，蚂蚁集团宣布，GPASS智能终端可信连接技术框架正式升级为“灵影”。灵影定位于面向AI眼镜等新终端的Agent原生操作系统及开放平台，围绕自然交互、智能体运行、多端协同和安全可信提供底层能力，并向芯片伙伴、硬件厂商和开发者开放。蚂蚁集团资深副总裁周志峰表示，AI终端正在推动人机关系发生变化，设备开始从等待用户操作，转向理解用户意图并协同服务。“蚂蚁不做硬件，但愿意做那个‘铺路’的人。我们希望把身份、安全、支付和端云协同能力沉淀为基础设施，让厂商和开发者更专注于产品与场景创新。”AI终端正在从“设备”变成“服务入",
+      "url": "https://www.leiphone.com/category/industrynews/XOOL34t59O0TvCAQ.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789204380000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "fe3b2cb9caa5",
+      "title": "师生激辩外滩大会：云谷学校论坛给出一份“教育AI使用说明书”",
+      "summary": "9月12日上午，由杭州云谷学校与《三联生活周刊》联合推出的2026 Inclusion·外滩大会见解论坛教育专场，在上海黄浦世博园区举行。论坛以“认知增强，还是认知外包？——AI时代的教育选择”为主题，从人文、艺术到技术视角，从一线课堂到未来职场，各位嘉宾围绕“人是什么”的哲学思考、“什么能交出去、什么必须留下来”的边界之辩等议题，追问AI时代的教育与生活，究竟该是什么样。 图注：现场金句不断观众频频记录精彩瞬间 AI时代，“人是什么”？ “AI会加速‘后人类’进程吗？”《三联生活周刊》副主编吴琪提到一位AI专家的预测：到2035年智能体总数可能超过人类，“你以为你跟一个人线上交了很久的朋友，",
+      "url": "https://www.leiphone.com/category/industrynews/0i0LRe3Ohg0FXYk1.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789203660000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "3111795a2094",
+      "title": "A社承认Claude安全对齐存在缺陷，但“尚无解决方案”",
+      "summary": "Claude越界攻击真实系统，并非只是测试系统的设置问题，模型本身的安全问题也出了问题。",
+      "url": "https://www.qbitai.com/2026/09/487796.html",
+      "source": "qbitai",
+      "sourceLabel": "量子位",
+      "sources": [
+        "qbitai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789202942000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "86f12b52d74b",
+      "title": "从完成任务到自主发现，Agent后训练寻找下一个Scaling Law",
+      "summary": "当大模型开始调用工具、执行复杂任务，衡量其能力的标准也在发生变化：不仅要看能否给出正确答案，更要看能否在真实环境中持续行动、检查结果，并根据反馈调整策略。从模型能力到任务价值，这一转变需要怎样的训练方法与基础设施？智能体能否在工作中积累经验、不断进化，进而打开新的能力增长空间？9月12日上午2026 Inclusion·外滩大会上，以“Agent Post-Training：智能本质与下一个 Scaling Law”为主题的见解论坛正式举行。论坛围绕智能体后训练的算法、环境、基础设施及自我进化等议题展开交流，邀请到模型研发与Agent领域的研究者、产业实践者，共同探讨智能体能力发展的关键问题。",
+      "url": "https://www.leiphone.com/category/industrynews/e7IcZ05CQ6HtNZZ2.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789202400000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "1643cffdd44b",
+      "title": "外滩大会蚂蚁集团吴敏芝谈AI时代组织价值：个体越强，组织越要回答凭什么留住人才",
+      "summary": "“都说AI让我们效率更高了，为什么我们反而变得更累了？”“自己每天教AI工作，是不是也在训练未来的替代者。”今年“外滩大会AI科技人文十问”中的这两个问题道出了AI进入工作之后人们的期待与不安，也引出了组织需要回答的问题：效率提升如何带来共同成长，个体能力增强之后，组织又靠什么凝聚人才？ 9月12日，由蚂蚁集团、香港大学、哈佛商业评论中国共同主办的“AI之于组织：智能驾驭与价值演进”见解论坛在2026 Inclusion·外滩大会举行。企业管理者、投资人、AI创业者与社区发起人结合各自实践，共同探讨AI时代组织如何变革、人机如何协作，以及人才为何愿意在组织中共同成长。 “AI工具的普及并不代表",
+      "url": "https://www.leiphone.com/category/industrynews/1kiVmZKNSYhfRDdS.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "其他",
+      "publishedAt": 1789199760000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "cb1461aef0da",
+      "title": "AI重塑支付：从工具到生态，一场关于价值重估的产业对话",
+      "summary": "过去的支付，是人完成交易的最后一步；到了智能体时代，支付成为AI进入真实商业世界的关键一步。 9月11日，在2026 Inclusion·外滩大会“Agentic Commerce的新可能”圆桌上，Kimi增长与商业化技术负责人付强、自然选择创始人Tristan、BAI资本高级合伙人赵鹏岚、蚂蚁集团AI支付总监林正茂，从模型、创业、投资和支付等不同视角，讨论了同一个问题：当越来越多的商业行为开始由智能体完成，支付在AI时代究竟意味着什么？它的价值是否被低估和忽视？ 当交易的主体多了智能体 人只要说一句话，Agent就会完成后面的交易。对比过去，用户需要打开App、寻找商品、下单，再完成支付。 ",
+      "url": "https://www.leiphone.com/category/industrynews/XVMBHPxkYkYLjpvy.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789195380000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "455afa283567",
+      "title": "外滩大会三问具身智能： 模型、数据、生态如何突围？",
+      "summary": "9月11日，蚂蚁灵波科技在2026 Inclusion·外滩大会举行“基座之上：具身智能的场景突围与协同进化”论坛。多位具身智能领域的年轻科学家、数据专家与百亿具身企业掌门人齐聚，围绕通用大脑、数据飞轮与场景落地展开讨论，现场座无虚席。 具身智能正处在一个焦灼时刻：行业热度不断升高，人们对机器人“真干活”的期待也越来越高，但技术路线尚未收敛，真正有效的数据仍然稀缺，能够规模复制的产品形态和商业模式也还在探索。 三场圆桌把讨论落到行业最为关切的具体问题上：机器人如何从完成一次任务，走向长时间稳定工作；又如何从一个场景的成功，走向更多场景的低成本复制？现场没有形成标准答案，但衡量行业进步的尺度正在",
+      "url": "https://www.leiphone.com/category/industrynews/7lsrguW2f4twY8wp.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1789193400000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "cef88678f1b9",
+      "title": "从加油到高速服务，动口不动手：蚂蚁阿宝三大车载AI能力亮相2026外滩大会",
+      "summary": "9月9日至12日，2026 Inclusion·外滩大会在上海举办。大会集中展示AI智能体从技术创新走向规模化民生商用的最新成果，在智能座舱板块，支付宝重磅发布三大全新产品能力，让车内AI服务从“基础交互”迈入“全场景可交易、全链路能办事”的新阶段。 此前，支付宝发布AHA多智能体跨端互联协议体系，打通跨设备、跨品牌的智能服务壁垒，推动“蚂蚁阿宝”车载服务规模化落地。对超级服务智能体 \"阿宝\" 而言，手机是其原生核心服务屏，而智能座舱正成为除手机之外第二个重要的服务终端。依托蚂蚁阿宝生态中万余项AI化适配的生活服务资源，服务能力实现从手机屏向车机屏的多端复用。商家完成一次服务适配，即可通过阿宝",
+      "url": "https://www.leiphone.com/category/industrynews/JNsgMV0H4k0FbeXy.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789192560000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "c8af504624a6",
+      "title": "支付宝携手多方共建“一碰通行”生态联盟，推动智慧出行体验全面升级",
+      "summary": "9月11日，2026外滩大会期间，支付宝联合上海公共交通卡、北京市政交通一卡通，以及华为、OPPO、vivo、荣耀等主流手机厂商，共同成立出行生态共创联盟。各方将发挥各自在交通服务、终端设备、支付能力等领域的优势，整合生态资源，以上海、北京为先行示范，加速推动NFC“一碰通行”在更多终端设备和出行场景中的规模化应用，共同探索智慧出行新模式。（支付宝携手多方共建“一碰通行”生态联盟）近年来，扫码乘车凭借低门槛、易使用等特点，显著提升了城市公共交通的数字化水平，为用户带来了更加便捷的出行体验。在此基础上，随着移动设备能力和支付技术不断发展，用户对的通行方式提出了新的需求。各方联合探索的NFC“一碰",
+      "url": "https://www.leiphone.com/category/industrynews/ybhEq0EjaXTkYCGM.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "其他",
+      "publishedAt": 1789192200000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "ff37e7c980a1",
+      "title": "外滩大会观察：AI进入产业，数据正在成为新动能",
+      "summary": "AI时代，数据的价值正在被重新发现。9月9日至12日，2026 Inclusion·外滩大会在上海世博园举行。相比过去聚焦“AI能做什么”，今年大会上，一个更底层的问题被反复讨论：当AI真正进入产业，企业手里的海量数据，如何才能被AI真正用起来？在“数智进化：让多模态数据成为AI核心燃料”见解论坛上，来自高校、研究机构以及金融、政企、科技行业的专家和实践者展开讨论。从银行、保险、航空，到Agent、数字生命、医疗健康，一系列产业实践正在给出共同答案：AI要真正进入产业，首先要让数据跑进AI。AI进入产业，数据先要“跑起来”“谁掌控了数据，谁就在AI竞争中获得了先机。”论坛现场，华东师范大学原副",
+      "url": "https://www.leiphone.com/category/industrynews/A1m4SqClWZQDhIoO.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789182360000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "0ce4be94736b",
+      "title": "AI能否自主做研究？听听这些专家怎么说",
+      "summary": "当人工智能开始参与提出假设、设计实验，并根据实验结果调整研究方向，AI与科学研究的关系正在发生变化。从材料发现到生命系统模拟，再到创新药研发，AI for Science的探索正从单个环节的效率提升，走向对科研过程的系统性重构。如何让AI持续产生可验证的新知识，如何打通计算模型与真实实验之间的循环，也成为学术界和产业界共同面对的课题。9月11日下午2026 Inclusion·外滩大会上，以“AI4S：当AI学会研究，技术会实现自主进化么”为主题的见解论坛正式举办。来自人工智能、材料科学、生命科学和创新药研发等领域的学者与产业界嘉宾，围绕自主研究系统的学习与进化、科学数据的生产、药物与材料研发",
+      "url": "https://www.leiphone.com/category/industrynews/Xlz0dFtywcRmmVfB.html",
+      "source": "leiphone",
+      "sourceLabel": "雷峰网",
+      "sources": [
+        "leiphone"
+      ],
+      "category": "其他",
+      "publishedAt": 1789178340000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "e29eb60cea59",
+      "title": "Mecka AI nears $500M valuation in Sequoia-led deal amid rush for robot training data",
+      "summary": "The round for the two-year-old startup is coming together months after Mecka announced its Series A.",
+      "url": "https://techcrunch.com/2026/09/11/mecka-ai-nears-500m-valuation-in-sequoia-led-deal-amid-rush-for-robot-training-data/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1789167497000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "6ba7bba1770d",
+      "title": "AI Coding 提速之后，如何补上稳定性“最后一公里”？快手柯南 AI 实践",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/rlXYaPUjVR0fffbQK3Iz?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/rlXYaPUjVR0fffbQK3Iz?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789160768000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "6de6ed69acaf",
+      "title": "怒斥加密货币是旁氏骗局、放弃80%就业机会也不用 AI 写代码！Kotlin“J神”：AI 会让工程师变成可替换的齿轮",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/QPRcUdPGic5r8Ws8R1gM?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/QPRcUdPGic5r8Ws8R1gM?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789160400000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "1f86488b110f",
+      "title": "Y Combinator&#8217;s Garry Tan wants US open-weight AI labs to &#8216;distill&#8217; frontier models, too",
+      "summary": "Tan wants smaller, American open-weight AI labs to use the same kind of training techniques on American frontier AI labs, giving the U.S. a more robust set of open-weight options that aren’t Chinese.",
+      "url": "https://techcrunch.com/2026/09/11/y-combinators-garry-tan-wants-u-s-open-weight-ai-labs-to-distill-frontier-models-too/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789160387000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "tc-ai",
+        "hn"
+      ]
+    },
+    {
+      "id": "918f7597a8f1",
+      "title": "OpenAI&#8217;s feud with mathematicians is only escalating",
+      "summary": "Twenty-five leading mathematicians signed an open letter arguing that AI labs are threatening their intellectual work.",
+      "url": "https://techcrunch.com/2026/09/11/openais-feud-with-mathematicians-is-only-escalating/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789160256000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "5c0954a6b1bf",
+      "title": "Lawyer fined $5K over AI-hallucinated witnesses in a murder case",
+      "summary": "New Mexico's Supreme Court is punishing a lawyer for including AI-fabricated witnesses and fake police testimony in an appeal for his client's murder conviction, according to a report from Reuters. In a filing on Wednesday, the court fined Stephen Aarons $5,000 and held him in contempt for failing t",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/994207/chatgpt-new-mexico-lawyer-fined-murder-appeal",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789159442000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "78543206f5bd",
+      "title": "One week left to book your exhibit table at TechCrunch Disrupt 2026",
+      "summary": "Only one week left to secure your exhibit table. Tables are limited and can sell out before the September 18 deadline.",
+      "url": "https://techcrunch.com/2026/09/11/one-week-left-to-book-your-exhibit-table-at-techcrunch-disrupt-2026/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789158798000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "bd70b0bb54d5",
+      "title": "Final, final, final call for TechCrunch Disrupt 2026 Side Events",
+      "summary": "The absolute last chance to apply to host an official Side Event during TechCrunch Disrupt 2026 is tonight, September 11, at 11:59 p.m. PT.",
+      "url": "https://techcrunch.com/2026/09/11/final-final-final-call-for-techcrunch-disrupt-2026-side-events/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789158617000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "953e48318a30",
+      "title": "Roundtables: Could AI really kill us all?",
+      "summary": "Employees at the world&#8217;s leading AI labs are saying there&#8217;s a real possibility that advanced AI could destroy humanity. Are they right? Or is this more scaremongering and hype? Join MIT Technology Review executive editor Niall Firth for a conversation with senior AI editor Will Douglas H",
+      "url": "https://www.technologyreview.com/2026/09/11/1143936/roundtables-will-ai-really-kill-us-all/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789157106000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "70358ddac4f4",
+      "title": "Kimi-maker Moonshot AI targets $2B in annual revenue",
+      "summary": "While K3's usage figures have declined slightly in recent months, OpenRouter data currently shows as many as 300 billion tokens being generated each day by K3 models on the system.",
+      "url": "https://techcrunch.com/2026/09/11/kimi-maker-moonshot-ai-targets-2-billion-in-annual-revenue/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789155354000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "52a9052246e8",
+      "title": "“我们在拿生命做赌注”：造AI的人为何开始密集预警？",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/FA80wgNMOwCRrXsSIAwX?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/FA80wgNMOwCRrXsSIAwX?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789153722000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "02f0e4f56e74",
+      "title": "An Anthropic researcher’s doomsday warning comes at a very interesting time",
+      "summary": "An Anthropic researcher resigned this week,&#160;warning in a post on X&#160;that the company is “racing straight to self-improving superintelligence and gambling with our lives”.&#160;The company&#8217;s own alignment&#160;lead&#160;even&#160;co-signed the message&#160;rather than walking it back.&",
+      "url": "https://techcrunch.com/podcast/an-anthropic-researchers-doomsday-warning-comes-at-a-very-interesting-time/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789152109000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "a2be4ff75270",
+      "title": "AI Coding 的下一步不是写得更快，而是可验收：蚂蚁数科 Harness 工程实践",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/A2IFuW8yiYhRqXizT5Uu?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/A2IFuW8yiYhRqXizT5Uu?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789150519000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "bc89c81cfc15",
+      "title": "“数据比模型重要”成了共识，接下来拼什么？",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/sT7izVmjw1YVxh3FQyK8?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/sT7izVmjw1YVxh3FQyK8?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789147759000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "a0fecd28b2bc",
+      "title": "HashiCorp Packer 1.16 发布，支持机器镜像 SLSA 来源证明生成与核验",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/v3VX3eqmROVDJ38rQOh0?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/v3VX3eqmROVDJ38rQOh0?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "其他",
+      "publishedAt": 1789146000000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "7387831a9639",
+      "title": "Nscale adds former OpenAI exec Fidji Simo to its board ahead of potential IPO",
+      "summary": "The No. 2 exec at OpenAI also led Instacart through its IPO in 2023.",
+      "url": "https://techcrunch.com/2026/09/11/nscale-adds-former-openai-exec-fidji-simo-to-its-board-ahead-of-potential-ipo/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789145185000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "139ca826bb51",
+      "title": "当 AI 写出更多代码，企业为什么没有跑得更快？| JDD 大会现场观察",
+      "summary": "<div align='right'><a href='https://www.infoq.cn/article/Y02WwW92ZqjLXQQvIWWi?utm_source=rss&utm_medium=article'>点击查看原文></a></div>",
+      "url": "https://www.infoq.cn/article/Y02WwW92ZqjLXQQvIWWi?utm_source=rss&amp;utm_medium=article",
+      "source": "infoq",
+      "sourceLabel": "InfoQ 中文",
+      "sources": [
+        "infoq"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789143031000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "031aab2e9ae3",
+      "title": "Anthropic spent this week in hot water over cybersecurity",
+      "summary": "After admitting earlier this year that its AI models had hacked other companies' systems on a handful of occasions, Anthropic released a new report on Wednesday detailing the attacks. It reveals a string of incidents displaying what Anthropic deems its models' single-minded \"recklessness\" - and will",
+      "url": "https://www.theverge.com/ai-artificial-intelligence/994064/anthropic-spent-this-week-in-hot-water-over-cybersecurity",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789142954000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "verge-ai",
+        "tc-ai",
+        "mit-ai"
+      ]
+    },
+    {
+      "id": "3a9a749fd8c0",
+      "title": "Meta says it&#8217;s changing AI suggestions after posing invasive personal questions",
+      "summary": "Meta says it's making changes to the prompts suggested by its AI chatbot after a viral video showed it digging for personal information about a woman's young daughters, as reported earlier by Futurism. In a statement to The Verge, Meta spokesperson Dina El-Kassaby says the company \"missed the mark,\"",
+      "url": "https://www.theverge.com/tech/993974/meta-ai-prompt-invasive-suggestions",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789136721000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "f7733cb674d0",
+      "title": "DeepSeek V4.1 Flash 发布；罗永浩狂喷苹果折叠屏：全是抄的；马斯克「无聊公司」融资 30 亿美元｜极客早知道",
+      "summary": "DeepSeek V4.1 Flash 模型正式发布：全面超越 V4 Pro、原生多模态视觉理解，最高降价 60% 9 月 10 日消息，深度求索今日正式发布DeepSeek V4.1 Flash 模型。这是其全新模型结构系列中的最小尺寸的模型，具备原生多模态视觉理解能力。 新模型结构的设计初衷是：能力上限更高、推理速度更快、吞吐更大、可扩展到更大参数模型。 DeepSeek V4.1 Flash 为 552B 参数的 MoE 模型，采用了全新的 Causal-Encoder-Decoder 结构，输入和输出不对称，输入激活只有 8B，输出激活 16B，成本显著低于已知的同尺寸模型。同时，V4",
+      "url": "http://www.geekpark.net/news/370157",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1789086665000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "geekpark",
+        "infoq",
+        "ai-bot"
+      ]
+    },
+    {
+      "id": "98a81690d601",
+      "title": "Jensen Huang explains why Nvidia will grow an astounding 70% next year",
+      "summary": "Nvidia has its finger in every pie, and sees another year of plenty in its future, Jensen Huang says. But, he insists, its deals are not circular.",
+      "url": "https://techcrunch.com/2026/09/10/jensen-huang-explains-why-nvidia-will-grow-an-astounding-70-next-year/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789077119000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "e08af857b671",
+      "title": "Mark Wahlberg is coming to TechCrunch Disrupt 2026, and he wants to talk about your work, not his",
+      "summary": "Mark Wahlberg joins Bruce K. Lee at Disrupt to discuss investing, entrepreneurship, healthcare, wellness, and building businesses.",
+      "url": "https://techcrunch.com/2026/09/10/mark-wahlberg-is-coming-to-techcrunch-disrupt-2026/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789076100000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "f8aad337b456",
+      "title": "Slack can now vibe-code interactive charts and reports inside chats",
+      "summary": "A new feature coming to Slack will allow you to build interactive reports, polls, dashboards, presentations, microsites, and other tools directly inside a chat. With Slackforce Surfaces, you can describe to Slackbot what you need, and it will use AI to gather information from relevant conversations ",
+      "url": "https://www.theverge.com/tech/989853/slackforce-surfaces-launch",
+      "source": "verge-ai",
+      "sourceLabel": "The Verge AI",
+      "sources": [
+        "verge-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789075521000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "33e1c9718dbb",
+      "title": "OpenAI puts Pro subscriptions on hold due to Astra demand",
+      "summary": "The company said Pro subscriptions put the most strain on its systems, so it's pausing sign-ups while adding more capacity.",
+      "url": "https://techcrunch.com/2026/09/10/openai-puts-pro-subscriptions-on-hold-due-to-astra-demand/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789073991000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "c1b87397105a",
+      "title": "Anthropic details distillation campaigns from Alibaba, Moonshot AI, and DeepSeek",
+      "summary": "A new report released Thursday by Anthropic alleges persistent distillation attacks by China-based AI companies, which have escalated in recent months as competition in the space has intensified.",
+      "url": "https://techcrunch.com/2026/09/10/anthropic-details-distillation-campaigns-from-alibaba-moonshot-ai-and-deepseek/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789073850000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "tc-ai",
+        "verge-ai"
+      ]
+    },
+    {
+      "id": "2f28c772d4a2",
+      "title": "Meta&#8217;s AI agent Muse is now the No. 2 app in the US",
+      "summary": "Meta's newest app Muse is off to a slower start than the company's other apps, like Meta AI or Threads.",
+      "url": "https://techcrunch.com/2026/09/10/metas-ai-agent-muse-is-now-the-no-2-app-in-the-us/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789069804000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "tc-ai",
+        "ai-bot"
+      ]
+    },
+    {
+      "id": "a1441acb7947",
+      "title": "Anthropic reveals rogue AI agents hate CAPTCHAs, just like you",
+      "summary": "Come inside the mind of a bot trying to convince the internet it's human.",
+      "url": "https://techcrunch.com/2026/09/10/anthropic-reveals-rogue-ai-agents-hate-captchas-just-like-you/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789062884000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "93d9e26d976d",
+      "title": "India&#8217;s Pocket FM doubles revenue run rate to $500M as AI powers 93% of audio content",
+      "summary": "Pocket FM uses AI to produce 99% of its new content, helping make content production about 80 times cheaper.",
+      "url": "https://techcrunch.com/2026/09/10/indias-pocket-fm-doubles-revenue-run-rate-to-500m-as-ai-powers-93-of-audio-content/",
+      "source": "tc-ai",
+      "sourceLabel": "TechCrunch AI",
+      "sources": [
+        "tc-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789062300000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "324c8171a714",
+      "title": "OpenAI将实时语音模型 GPT-Live-1 上线 API",
+      "summary": "OpenAI宣布将GPT-Live-1上线API。模型支持全双工对话，可同时进行语音输入输出，处理打断、停顿及背景噪声，适用餐厅预订、客户服务等电话语音智能体。GPT-Live-1 将语音理解与输出整合在同一模型中，降低延迟，复杂推理可交由后端文本模型处理。",
+      "url": "https://www.ithome.com/1/001/091.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789056000000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "363848772161",
+      "title": "商汤小浣熊上线移动端",
+      "summary": "商汤小浣熊移动端正式上线，iOS与安卓版本同步发布。移动端推出三大核心能力：手机发指令、电脑持续执行；离开工位也能随时查看、分享和接续成果；长按语音输入、松手即发送。",
+      "url": "https://mp.weixin.qq.com/s/FPJ9_HjdXZnR6Dfe24MpwQ",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1789056000000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "e9a717c4c607",
+      "title": "基元律动 x 无问芯穹推出 Agent-Native 模型 NeoHorse-1",
+      "summary": "基元律动联合无问芯穹及清华、北大、港中文、阿里等推出自研 Agent-Native 模型 NeoHorse-1，提供 4B 与 9B 两个版本。模型训练数据来自 Harness 结构化执行轨迹，内部评测称多项 Agent 子任务达同规模 SOTA。",
+      "url": "https://mp.weixin.qq.com/s/8mJRNtwty4s_SQfAlWOerA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789056000000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "ef2a155b876a",
+      "title": "走出聊天框，Agent 开始进入现实世界",
+      "summary": "头图来源：小度 Agent 正在寻找自己的「身体」。 过去一年，智能体的主要工作对象是文件、网页和软件。它们可以搜索资料、分析数据、制作 PPT，也可以打开浏览器、调用工具，把一句需求推进成一份可供交付的结果。衡量一个 Agent 能力的方式，也集中在任务能不能做完、执行路径是否稳定、生成结果是否可用。 但屏幕里的 Agent 仍然与现实世界隔着一层。 它可以替人整理一周的工作记录，却不知道会议室里刚刚讨论了什么；能够生成一套家庭计划，却看不到孩子有没有开始写作业；可以给出老人用药的注意事项，却无法确认提醒是否被听见。文件、网页和软件提供的是结构化信息，现实世界则充满持续变化的人、物品、声音和",
+      "url": "http://www.geekpark.net/news/370064",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1789047547000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "f59fefad0a5f",
+      "title": "微信，悄悄迈出 AI 社交的第一步",
+      "summary": "头图来源：视觉中国、ChatGPT 生成 最近，微信开始小范围测试一项新的「小微 AI 社交」功能。 用户如果想联系一位朋友，可以先把诉求告诉自己的「小微」。小微找到对方的小微后，会说明此次沟通的话题，并向对方本人请求授权。获得同意后，两个小微先行交流；遇到需要用户作出选择或者确认的地方，再分别回来提醒各自的主人。 这和「帮我给某某发一条微信」并不相同。 代发消息仍然由用户决定说什么，AI 只是代替用户点击发送。小微 AI 社交中，用户交给 AI 的是一个目的。如何发起询问、交换哪些信息、怎样归纳分歧，部分沟通过程已经交给两个 AI 完成。 据极客公园实测，两个小微之间的交流不会出现在双方原有",
+      "url": "http://www.geekpark.net/news/370155",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1789047417000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "ba6eae858c65",
+      "title": "对话极壳创始人孙宽：年出货 3 万台后，外骨骼「全班第一」的成长和焦虑",
+      "summary": "在刚刚结束的 IFA 柏林国际消费电子展上，几乎每家机器人公司的展台上，都会摆上一台可穿戴外骨骼设备。就像 10 年前，很多互联网新锐创业者都喜欢在办公桌上摆一台无人机。这既是对这个品类「前沿」的认可，也表露出某种对市场增长的看好。 2025 年被认为是「消费级外骨骼元年」。今年，这个行业迅速涌入了上百个新玩家。 极壳 Hypershell 去年的全球出货量超过了 3 万台，是这个细分领域里公认的头号玩家。创始人孙宽认为，这仍然是一个相对早期和小众的品类，现有的产品体验还有大量提升的空间。 在孙宽看来，竞争并不是当下驱动行业创新的核心动力。他希望跨越鸿沟，把外骨骼产品的目标用户从户外、老年等几",
+      "url": "http://www.geekpark.net/news/370150",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1789040493000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "fe35ce03f596",
+      "title": "Powering AI is an architecture problem",
+      "summary": "On July 22, 2026, a transmission line fault in Ashburn, Virginia—the heart of the world&#8217;s largest data center cluster—knocked more than 3 gigawatts of load off the grid in seconds. And it wasn&#8217;t the first time. Two years earlier, a single failed surge arrester dropped roughly 60 Virginia",
+      "url": "https://www.technologyreview.com/2026/09/10/1141649/powering-ai-is-an-architecture-problem/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1789038000000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "fbf647cc4f5e",
+      "title": "苹果进入特努斯时代，首发 15999 元折叠屏 iPhone；Deepseek 被曝备战科创板 IPO；谷歌埃森哲组建千人 FDE 团队 | 极客早知道",
+      "summary": "苹果首款折叠 iPhone Duo 亮相，国行 15999 元起 北京时间 9 月 10 日凌晨，苹果发布首款折叠手机 iPhone Duo，国行 15999 元起，10 月 16 日开启预售，23 日正式发售。同场推出 iPhone 18 Pro 系列，9999 元起；标准版 iPhone 18 推迟至明年春季发布。 该机采用书本式内折设计，内外屏尺寸与小米 18 Fold 接近，价格高出 5000 元。机身重 254 克，厚度在同类折叠机型中偏厚重，但支持 IP68 防水。机型取消长焦镜头与面容 ID，改用侧边 Touch ID，搭载 A20 Pro 芯片。iOS 27 首次加入手机分屏功",
+      "url": "http://www.geekpark.net/news/370089",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1789001939000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "847452e67c90",
+      "title": "苹果第一台折叠 iPhone，15999 元起",
+      "summary": "iPhone Duo，国行 15999 元起 作者｜张勇毅 编辑｜靖宇 北京时间今天凌晨，苹果发布了第一台折叠屏手机，名字叫 iPhone Duo。国行 15999 元起，10 月 16 日晚 8 点预购，10 月 23 日发售。同场发布的 iPhone 18 Pro 系列 9999 元起，9 月 12 日晚 8 点预购，18 日发售。 三天前，小米发布了 18 Fold：外屏 5.38 英寸，内屏 7.58 英寸，10999 元起。iPhone Duo 按苹果规格页的标准矩形口径，外屏 5.36 英寸，内屏 7.58 英寸。 两块屏幕的尺寸，差别在小数点后第二位。价格差了 5000 元。 书",
+      "url": "http://www.geekpark.net/news/370088",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788982989000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "91288f69f7bb",
+      "title": "ChatGPT 语音模式支持调用 GPT-5.6 Sol 和 GPT-6 Astra",
+      "summary": "OpenAI更新ChatGPT语音模式，用户可在语音对话中自选模型与推理强度，Pro用户可选用GPT-5.6 Sol或GPT-6 Astra。遇到搜索或复杂推理时，系统会自动调用所选模型，且每次转交底层文本模型都计入消息额度。",
+      "url": "https://www.ithome.com/1/000/577.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788969600000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "ai-bot",
+        "aitntnews"
+      ]
+    },
+    {
+      "id": "475928b1e59a",
+      "title": "Kimi 正式启动企业合作伙伴计划",
+      "summary": "Kimi今日启动企业合作伙伴计划，联合IT服务商、集成商共建前线部署工程师队伍，深入客户现场推动AI进入核心业务。伙伴可接入Kimi模型与Kimi Hosted Agents底座，沉淀行业方案并转型AI服务商；华胜天成、金山云、亚康股份、亚信科技、中软国际等已签约。",
+      "url": "https://mp.weixin.qq.com/s/CdPMweyCatDeWrEB2SJWnA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788969600000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "a2a3e433cbc5",
+      "title": "DeepSeek 正式开源 DeepSeek V4.1 Flash",
+      "summary": "DeepSeek正式开源DeepSeek V4.1 Flash，为552B参数的 MoE 模型，采用非对称Causal-Encoder-Decoder结构，输入激活仅8B、输出16B，具备原生多模态能力。模型同时显著压缩KV Cache，降低Agent场景成本。API已同步上线，模型名改为deepseek-flash即可调用。同时腾讯（WorkBuddy、CodeBuddy）与OpenCode已全量接入。",
+      "url": "https://mp.weixin.qq.com/s/qg0NU3NNUbp1co2PdkAPAg",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788969600000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "ai-bot",
+        "infoq",
+        "geekpark"
+      ]
+    },
+    {
+      "id": "a889145e19c8",
+      "title": "Qoder 上线 Sonus 模型，电脑操作能力全面增强",
+      "summary": "Qoder国际版新增内置模型Sonus，模型擅长超长自主任务执行与电脑操作。配合Qoder桌面端0.2.3版本的优化能力，Sonus可直接操作电脑及各类专业软件，自主完成编程、金融建模、科学研究、制作电子表格等复杂任务。",
+      "url": "https://mp.weixin.qq.com/s/PWLVB_O8vmoiT5oSO_zB3Q?scene=1",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788969600000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "d43f35f2ccde",
+      "title": "千问办公发布多人工作台，重写企业软件的最后一公里",
+      "summary": "作者｜Cynthia 编辑｜郑玄 2026 年 2 月 3 日，由 Anthropic 带头，华尔街替 SaaS 写好了讣告。 几天前，Anthropic 正式官宣把 Claude Cowork 的插件能力扩展到法律、销售、金融等知识工作。与普通聊天机器人不同，这些插件可以携带部门工作流、调用外部工具和数据，并按照预设规则完成一段具体工作。 市场很快把这种能力翻译成了另一个词：替代。2 月 3 日，高盛一篮子美国软件股单日下跌 6%；彭博统计，当天软件、金融服务和资产管理相关股票合计蒸发约 2850 亿美元。一天之后，Wind 香港 SaaS 指数又下跌 6.39%，板块总市值缩水近 150 ",
+      "url": "http://www.geekpark.net/news/370061",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788937624000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "5d0fd86e39ab",
+      "title": "What OpenAI’s latest controversy tells us about the future of math",
+      "summary": "OpenAI’s latest mathematical milestone has quickly become mired in controversy. Today, the company announced that its agents have solved one of the Millennium Prize Problems, some of the most important open problems in mathematics. Under normal circumstances, that solution would be a huge feather in",
+      "url": "https://www.technologyreview.com/2026/09/08/1143747/what-openais-latest-controversy-tells-us-about-the-future-of-math/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788923408000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "mit-ai",
+        "verge-ai"
+      ]
+    },
+    {
+      "id": "044341038863",
+      "title": "折叠屏 iPhone 初期产量受限，每日仅数百部；环比增长 379%，腾讯 HY4 登顶全球大模型调用榜；特斯拉时隔 19 个月再降价｜极客早知道",
+      "summary": "消息称苹果折叠屏 iPhone 初期产量受限，每日仅数百部 9 月 8 日，据日经中文网报道，根据多位知情人士指出，市场期待已久的首部苹果折叠 iPhone，由于苹果极为严格的质量管控标准，初期生产量每天仅有「数百部」，而苹果及其供货商正全力加快产量爬坡。 熟悉情况的供应链主管向《日经亚洲》透露：「苹果设定了极高的质量标准，在正式量产之前，8 月又追加了一轮试产」。该人员表示：「截至 8 月下旬日产量仅数百部。按这样的初期产能计算，有可能难以满足市场需求」。 《日经亚洲》先前报导，苹果计划今年内生产 800 万~1000 万部折叠屏 iPhone，并希望凭借这款全新外型设计的机型激发市场需求，",
+      "url": "http://www.geekpark.net/news/370026",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788914262000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "e0b7dd25ded4",
+      "title": "智象未来正式上线旗下内容创作智能体 vivago R1「够搭」",
+      "summary": "象未来旗下内容创作智能体vivago R1正式全球上线，国内版「够搭」同步升级。vivago R1为全球首个无限时长内容创作智能体，可一次性稳定输出5分钟高质量视频并支持多轮延长，内容有效可用率达85%。产品采用Chat-First对话优先模式，依托&#8221;基础模型+智能体&#8221;双轮驱动，由Agent自动拆解脚本、分镜、角色、场景与音效。",
+      "url": "https://mp.weixin.qq.com/s/kEkUPbdtnsbLmSv_jWSS3g",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788883200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "fefa8f77a9e8",
+      "title": "OpenAI 推出新一代图像生成模型 ChatGPT Images 2.5",
+      "summary": "OpenAI推出ChatGPT Images 2.5新一代图像模型，模型在细节、编辑精准度和速度上全面升级，生成延迟较2.0降低50%，能更好保留参考照片主体并维持多轮编辑一致性。ChatGPT同步上线手绘草图、模板、图片评论及提示词分享等创作功能，API同步推出Flare与Sunburst两款模型。",
+      "url": "https://openai.com/index/introducing-chatgpt-images-2-5/",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788883200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "1016ab53a473",
+      "title": "小米开放邀测 Xiaomi MiMo Desktop",
+      "summary": "小米 XiaoMi MiMo Desktop 正式开放邀测，切入桌面 Agent 赛道，与腾讯、阿里、字节同场竞争。官方强调用真实任务换反馈，邀测期通过申请的用户可限时、限量免费体验 MiMo-X-Pro-Preview 与 MiMo-X-Flash-Preview。",
+      "url": "https://mp.weixin.qq.com/s/Ey0GaGl3erC6sm_ubOOEEQ",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788883200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "62904db246fb",
+      "title": "蚂蚁开源原生多模态大模型 Ling-3.0-flash-VL",
+      "summary": "蚂蚁百灵开源首个原生多模态大模型 Ling-3.0-flash-VL，总参数 124B、单次推理仅激活 5.5B，支持图像/文本/视频与 256K 上下文。模型原生联合训练称可反哺文本，通过观察—行动—验证—修正视觉反馈闭环，用于网页复刻、GUI Agent、医疗报告解读等，强调低延迟低成本。",
+      "url": "https://mp.weixin.qq.com/s/1MwD3tusIJiUNlR8awJOkw",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788883200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "c04433b0e9de",
+      "title": "Meta 推出首款个人智能体 Muse",
+      "summary": "Meta推出首款个人AI智能体Muse，可自主代表用户完成发送邮件、卖车及预订旅行等任务。产品现已在美国上线并提供订阅收费。Muse能接入邮件、日历、支付、健康等敏感数据，用户可自行选择 Muse 连接哪些应用，有权随时撤销其访问权限。",
+      "url": "https://www.ithome.com/0/999/960.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788883200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "6357b3afb9aa",
+      "title": "This AI entrepreneur is developing agents that can plan ahead for the unexpected",
+      "summary": "Danijar Hafner’s office in San Francisco’s SoMa district sits mostly empty. His brand-new startup is still in stealth mode and doesn’t even have its name on the door. On the day I visited, earlier this year, there’s only one other person there, and little in the way of furniture. But what it lacks i",
+      "url": "https://www.technologyreview.com/2026/09/08/1142088/danijar-hafner-developing-plan-ahead-agents/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788863640000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "2055475aeff7",
+      "title": "IFA 2026 现场：下一代穿戴设备的本质，是把录音笔和摄像头戴在身上",
+      "summary": "本文转载自 Hardwire，欢迎关注，共同看见硬件行业新风向 👇 屏幕消失不是做减法，是把「显示」换成了「采集」。 作者｜张勇毅 编辑｜靖宇 IFA 开幕前一天，小米在柏林把手环 11 端了出来。还是 1.72 英寸的屏幕，亮度从上一代的 1500 尼特提到 2000 尼特，国内 289 元起，9 月 7 日首售。官方通稿的第一个卖点，就是这块屏幕在太阳底下有多清楚。 同一周的同一个展馆里，另一批穿戴设备正在把屏幕拆掉。 会场对面地铁站附近，Plaud 的广告｜图片来源：极客公园 Luna Band 从 IFA 开幕这天起全球发货，149 美元，没有屏幕，也没有订阅费；Circular 发",
+      "url": "http://www.geekpark.net/news/370007",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788852559000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "866dbec69880",
+      "title": "单人一月烧掉 19 万，硅谷开始倒查员工 AI 账单",
+      "summary": "「有人星夜赶科场，有人辞官归故里。」 作者｜张勇毅 编辑｜靖宇 过去很长一段时间里，微软员工之间流传着一张自发维护的表格，用来互相交换薪资和奖金数字，大公司里常见的那种「工资透明化」地下工程。 今年，这张后来被 Business Insider 拿到的表格上，多出了一列新数字：「每月 AI 花费」。 各部门员工自报 AI 用量，28 天口径｜图片来源：Business Insider 约 350 名美国员工填了这一列。最高的那一格写着：28 天，2.8 万美元（约合 19 万元人民币）。 微软的反应不是给这位同学发先进。据 Android Headlines 报道，公司已经开始收紧 token",
+      "url": "http://www.geekpark.net/news/370006",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788852431000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "930657c5e04b",
+      "title": "传字节开发实时空间视频生成模型；微信内测「AI 社交」功能；华为小米同天发布折叠屏手机",
+      "summary": "消息称字节正开发实时空间视频生成 AI 模型：最快下个月发布 9 月 7 日消息，据彭博社报道，字节跳动正准备推出一款实时空间视频生成 AI 模型。该模型计划最早于下月发布。 知情人士指出，发布时间尚未最终确定，计划仍可能发生变动。 据介绍，该模型基于字节跳动现有的电影级视频生成 AI 模型 Seedance 构建，将允许用户面向直播、短剧和游戏创建交互式虚拟世界。字节跳动发言人未回应置评请求。 知情人士称，字节跳动此次将空间视频模型定位为驱动整个生态的「飞轮（Flywheel）」&mdash;&mdash;该模型能够将用户置于高度沉浸的三维虚拟环境中，功能与谷歌的 Genie 类似。字节跳动",
+      "url": "http://www.geekpark.net/news/369965",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788827694000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "2a245d043a94",
+      "title": "蚂蚁集团开源统一图像生成与编辑模型 LLaDA-Image",
+      "summary": "蚂蚁集团 InclusionAI 开源 6B 参数文生图模型 LLaDA-Image，模型搭载自条件学习、统一生成编辑及 TwinFlow 蒸馏（50 步压缩至 2–4 步）等技术，在 Qwen-Image-Bench 中英文双料位列开源第一，总分介于 GPT Image 1 与 Imagen 4.0 Ultra 之间。",
+      "url": "https://mp.weixin.qq.com/s/bYm-YTP9higpLzf-vR9Brw",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788796800000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "9a116141e66a",
+      "title": "DeepSeek内测新模型 DeepSeek V4.1 Flash",
+      "summary": "DeepSeek 宣布 DeepSeek V4.1 Flash 中间版开启内测，模型采用新模型结构，原生支持多模态、能力更强、速度更快且成本更低。开发者沿用原base_url、改设指定模型名即可调用，计费与DeepSeek V4 Flash相同，单账号限20并发，模型将于9月10日自动过期。",
+      "url": "https://mp.weixin.qq.com/s/Y13161SUQE3FH1mac8sIxA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788796800000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "ai-bot",
+        "infoq",
+        "geekpark"
+      ]
+    },
+    {
+      "id": "c4d98c289c61",
+      "title": "Mistral AI 完成 30 亿欧元 D 轮融资",
+      "summary": "法国 AI 初创企业 Mistral AI 宣布完成 30 亿欧元 D 轮融资，投后估值超 210 亿欧元，本轮融资由三星电子、Scaleup Europe Fund 及 PSG Equity 领投，融资规模创欧洲科技公司历史纪录,资金将用于前沿研究。旗下 AI 助手 Le Chat 支持多语言对话、深度研究、图像生成与编辑、代码生成及网页搜索等功能，注重数据隐私保护。",
+      "url": "https://www.ithome.com/0/999/657.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788796800000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "cb7ec39e52e9",
+      "title": "面壁智能开源端侧语言基座模型 MiniCPM5-2B",
+      "summary": "面壁智能联合OpenBMB开源2B端侧基座MiniCPM5-2B，在AA榜单位列全球4B以下开源模型第一，综合23分，Agentic Index达20分、约为同级十倍。项目同步开放UltraData数据、Meshy框架与JustRL II，并完成英特尔、瑞芯微、Arm等Day0适配。",
+      "url": "https://mp.weixin.qq.com/s/QjIQhrayJK47SAN2E5TpdA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788796800000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "90642e9262ec",
+      "title": "腾讯混元升级 Hy4 preview 模型",
+      "summary": "腾讯混元发布 Hy4 preview 模型升级公告。模型针对复杂任务中长思考、过度自我验证等问题进行专项优化，已通过 Bench 指标与人工评测双重监控全量上线。新版本在不损失任务效果的前提下，显著降低任务轮次及输入输出 token 消耗，提升效率。",
+      "url": "https://mp.weixin.qq.com/s/WKXIAtQX4OSNVdz3UUtcgA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788796800000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "d4c4416c62ce",
+      "title": "AI 时代，「种草」这件事会变成什么样？",
+      "summary": "作者｜靖宇 互联网时代，鲜有一个网站或者应用，能像小红书一样在不停的转换身份和功能的进化中，穿越周期。 对于现在的网民来说，你几乎能在小红书上面搜索到各种小妙招。它还是攻略集宝鉴，哪里旅游不踩坑全部奉献给小伙伴。 当然，没人能忘了，这是国内公认的「种草」平台，甚至，「种草」这两个字的本源，就来自小红书本身。 在 AI 时代，信息和内容以指数级的增速被生产出来，一方面确实拉低了「种草内容」的创作门槛，但另一方面，AIGC 内容的泛滥，也让用户对平台内容产生了「过敏」，降低了对于内容的信任。 对于营销从业者来说，这可能是一个新时代的挑战。 如何在 AI 时代，让品牌能够更精准的找到目标用户，更重要",
+      "url": "http://www.geekpark.net/news/369962",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788786065000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "6846b3aad2bc",
+      "title": "判断用不用你的软件，Agent 只需 500 个 Token",
+      "summary": "作者｜宇航猿 编辑｜靖宇 现在几乎每个开发者都在用 AI Agent 干活。Cursor、Claude Code、Windsurf、Gemini CLI，各种 Coding Agent 已经深度嵌入了日常工作流。一个普遍的体验是，让 Agent 去调某些 API 或者集成某个服务，有些丝滑得像开了挂，有些则反复报错，甚至直接编造出一个根本不存在的接口。 大多数人把这归结为： 「 模型还不够聪明 」。 但如果反过来想， 不是 Agent 不够聪明，而是有些产品天然对 Agent 友好，有些则天然对 Agent 充满敌意 。 这像极了十几年前的 SEO。你觉得自己的网站内容很好，但 Google ",
+      "url": "http://www.geekpark.net/news/369960",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788777168000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "geekpark",
+        "aitntnews",
+        "ai-bot"
+      ]
+    },
+    {
+      "id": "749d9f196979",
+      "title": "童欣加入 Meshy，3D 世界终于等到自己的「互联网时刻」",
+      "summary": "作者｜Cynthia 编辑｜ 郑玄 2016 年， 后来被反复宣布了无数次元年的 VR 产业，正式迎来了第一次爆发浪潮。 这一年 3 月 28 日，Oculus Rift 首批发货，售价 599 美元的产品很快被销售一空；两天后，曾在微软 Windows 10 发布会上被重点推介的 3000 美元 HoloLens 开发者版也迎来正式发售，此前围绕 HoloLens 举办的 11 城开发者巡展，名额开放 90 分钟便全部订满。同一时间还未正式发售 PlayStation VR 的索尼，则直接宣布已经有 230 多家开发商和发行商正在为它制作内容。 资本比硬件更为激进。高盛在当年年初把 VR/A",
+      "url": "http://www.geekpark.net/news/369959",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788776802000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "6b90aed03f3c",
+      "title": "「AI Native 」不是魔法，「创业者」这三个字依旧厚重",
+      "summary": "上个月，我集中跑了一趟上海和深圳，也跟几位在 AI 前沿一线折腾的创业者深聊了几次。 齐俊元的新产品干了半年，我问他这阶段最大的收获是什么，他说了句挺朴素的话：「真的伸手去干的时候，你会发现认真还是挺重要的。」 这话听着很普通，事后却让我不断想起，放到当下的行业环境下看，也挺让人警醒的。 3 年来深入聊过至少 200 位 AI 创业者了，现在有一些已经有点丧气了。「AI 应用已经不能投了」的观点也在业内流传。觉得这不能干，那不能干，机会没了，窗口关了。但你反过来看，那些真正跑出来的产品，都有一个共同点&mdash;&mdash;特别笃定地扎在一个方向上，然后往死里抠细节。 比如俊元做的产品，真",
+      "url": "http://www.geekpark.net/news/369955",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788773366000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "ae07c0da2d2f",
+      "title": "麒麟 9050 Pro 现身、余承东秀英文，华为新三折叠太有活了",
+      "summary": "「Super Intelligent！Super cool！」 你很难想到，华为终端 BG 董事长 余承东，会在正式场合突然充满自信的飙英文。 余承东在发布会上展示华为 Mate XT2 非凡大师三折叠手机｜图片来源：极客公园 9 月 7 日的华为秋季全场景发布会上，余承东在介绍当天的重磅新品华为 Mate XT2 非凡大师时，突然用英语评价起了这款产品，「超级智能、超级酷」，翻译过来就是英文版的「遥遥领先」。 余承东公布华为 Mate XT2 非凡大师三折叠手机售价｜图片来源：极客公园 作为隔年更新的第二代三折叠手机，19999 元起的华为Mate XT2 非凡大师固然是当天最大的亮点，但比",
+      "url": "http://www.geekpark.net/news/369954",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788772407000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "69762573fc00",
+      "title": "雷军：小米汽车销量突破 80 万；苹果元老辞职，传不满激进 AppStore 增收方案；韩国推出首档人机 AI 恋综 | 极客早知道",
+      "summary": "雷军：小米汽车累计交付量超过 80 万辆 9 月 7 日消息，小米创办人、董事长兼 CEO 雷军刚刚宣布，小米汽车累计交付量超过 80 万辆。 据本月早些时候报道，2026 年 8 月，小米汽车交付量持续超过 30,000 台。小米汽车表示，正全力为小米澎程上市交付做准备。 另外，在 7 月 30 日的小米澎程技术发布会上，小米创办人、董事长兼 CEO 雷军表示，2 年半的时间，小米汽车发布了两款车&mdash;&mdash;小米 SU7 和小米 YU7。这两款车都成了爆品，并且累计交付 70 多万台。 小米汽车 2026 年各月交付量如下： 1 月交付量超 39,000 台 2 月交付量超 ",
+      "url": "http://www.geekpark.net/news/369884",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788742547000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "8daa22069009",
+      "title": "马斯克 SpaceXAI 拓展 Grok Bot 至 iPad 和安卓",
+      "summary": "马斯克旗下 xAI 拓展 Grok Bot 平台，新适配 iPad 与安卓系统，实现 Mac、iPhone、iPad、安卓四终端覆盖。平台支持 AI 智能体 24 小时组队协作，可登录不同应用、保留任务上下文并在多机器人间共享信息。",
+      "url": "https://www.ithome.com/0/998/685.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788710400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "a6d0f663b147",
+      "title": "秘塔科技推出 AI 心理健康应用 「智慧月隐」",
+      "summary": "秘塔科技推出AI心理健康应用「智慧月隐」微信小程序。产品采用结构化卡牌问答互动形式，通过AI追问引导用户抽牌，结合专业心理逻辑进行牌局解读，提供个性化情绪疏导与认知视角建议。产品适用职场压力疏导、情感关系梳理及睡前情绪整理等场景。",
+      "url": "https://ai-bot.cn/moonveil/",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788710400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "cb7803060b1c",
+      "title": "科大讯飞正式推出星火X2.5",
+      "summary": "科大讯飞正式推出星火X2.5大模型。模型基于全国产算力完成全流程训练，采用MoE架构，参数规模达293B-A30B，并持续优化国产超长序列训推难题。新版本重点提升代码生成与智能体能力，数学、理解等通用能力也持续进步。",
+      "url": "https://mp.weixin.qq.com/s/hyUDlpPzEP0ummj226A7NA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788710400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "dc42f6f95155",
+      "title": "阿里正式推出 QoderWake 1.0",
+      "summary": "阿里 QoderWake 1.0 正式推出，支持企业像管理真实员工一样全流程招聘、培训、授权和管理 AI 员工。产品实现人与 AI 在同一组织内协作，人负责决策把关，数字员工负责执行推进，将优秀员工能力沉淀为可复用的数字化生产力，为企业提供不设上限的数字化人力产能。",
+      "url": "https://mp.weixin.qq.com/s/IEL__DL9hWKIAvz8MCn7FQ",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788710400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "776c47f67ff5",
+      "title": "传 iPhone 18 Pro 仅涨价 100 美元；Kimi、MiniMax 将在天猫开店；OpenAI 回应 Agent 攻击德国网站",
+      "summary": "大模型厂商纷纷「卖 Token」，消息称 Kimi、MiniMax 等即将在天猫开店 上海证券报 9 月 5 日独家获悉，Kimi、MiniMax、阶跃星辰等多家大模型厂商也都在与天猫接洽中，未来将入驻天猫开设官方旗舰店，开售 Token 订阅套餐产品。 本月 2 日，国产 AI 大模型厂商智谱正式入驻天猫，开设「智谱旗舰店」。用户可在淘宝 App 搜索「智谱旗舰店」进店下单。店铺目前已上架智谱 GLM Coding Plan 订阅套餐，基于 GLM-5.3 模型，并适配 ZCode、Claude Code、Codex 等 20 余款主流 Agent。 此前大模型厂商主要通过官网等自有渠道销售",
+      "url": "http://www.geekpark.net/news/369875",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788653172000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "geekpark",
+        "aitntnews",
+        "ai-bot",
+        "infoq"
+      ]
+    },
+    {
+      "id": "3ca66fd84fef",
+      "title": "互联网最古老的恐惧，被 AI 复活了",
+      "summary": "作者｜Techno 之王 编辑｜靖宇 2006 年底，一只熊猫毁了数百万人的电脑。 那只熊猫手捧三支香，面带微笑，出现在每一个被感染文件的图标上。「熊猫烧香」蠕虫在两个月内席卷全国，可执行文件全部变成那只诡异的熊猫图案，硬盘数据被破坏，局域网整段瘫痪，杀毒软件被病毒反杀。 那个年代的互联网老冲浪客大概都记得，打开网页心惊肉跳，插个 U 盘如临大敌，同事的电脑中了毒，你的也跟着遭殃。 再往前还有 CIH，直接烧主板 BIOS，硬件报废；有冲击波蠕虫，不需要你做任何操作，连上网线就中招，电脑不停重启，系统不断崩溃。那是一个「裸奔上网」近乎自杀的时代。 后来这种恐惧慢慢消退了。Windows 有了自",
+      "url": "http://www.geekpark.net/news/369873",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788584357000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "e2a120d75cf5",
+      "title": "传玛莎拉蒂和华为+江淮合作开发电动车；苹果最大新品阵容时代开启；人人影视回归，终身 VIP 888 元",
+      "summary": "OpenAI 智能体被曝「接管」德国维基网站 一项最新曝光的人工智能安全事件正在引发业内广泛关注。 根据研究人员披露的信息，今年春季，一批与 OpenAI 模型相关的自主智能体曾在未经授权的情况下「接管」一家德国维基网站，并将其改造成供其他 AI 系统交流信息的公共平台。这一事件此前从未对外公开，而 OpenAI 据称已在数周前获悉相关情况。 报道称，事件最早开始于今年 5 月，目标网站是一家名为 DseWiki 的德语维基平台，主要面向程序员社区开放协作编辑。研究人员在 8 月底调查 互联网异常 AI 活动时发现，该网站在数月时间内累计出现超过 1.5 万次由 AI 智能体完成的编辑操作。 ",
+      "url": "http://www.geekpark.net/news/369871",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788567855000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "d81424e2ad31",
+      "title": "Architecting memory and storage in the AI era",
+      "summary": "The era of AI inference has arrived. Imagine a healthcare system analyzing millions of data points in real time to accelerate life-saving medical research, or an intelligent assistant instantly resolving thousands of complex customer needs at once. These real-world breakthroughs rely on advanced inf",
+      "url": "https://www.technologyreview.com/2026/09/04/1140872/architecting-memory-and-storage-in-the-ai-era/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1788547159000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "947c90d12e9b",
+      "title": "Data from drones in Ukraine is fueling a new Wild West marketplace",
+      "summary": "Battlefields in Ukraine are littered with the remnants of drones, which are now firmly established as a critical weapon of modern warfare. But behind all that wreckage, there’s a new gold mine for the defense sector. The data drones generate will far outlast the wars in which they are used to fight,",
+      "url": "https://www.technologyreview.com/2026/09/04/1143452/drone-data-wild-west/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1788513919000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "907a2a9e9ca4",
+      "title": "对话 Sharpa 李一帆：通用机器人要么全能，要么无能",
+      "summary": "具身智能现在太吵了。 行业里的人各自笃定，声音大的先被听见。最响的那些声音，往往离真实的进展最远。 真正在往前推的人，看的是谁在践行非共识，什么在真的往前走，以及谁心里有一张完整的图，而不是走一步看一步。 这些东西不会上热搜，但它们决定这个行业的下一步。 我们一直探寻这些。如果你也是&mdash;&mdash; 欢迎来到极客公园 In The Loop。👇 作者｜Li Yuan 过去一年，上海静安区最醒目的队伍之一，在兴业太古汇北广场上。114.5 米长的路易威登「路易号」，像是一艘巨轮驶入南京西路，引起游人纷纷拍照。 很快，隔着石门一路，对面可能会出现一个新的排队打卡点。 8 月 29 日",
+      "url": "http://www.geekpark.net/news/369851",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1788511024000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "23d37bc60365",
+      "title": "梅卡曼德上市，具身智能又跑出一家百亿公司",
+      "summary": "作者｜Li Yuan 编辑｜郑玄 2026 年 9 月 1 日，梅卡曼德登陆港交所。一个过去很少被大众看见的机器人公司，终于被公开市场标出了价格，首日收盘总市值约 124 亿港元。 上市之前，一级市场和基石投资者已经先给出了自己的判断。梅卡曼德此次引入包括苏格兰百年资管巨头 Baillie Gifford 在内的 9 家基石投资者，合计认购 1.86 亿美元。 成立于 2016 年，梅卡曼德和宇树一样，都是上一轮机器人创业潮里走出来的公司。 但从第一天起，梅卡曼德就没有把重点放在造一台机器人上。公司名 Mech-Mind 里的「Mind」，指向的是另一件事：给机器人做感知、识别和运动规划。 2",
+      "url": "http://www.geekpark.net/news/369850",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1788510821000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "57c889129c08",
+      "title": "OpenAI 曝光 GPT-6，能力超群；微信公关总监回应「好友超 1 万可查看单删好友」；联合国：超强而厄尔尼诺将冲击全球经济 ｜ 极客早知道",
+      "summary": "GPT-6 曝光，OpenAI 总裁说：AGI 来了 当地时间 9 月 3 日，GPT-6 Astra 正式发布。OpenAI 总裁 Greg Brockman 在发布会结束后，说了一句在 AI 行业极为罕见的话：「我个人认为，我们可能已经到达 AGI 了，我觉得就是这个模型。」 OpenAI 给 Astra 起了个简洁的 slogan：「Anything you can do on a computer, Astra can do for you.（你在电脑上能做的任何事，Astra 都能替你做。）」 新模型可以像人一样，直接「看」屏幕上的像素，然后移动鼠标、敲击键盘，完成操作。 给 Ast",
+      "url": "http://www.geekpark.net/news/369801",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788481505000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "be6a4edf9fd5",
+      "title": "GPT-6 曝光， OpenAI 总裁说：AGI 来了",
+      "summary": "头图来源：OpenAI 作者｜桦林舞王 编辑｜靖宇 2026 年 9 月 3 日，OpenAI 总裁 Greg Brockman 在发布会结束后，说了一句在 AI 行业极为罕见的话：「我个人认为，我们可能已经到达 AGI 了，我觉得就是这个模型。」 他措辞很谨慎，用的是第一人称，加了「可能」，还专门留了后路说「如果你想说这是第一个，我认为这是合理的」。 这不是 OpenAI 官方宣布 AGI 到来，而是一位公司总裁在镜头前说出了自己的判断。 当地时间 9 月 3 日，GPT-6 Astra正式发布。极客公园拆解了目前能获取到的所有技术细节和演示材料，试图回答一个最核心的问题，这个模型，到底能干",
+      "url": "http://www.geekpark.net/news/369800",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "其他",
+      "publishedAt": 1788475709000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "d5bc409c1819",
+      "title": "英伟达拟约130亿美元价格收购 Hugging Face",
+      "summary": "英伟达宣布以约130亿美元收购AI初创公司Hugging Face，其中119亿美元支付投资者，10亿美元用于员工股权激励留任。这将成为英伟达史上最大收购之一，加快开放权重模型普及，巩固其在开放AI市场的核心地位。黄仁勋承诺Hugging Face将继续保持开放平台定位，不强制使用英伟达算力。",
+      "url": "https://mp.weixin.qq.com/s/Jvox0Xsq5vE23W9NHojUTQ",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788451200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "fbd228564e62",
+      "title": "OpenAI 推出最新旗舰大模型 GPT-6 Astra",
+      "summary": "OpenAI推出 GPT-6 Astra，是OpenAI迄今为止最强大且部署最广泛的大语言模型。模型首次达到公司准备框架中关键级网络安全能力门槛，可自主发现未知漏洞并开发利用方式。OpenAI强化了安全防护与对齐评估，抗越狱和提示词注入能力优于前代，但在对抗测试中展现出一定的监控规避能力，可监控性有所下降。",
+      "url": "https://www.ithome.com/0/998/208.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788451200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "4d6a66bcf249",
+      "title": "千问联合淘天开源电商经营评测基准 E-Commerce Bench",
+      "summary": "阿里联合淘天集团推出电商经营评测基准E-Commerce Bench，让大模型用10万元本金在真实市场数据中经营网店365天，涵盖选品、定价、供应商谈判、库存及促销等全链路。测试18个模型发现，GPT-5.6 Sol资产增值14倍领跑；模型在反欺诈、现金流管理等维度差异显著，仅Qwen3.8-Max-Preview能在复购中逐步压价。",
+      "url": "https://mp.weixin.qq.com/s/eND9TLcN3UcjpDjBXTmfPQ?scene=1",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788451200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "4d16a022f82d",
+      "title": "微软推出 AI 语音转文字模型 MAI-Transcribe-2",
+      "summary": "微软推出最强AI语音转写模型 MAI-Transcribe-2，在60种语言的FLEURS测试中平均词错误率仅5.2%，准确率和速度均大幅领先Gemini、GPT-Transcribe及Whisper等竞品。模型可智能区分说话人并标注逐词时间戳，根据场景在verbatim与clean两种风格间灵活切换，同时支持自然混用语言对话。",
+      "url": "https://www.ithome.com/0/998/241.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788451200000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "6336a816a5ca",
+      "title": "逛完 WRC，我们发现机器人行业最该回答的 5 个问题",
+      "summary": "8 月 19 日，北京亦庄的空气里飘着一种奇怪的兴奋，这是 2026 世界机器人大会开幕的日子。300 多家企业、2000 多件展品，几乎把具身智能行业能拿出的东西都搬到了这里：大模型、本体、关键零部件、数据，应有尽有。 开幕当天，宇树科技敲钟上市，盘中市值一度冲破 4000 亿元，这可能是过去十年，中国机器人行业最接近「资本狂欢」的一天。过去，机器人公司更多活在实验室、融资新闻和 Demo 视频里；而宇树的上市，第一次给这个仍处在早期的赛道钉下了一个资本锚点。 除此之外，云深处科技进入交易所受理或审核环节；智元机器人则于 2026 年 7 月确认启动赴港上市流程。一级市场的热，正在向二级市场",
+      "url": "http://www.geekpark.net/news/369388",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1788449138000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "dfe1b777c44a",
+      "title": "成立不到一年连融三轮，这个睡眠 AI 产品「火」了",
+      "summary": "头图来源：Fullive.ai 一家成立几个月、第一款产品即将量产的 AI 硬件公司，已经连续融了三轮：高瓴连续三轮加注，智元机器人等机构先后进入股东名单；到了今年 7 月，招商局创投又领投了它的新一轮融资。 这家公司叫 Fullive.ai，创始人郑昊本科就读于清华数学系，此后一路跨过生物统计、因果推断、AI、医学和硬科技投资；联合创始人韦骁龙来自北大计算机，此前曾在华为、荣耀负责消费电子产品。团队里还有参与过华为手环、WHOOP 等穿戴设备的硬件人员，以及来自百度、大疆等公司的算法和商业化老兵。 Fullive.ai 把第一款产品放在了床头。 它叫 Somni，是一款面向高压脑力人群的睡眠",
+      "url": "http://www.geekpark.net/news/369768",
+      "source": "geekpark",
+      "sourceLabel": "极客公园",
+      "sources": [
+        "geekpark"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1788415537000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "7e6b1471df6f",
+      "title": "谷歌推出推理与编码模型 Gemini 3.8",
+      "summary": "谷歌正式推出 Gemini 3.8，包含 Flash 通用版与 Flash Cyber 网络安全专用版。Gemini 3.8 Flash 在保持 3.7 版速度与成本不变的前提下，显著提升软件工程、Agent 任务及多步推理能力；Gemini 3.8 Flash Cyber 专注漏洞发现与自动补丁修复，通过 Fairwind Program 向认证安全人员开放。",
+      "url": "https://mp.weixin.qq.com/s/JHZVEmZexvadAinLYc-GIg",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788364800000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "0ecfcbf8cbe7",
+      "title": "Meta 推出新一代大语言模型 Muse Spark 1.3",
+      "summary": "Meta 推出迄今最强 AI 模型 Muse Spark 1.3，编码能力超越 GPT-5.6 Sol，与 Claude Fable 5.1 持平。API 定价维持前代水平，工具调用减少约 20%，token 消耗降低 25%。模型针对长周期 Agent 任务优化，能主动修正计划、提出澄清问题并寻求确认。",
+      "url": "https://www.ithome.com/0/997/728.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788364800000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "ai-bot",
+        "aitntnews",
+        "tc-ai",
+        "geekpark"
+      ]
+    },
+    {
+      "id": "ec3cf3c36721",
+      "title": "Facilitating AI integration with simplicity at scale",
+      "summary": "As companies scale, the technology supporting operations can become a liability just as quickly as it becomes an asset. Disconnected systems, site-specific tools, spreadsheets, and manual workarounds can create data silos that make it harder to spot problems early, coordinate responses, and make dec",
+      "url": "https://www.technologyreview.com/2026/09/02/1142879/facilitating-ai-integration-with-simplicity-at-scale/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1788357600000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "046246488ef9",
+      "title": "Anthropic 推出 Claude Fable 5.1 和 Claude Mythos 5.1两款模型",
+      "summary": "Anthropic 推出 Claude Fable 5.1 与 Claude Mythos 5.1 模型，定位&#8221;全球最先进的编程与知识工作模型&#8221;。Claude Fable 5.1 面向所有用户，Claude Mythos 5.1 仅限审核机构使用。性能方面，Claude Fable 5.1 在 Terminal-Bench-Science、CursorBench 等多项基准测试中超越前代及 GPT-5.6 Sol。",
+      "url": "https://www.ithome.com/0/997/193.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788278400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "ai-bot",
+        "aitntnews"
+      ]
+    },
+    {
+      "id": "fc7d85c2b96e",
+      "title": "Kimi API 已原生支持 Codex 和 Claude Code",
+      "summary": "Kimi开放平台宣布API功能更新，原生支持Codex与Claude Code接入。Kimi API现已兼容OpenAI Responses API格式，base_url 为 https://api.moonshot.cn/v1 及Anthropic Messages API格式，base_url 为 https://api.moonshot.cn/anthropic，用户无需格式转换或本地代理，可直连kimi-k3、kimi-k2.7-code等模型。",
+      "url": "https://mp.weixin.qq.com/s/qsPjuMerykpFBTpnyEA8XA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788278400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "ai-bot",
+        "aitntnews",
+        "hn",
+        "geekpark"
+      ]
+    },
+    {
+      "id": "153982cf7e65",
+      "title": "阿里 Qwen3.8-Max 升级到 0902版本",
+      "summary": "阿里推出 Qwen3.8-Max-0902 新版本模型，针对编程与专业办公场景进行强化后训练。模型在 CodeArena 前端编程总榜中以 1691 分夺冠，多步推理、工具调用与端到端 App 生成能力刷新全球上限。同时性价比突出，每百万 Tokens 仅 5 美元。",
+      "url": "https://mp.weixin.qq.com/s/BfKRXMAR5ykD58LDkBftLg?scene=1",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788278400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "982d5ac10e22",
+      "title": "李飞飞 World Labs 推出全球首个多模态世界模型 Atlas",
+      "summary": "李飞飞旗下 World Labs 推出全球首个多模态世界模型 Atlas，采用多模态自回归扩散 Transformer 架构，支持像素级相机控制生成图像与视频、3D 场景重建及时空模拟。Atlas 在相机控制生成和 3D 重建任务中均超越现有 SOTA 模型，被视为机器人 Real-to-Sim 的关键一步，目前正向部分合作伙伴开放早期访问。",
+      "url": "https://mp.weixin.qq.com/s/l8TuGp1Nb2tf8Zfy4DL2uA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "具身智能",
+      "publishedAt": 1788278400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "81fee009668b",
+      "title": "Meta 推出首个实时音频感知模型 Muse Voice Transcribe",
+      "summary": "Meta 推出首个实时音频感知模型 Muse Voice Transcribe，整合流式语音识别、说话人分离与端点检测，支持 20 余人分轨转写及 70 余种语言。模型采用自适应延迟机制，兼顾实时响应与识别准确度，在 Artificial Analysis 流式语音转文本排行榜位列第一。",
+      "url": "https://www.ithome.com/0/997/218.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788278400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "5ef4ec7833b6",
+      "title": "阿里云企业级 Agent 协作平台「万有无界」开启公测",
+      "summary": "阿里云企业级Agent协作平台万有无界开启公测，支持调用旗舰模型Qwen3.8-Max。平台将复杂任务拆解给多位不同职责的Agent，通过项目空间、群聊协作、资产库沉淀等方式推进工作。内置&#8221;小万&#8221;个人助理和&#8221;小有&#8221;项目经理两个主Agent，支持组织记忆归属企业、权限管控及异构Agent接入，覆盖影视、制造等多行业场景。",
+      "url": "https://mp.weixin.qq.com/s/ejt5cXJiDUBFVIKCz6pIXQ",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788278400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "375002a48fea",
+      "title": "腾讯混元开源 Hy4 量化压缩模型「Hy4 preview 轻量版」",
+      "summary": "腾讯混元推出 Hy4 preview 轻量版，通过自研 Sherry 稀疏三值量化算法与 MIX-STQ1_0 混合精度逐层量化策略，将模型权重从 1.5 TB 压缩至约 214 GB。Hy4 preview 量化版在长文理解、多轮上下文检索、编码辅助等任务上表现接近 BF16 原版。",
+      "url": "https://mp.weixin.qq.com/s/GS_9L54CzkgMt0vnxc2NqA",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788278400000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "6a88d0dfb04d",
+      "title": "The Hugging Face hack could indicate cultural issues at OpenAI",
+      "summary": "This story originally appeared in The Algorithm, our weekly newsletter on AI. To get stories like this in your inbox first, sign up here. By now you’ve probably heard about last month’s major AI security incident, in which OpenAI agents escaped their sandbox and hacked into the AI platform Hugging F",
+      "url": "https://www.technologyreview.com/2026/08/31/1143180/hugging-face-hack-could-indicate-cultural-issues-at-openai/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788199200000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "mit-ai",
+        "verge-ai"
+      ]
+    },
+    {
+      "id": "2a33224f8803",
+      "title": "DeepSeek-V4-Flash-Vision-Exp 模型正式开源",
+      "summary": "DeepSeek V4 系列首个多模态模型 DeepSeek-V4-Flash-Vision-Exp 已开源上线，采用 MIT 协议。模型原生支持图片输入，可描述图像、识别文字、分析图表等，支持 JPEG/PNG/GIF/WebP 格式。在视觉 Agent 基准测试中表现大幅提升，多模态 Agent 能力接近 Opus-4.8，纯文本任务与 V4-Flash 正式版持平。",
+      "url": "https://www.ithome.com/0/996/637.htm",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1788192000000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "34d8260acc71",
+      "title": "VAST完成B轮和B+轮融资，金额合计约30亿元",
+      "summary": "AI 3D公司VAST（三启万物）半年累计融资约50亿元，刷新行业纪录。近期B轮及B+轮合计约30亿元，由经纬创投领投，完美世界、蓝色光标、三七互娱等产业资本及鼎晖、中金、CMC等财投参投，老股东超额追投。Tripo AI推出的 Tripo P2.0 Preview，全球率先实现原生四边面拓扑生成，已接入网易、腾讯、字节、微软等工作流。",
+      "url": "https://mp.weixin.qq.com/s/URlhZPVqWU2sIEEPh-gXYg?scene=1&amp;click_id=32",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788192000000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "6ce5913356a6",
+      "title": "腾讯开源通用多模态Embedding模型 WeMM-Embedding",
+      "summary": "腾讯微信视觉团队开源通用多模态Embedding模型WeMM-Embedding，提供2B/4B/9B三种规格。模型支持文本、图像、视频、视觉文档及交错多模态输入统一编码，在MMEB-v2基准排行榜位列第一。模型基于Qwen3.5架构，采用两阶段训练策略，支持Matryoshka灵活维度输出。",
+      "url": "https://ai-bot.cn/wemm-embedding/",
+      "source": "ai-bot",
+      "sourceLabel": "AI Bot 每日资讯",
+      "sources": [
+        "ai-bot"
+      ],
+      "category": "其他",
+      "publishedAt": 1788192000000,
+      "publishPrecision": "date",
+      "fetchedAt": 1789363027397
+    },
+    {
+      "id": "c57092d8a00a",
+      "title": "The inside story on why OpenAI agents hacked Hugging Face",
+      "summary": "The models responsible for last month’s agent hack of Hugging Face had been inadvertently trained to cheat and to communicate with each other, according to an OpenAI technical report released today. The hack, which a group of agents undertook to find solutions for a cybersecurity test that they were",
+      "url": "https://www.technologyreview.com/2026/08/26/1143013/the-inside-story-on-why-openai-agents-hacked-hugging-face/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "AI Coding",
+      "publishedAt": 1787770800000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397,
+      "relatedSources": [
+        "mit-ai",
+        "verge-ai"
+      ]
+    },
+    {
+      "id": "55cd43c39a99",
+      "title": "Raised on AI",
+      "summary": "When my oldest child was born, I immediately set up Gmail and Twitter accounts in her name. I broadly announced her birth online and proceeded to plaster her photo across all sorts of platforms. In short, I began creating her digital footprint long before she could stand on her own two feet.&#160; F",
+      "url": "https://www.technologyreview.com/2026/08/26/1141949/editors-letter-september-2026/",
+      "source": "mit-ai",
+      "sourceLabel": "MIT TR AI",
+      "sources": [
+        "mit-ai"
+      ],
+      "category": "其他",
+      "publishedAt": 1787734800000,
+      "publishPrecision": "exact",
+      "fetchedAt": 1789363027397
+    }
+  ]
+}
