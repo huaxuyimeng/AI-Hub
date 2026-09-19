@@ -218,9 +218,9 @@ export const meetingRouter = router({
         throw new TRPCError({ code: 'CONFLICT', message: '会议已被其他请求抢占' });
       }
 
+      // 串行调每个参与者（声明在 try 外以保证错误分支也能 return）
+      const allTranscripts: Array<{ participantId: string; transcript: TranscriptEntry[] }> = [];
       try {
-        // 串行调每个参与者
-        const allTranscripts: Array<{ participantId: string; transcript: TranscriptEntry[] }> = [];
         for (const p of meeting.participants) {
           const priorContext = allTranscripts
             .map((t) => t.transcript.map((e) => `${e.speaker ?? 'AI'}: ${e.content}`).join('\n'))
@@ -295,6 +295,8 @@ export const meetingRouter = router({
           where: { id: meeting.id },
           data: { status: 'COMPLETED' },
         });
+
+        return { ok: true, completedParticipants: allTranscripts.length };
       } catch (err) {
         // 抢占了 RUNNING 但中途崩溃 → 回退到 ACTIVE 避免会议永远卡住
         await prismaRaw.meeting.update({
@@ -303,8 +305,6 @@ export const meetingRouter = router({
         });
         throw err;
       }
-
-      return { ok: true, completedParticipants: allTranscripts.length };
     }),
 
   /** 调主持人模型汇总发言，生成 conclusion */

@@ -19,7 +19,6 @@ import { PromptTemplate } from '@langchain/core/prompts';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import type { ChatMessage, ChatOptions } from '../router';
 import { logger } from '../../observability/logger';
-import { mergeMessages } from '../langchain-adapter/utils';
 import { UsageCallbackHandler } from '../langchain-adapter/usage-callback';
 import type { ChatChunk } from '../langchain-stream';
 
@@ -83,6 +82,8 @@ export async function* streamViaLC(
  *   3. 用 chain.stream() 而非 chain.invoke()
  *   4. UsageCallbackHandler 在流末尾捕获真实 token
  *
+ * 主体走 LCEL 公共骨架 streamLcelChain（仅 provider 特定部分：构造 chatModel）。
+ *
  * 导出：仅供 langchain-stream/index.ts 公开 re-export（不建议业务直接调用）
  */
 export async function* lcelStreamOpenAI(
@@ -108,98 +109,20 @@ export async function* lcelStreamOpenAI(
     streaming: true, // ⚠️ 关键：开启流式
   });
 
-  // DeepSeek thinking: .bind() 透传
-  let callable: typeof chatModel | ReturnType<typeof chatModel.bind> = chatModel;
+  // DeepSeek thinking: 单独走带 thinking 的 chain（不走公共骨架的简化模式）
   if (useThinking && isDeepSeek) {
     const bindable = chatModel as unknown as {
       bind: (opts: Record<string, unknown>) => typeof chatModel;
     };
-    callable = bindable.bind({
+    const bound = bindable.bind({
       reasoning_effort: options.reasoningEffort ?? 'high',
       thinking: { type: 'enabled' as const },
     });
-  }
-
-  // LCEL chain
-  const { system, user } = mergeMessages(messages);
-  const inputText = system ? `${system}\n\n${user}` : user;
-
-  const prompt = PromptTemplate.fromTemplate('{input}');
-  const parser = new StringOutputParser();
-  const chain = prompt.pipe(callable).pipe(parser);
-
-  const usageHandler = new UsageCallbackHandler();
-
-  let stream: AsyncIterable<string>;
-  try {
-    stream = await chain.stream({ input: inputText }, {
-      callbacks: [usageHandler],
-      signal: options.signal,
-    } as Record<string, unknown>);
-  } catch (err) {
-    if ((err as Error).name === 'AbortError') {
-      logger.info('[chatLCStream] OpenAI aborted before stream start', {
-        model: supported.name,
-        duration: Date.now() - t0,
-      });
-      return;
-    }
-    logger.error('[chatLCStream] OpenAI stream init failed', {
-      model: supported.name,
-      duration: Date.now() - t0,
-      error: (err as Error).message,
-    });
-    yield { type: 'error', error: { message: (err as Error).message } };
-    yield { type: 'done', done: true };
+    yield* streamLcelChain(supported, bound, messages, options, t0, 'OpenAI');
     return;
   }
 
-  // ── 逐 chunk yield ───────────────────────────────────────────────
-  try {
-    for await (const chunk of stream) {
-      if (options.signal?.aborted) {
-        logger.info('[chatLCStream] OpenAI aborted mid-stream', {
-          model: supported.name,
-          duration: Date.now() - t0,
-        });
-        return;
-      }
-      if (typeof chunk === 'string' && chunk.length > 0) {
-        yield { type: 'text', delta: chunk };
-      }
-    }
-  } catch (err) {
-    if ((err as Error).name === 'AbortError') return;
-    logger.error('[chatLCStream] OpenAI stream iteration failed', {
-      model: supported.name,
-      duration: Date.now() - t0,
-      error: (err as Error).message,
-    });
-    yield { type: 'error', error: { message: (err as Error).message } };
-    yield { type: 'done', done: true };
-    return;
-  }
-
-  // ── 流结束：yield usage + done ──────────────────────────────────
-  const realUsage = usageHandler.getUsage();
-  if (realUsage && (realUsage.input > 0 || realUsage.output > 0)) {
-    yield {
-      type: 'usage',
-      usage: {
-        input: realUsage.input,
-        output: realUsage.output,
-        ...(realUsage.cachedInput ? { cachedInput: realUsage.cachedInput } : {}),
-      },
-    };
-  }
-
-  logger.debug('[chatLCStream] OpenAI stream completed', {
-    model: supported.name,
-    duration: Date.now() - t0,
-    hasUsage: !!realUsage,
-  });
-
-  yield { type: 'done', done: true };
+  yield* streamLcelChain(supported, chatModel, messages, options, t0, 'OpenAI');
 }
 
 // ─── Anthropic 流式 ─────────────────────────────────────────────────────────
@@ -208,6 +131,7 @@ export async function* lcelStreamOpenAI(
  * Anthropic 专用协议的流式实现。
  *
  * Anthropic 的 streaming 与 OpenAI 类似：底层用 SSE，LangChain 通过 .stream() 暴露。
+ * 主体走公共骨架 streamLcelChain。
  *
  * 导出：仅供 langchain-stream/index.ts 公开 re-export
  */
@@ -225,6 +149,34 @@ export async function* lcelStreamAnthropic(
     maxTokens: options.maxTokens ?? 4096,
   });
 
+  yield* streamLcelChain(supported, chatModel, messages, options, t0, 'Anthropic');
+}
+
+/**
+ * streamLcelChain — OpenAI / Anthropic 共用的 LCEL 流式骨架。
+ *
+ * 不适用的 provider（Gemini）保留独立实现。
+ *
+ * 职责链：
+ *   1. 构造 prompt → pipe(chatModel) → pipe(parser)
+ *   2. 初始化 UsageCallbackHandler
+ *   3. chain.stream() 拿 AsyncIterable
+ *   4. try-init 失败：abort 静默 / 其它 yield error + done + return
+ *   5. for-await chunk：signal 检查 + yield text
+ *   6. try-iterate 失败：同上
+ *   7. yield usage + done
+ *
+ * @param chatModel LCEL chat model 实例（ChatOpenAI / ChatAnthropic 已经构造好）
+ * @param providerName 用于日志的 provider 名
+ */
+async function* streamLcelChain(
+  supported: SupportedModelSubset,
+  chatModel: ChatOpenAI | ChatAnthropic,
+  messages: ChatMessage[],
+  options: ChatOptions & { signal?: AbortSignal },
+  t0: number,
+  providerName: 'OpenAI' | 'Anthropic',
+): AsyncGenerator<ChatChunk, void, undefined> {
   const system = messages.find((m) => m.role === 'system')?.content;
   const userContent = messages
     .filter((m) => m.role !== 'system')
@@ -235,7 +187,6 @@ export async function* lcelStreamAnthropic(
   const prompt = PromptTemplate.fromTemplate('{input}');
   const parser = new StringOutputParser();
   const chain = prompt.pipe(chatModel).pipe(parser);
-
   const usageHandler = new UsageCallbackHandler();
 
   let stream: AsyncIterable<string>;
@@ -245,8 +196,14 @@ export async function* lcelStreamAnthropic(
       signal: options.signal,
     } as Record<string, unknown>);
   } catch (err) {
-    if ((err as Error).name === 'AbortError') return;
-    logger.error('[chatLCStream] Anthropic stream init failed', {
+    if ((err as Error).name === 'AbortError') {
+      logger.info(`[chatLCStream] ${providerName} aborted before stream start`, {
+        model: supported.name,
+        duration: Date.now() - t0,
+      });
+      return;
+    }
+    logger.error(`[chatLCStream] ${providerName} stream init failed`, {
       model: supported.name,
       duration: Date.now() - t0,
       error: (err as Error).message,
@@ -259,7 +216,10 @@ export async function* lcelStreamAnthropic(
   try {
     for await (const chunk of stream) {
       if (options.signal?.aborted) {
-        logger.info('[chatLCStream] Anthropic aborted', { model: supported.name });
+        logger.info(`[chatLCStream] ${providerName} aborted mid-stream`, {
+          model: supported.name,
+          duration: Date.now() - t0,
+        });
         return;
       }
       if (typeof chunk === 'string' && chunk.length > 0) {
@@ -268,7 +228,7 @@ export async function* lcelStreamAnthropic(
     }
   } catch (err) {
     if ((err as Error).name === 'AbortError') return;
-    logger.error('[chatLCStream] Anthropic stream iteration failed', {
+    logger.error(`[chatLCStream] ${providerName} stream iteration failed`, {
       model: supported.name,
       duration: Date.now() - t0,
       error: (err as Error).message,
@@ -290,9 +250,10 @@ export async function* lcelStreamAnthropic(
     };
   }
 
-  logger.debug('[chatLCStream] Anthropic stream completed', {
+  logger.debug(`[chatLCStream] ${providerName} stream completed`, {
     model: supported.name,
     duration: Date.now() - t0,
+    hasUsage: !!realUsage,
   });
 
   yield { type: 'done', done: true };

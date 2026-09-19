@@ -232,7 +232,7 @@ async function invokeAndAccumulate(
  */
 export function buildErrorFallback(
   p: ParticipantConfig,
-  state: MeetingState,
+  state: Pick<MeetingState, 'transcripts' | 'errors'> & { round?: number },
   errorMsg: string,
 ): Partial<MeetingState> {
   logger.warn('[meeting-graph] callLLM failed', {
@@ -240,7 +240,7 @@ export function buildErrorFallback(
     role: p.role,
     model: p.model,
     error: errorMsg,
-    round: state.round,
+    round: state.round ?? 0,
   });
 
   const errorEntry: TranscriptEntry = {
@@ -274,43 +274,69 @@ export async function decideContinueNode(
   state: MeetingState,
   config: LangGraphRunnableConfig
 ): Promise<Partial<MeetingState>> {
-  const nextIndex = state.currentIndex + 1;
-  const totalParticipants = state.participants.length;
+  const ctx = (config.configurable as Partial<MeetingContext>) ?? {};
 
-  // ── 情形 1：本轮还有其他人 ──────────────────────────────
-  if (nextIndex < totalParticipants) {
-    return {
-      currentIndex: nextIndex,
-      continueMeeting: true,
-    };
+  // 情形 1：本轮还有其他人没发言 → 推进到下一位
+  const advance = tryAdvanceToNextSpeaker(state);
+  if (advance) return advance;
+
+  // 情形 2：本轮全部发言完 → 看 maxRounds 和 LLM 决策
+  if (shouldForceEnd(state, ctx)) {
+    return { continueMeeting: false };
   }
 
-  // ── 情形 2：本轮结束，判断是否继续下一轮 ─────────────────
-  // 从 configurable 读取 ctx（包括 maxRounds）
-  const ctx = (config.configurable as Partial<MeetingContext>) ?? {};
-  // Bug5 修复：用户指定的 maxRounds 优先（不能超过硬上限 MAX_MEETING_ROUNDS）
+  return resolveDecisionWithLLM(state, ctx);
+}
+
+/**
+ * tryAdvanceToNextSpeaker — decideContinue 情形 1 helper。
+ *
+ * 若本轮还有后续参与者，返回推进结果；否则返回 null（交给外层处理情形 2）。
+ */
+function tryAdvanceToNextSpeaker(state: MeetingState): Partial<MeetingState> | null {
+  const nextIndex = state.currentIndex + 1;
+  if (nextIndex >= state.participants.length) return null;
+  return {
+    currentIndex: nextIndex,
+    continueMeeting: true,
+  };
+}
+
+/**
+ * shouldForceEnd — decideContinue 情形 2 守卫 helper。
+ *
+ * 返回 true 表示达到 round 上限，需强制 DONE。
+ * 用户指定的 maxRounds 优先（不能超过硬上限 MAX_MEETING_ROUNDS）。
+ */
+function shouldForceEnd(state: MeetingState, ctx: Partial<MeetingContext>): boolean {
   const effectiveMaxRounds = Math.min(
     ctx.maxRounds ?? MAX_MEETING_ROUNDS,
     MAX_MEETING_ROUNDS,
   );
+  if (state.round < effectiveMaxRounds) return false;
+  logger.debug('[meeting-graph] decideContinue: hit maxRounds, forcing DONE', {
+    round: state.round,
+    maxRounds: effectiveMaxRounds,
+  });
+  return true;
+}
 
-  if (state.round >= effectiveMaxRounds) {
-    // 达到最大轮数，强制结束
-    logger.debug('[meeting-graph] decideContinue: hit maxRounds, forcing DONE', {
-      round: state.round,
-      maxRounds: effectiveMaxRounds,
-    });
-    return { continueMeeting: false };
-  }
-
-  // 从 configurable 读取 tenantId / decisionModel
-  const ctx2 = (config.configurable as Partial<MeetingContext>) ?? {};
-  const tenantId = ctx2.tenantId;
+/**
+ * resolveDecisionWithLLM — decideContinue 情形 2 主体 helper。
+ *
+ * 调决策模型判断 CONTINUE / DONE，并累加 usage。
+ * tenantId 缺失或 LLM 调用失败时默认 DONE（保守策略）。
+ */
+async function resolveDecisionWithLLM(
+  state: MeetingState,
+  ctx: Partial<MeetingContext>,
+): Promise<Partial<MeetingState>> {
+  const tenantId = ctx.tenantId;
   if (!tenantId) {
     logger.warn('[meeting-graph] decideContinue: missing tenantId, defaulting to DONE');
     return { continueMeeting: false };
   }
-  const decisionModel = ctx2.decisionModel ?? DEFAULT_DECISION_MODEL;
+  const decisionModel = ctx.decisionModel ?? DEFAULT_DECISION_MODEL;
   const decisionTemp = 0;
 
   try {
@@ -322,7 +348,7 @@ export async function decideContinueNode(
       state.participants,
       decisionModel,
       tenantId,
-      decisionTemp
+      decisionTemp,
     );
 
     // Bug2 修复：累加决策模型的 usage
@@ -334,7 +360,6 @@ export async function decideContinueNode(
     );
 
     if (decisionResult.decision === 'CONTINUE') {
-      // 开始下一轮
       logger.debug('[meeting-graph] decideContinue: CONTINUE', {
         round: state.round,
         nextRound: state.round + 1,
@@ -349,9 +374,7 @@ export async function decideContinueNode(
 
     logger.debug('[meeting-graph] decideContinue: DONE', { round: state.round });
     return { continueMeeting: false, usageTotal };
-
   } catch (err) {
-    // 决策 LLM 调用失败 → 默认结束（保守策略：避免无限循环）
     logger.warn('[meeting-graph] decideContinue LLM failed, defaulting to DONE', {
       error: (err as Error).message,
       round: state.round,
@@ -459,28 +482,68 @@ export async function concludeNode(
   config: LangGraphRunnableConfig
 ): Promise<Partial<MeetingState>> {
   const ctx = (config.configurable as Partial<MeetingContext>) ?? {};
+
+  // Step 1: ctx 守卫
+  const guardFailure = checkConclusionContext(state, ctx);
+  if (guardFailure) return guardFailure;
+
+  // Step 2: 收集 + 构造 + 调主持人 + 累加
+  const tenantId = ctx.tenantId as string;
+  const hostModel = ctx.hostModel as string;
+  const allSpeeches = collectAllSpeeches(state);
+  const messages = buildConcludeMessages(state, allSpeeches);
+
+  try {
+    return await invokeHostAndAccumulate(hostModel, tenantId, messages, state.usageTotal, state);
+  } catch (err) {
+    return concludeErrorFallback(state, (err as Error).message);
+  }
+}
+
+/**
+ * checkConclusionContext — conclude 守卫 helper。
+ *
+ * tenantId / hostModel 缺失时返回错误占位结论（与 catch 分支一致计入 errors）；
+ * 正常情况下返回 null，调用方继续执行。
+ *
+ * Bug4 修复：与 catch 分支一致，缺失 ctx 时也写入 errors。
+ */
+function checkConclusionContext(
+  state: MeetingState,
+  ctx: Partial<MeetingContext>,
+): Partial<MeetingState> | null {
   const tenantId = ctx.tenantId;
   const hostModel = ctx.hostModel;
-  // Bug4 修复：与 catch 分支一致，缺失 ctx 时也写入 errors
-  if (!tenantId || !hostModel) {
-    const msg = `conclude: missing ${!tenantId ? 'tenantId' : 'hostModel'}`;
-    logger.error('[meeting-graph] ' + msg);
-    return {
-      conclusion: `[会议纪要生成失败] ${msg}\n\n请手动查看上方所有发言记录。`,
-      errors: [...state.errors, msg],
-    };
-  }
+  if (tenantId && hostModel) return null;
+  const msg = `conclude: missing ${!tenantId ? 'tenantId' : 'hostModel'}`;
+  logger.error('[meeting-graph] ' + msg);
+  return {
+    conclusion: `[会议纪要生成失败] ${msg}\n\n请手动查看上方所有发言记录。`,
+    errors: [...state.errors, msg],
+  };
+}
 
-  // ── Step 1: 收集所有发言 ────────────────────────────────
-  const allSpeeches = state.participants
+/**
+ * collectAllSpeeches — conclude Step 1 helper。
+ *
+ * 把所有 participants 的全部 entry 按角色 + 模型编号，拼接成「会议纪要」原始素材。
+ */
+function collectAllSpeeches(state: MeetingState): string {
+  return state.participants
     .map((p) => {
       const entries = state.transcripts[p.id] ?? [];
       const content = entries.map((e) => e.content).join('\n\n---\n\n');
       return `【${p.role}（${p.model}）】\n${content}`;
     })
     .join('\n\n═══════════════════════════════\n\n');
+}
 
-  // ── Step 2: 构造主持人消息 ──────────────────────────────
+/**
+ * buildConcludeMessages — conclude Step 2 helper。
+ *
+ * 构造 system + user messages（含核心共识/主要分歧/行动项三段式 prompt）。
+ */
+function buildConcludeMessages(state: MeetingState, allSpeeches: string): ChatMessage[] {
   const systemContent = `你是会议主持人。请基于所有参与者的发言，生成一份结构化会议纪要，必须包含以下三部分：
 
 1. 核心共识：所有参与者都认同的观点
@@ -495,51 +558,66 @@ export async function concludeNode(
 
 ${allSpeeches}`;
 
-  const messages = [
-    { role: 'system' as const, content: systemContent },
-    { role: 'user' as const, content: userContent },
+  return [
+    { role: 'system', content: systemContent },
+    { role: 'user', content: userContent },
   ];
+}
 
-  // ── Step 3: 调用主持人模型 ─────────────────────────────
-  try {
-    const result = await chatLC(hostModel, tenantId, messages, {
-      temperature: 0.5, // 主持人不需要太有创意
-      maxTokens: 1500, // 会议纪要约 500-1000 字
-      // Bug2 修复：主持人 conclusion 也是 meeting 的一部分
-      skipUsage: true,
-    });
+/**
+ * invokeHostAndAccumulate — conclude Step 3 helper。
+ *
+ * 调主持人模型 + 累加 usage + 记录日志。
+ * 失败抛出原错误，由 concludeNode catch 转给 concludeErrorFallback。
+ */
+async function invokeHostAndAccumulate(
+  hostModel: string,
+  tenantId: string,
+  messages: ChatMessage[],
+  prevUsageTotal: MeetingState['usageTotal'],
+  state: MeetingState,
+): Promise<Partial<MeetingState>> {
+  const result = await chatLC(hostModel, tenantId, messages, {
+    temperature: 0.5, // 主持人不需要太有创意
+    maxTokens: 1500, // 会议纪要约 500-1000 字
+    // Bug2 修复：主持人 conclusion 也是 meeting 的一部分
+    skipUsage: true,
+  });
 
-    logger.info('[meeting-graph] meeting concluded', {
-      topic: state.topic,
-      totalRounds: state.round,
-      totalEntries: Object.values(state.transcripts).flat().length,
-      conclusionLen: result.content.length,
-      usage: result.usage,
-    });
+  logger.info('[meeting-graph] meeting concluded', {
+    topic: state.topic,
+    totalRounds: state.round,
+    totalEntries: Object.values(state.transcripts).flat().length,
+    conclusionLen: result.content.length,
+    usage: result.usage,
+  });
 
-    // Bug2 修复：累加主持人 usage 到 state
-    const usageTotal = accumulateUsage(
-      state.usageTotal,
-      hostModel,
-      result.usage.input,
-      result.usage.output,
-    );
+  // Bug2 修复：累加主持人 usage 到 state
+  const usageTotal = accumulateUsage(
+    prevUsageTotal,
+    hostModel,
+    result.usage.input,
+    result.usage.output,
+  );
 
-    return { conclusion: result.content, usageTotal };
+  return { conclusion: result.content, usageTotal };
+}
 
-  } catch (err) {
-    // 主持人调用失败 → 生成占位结论 + 写入 errors
-    // Bug4 修复：把错误计入 state.errors，router 层据此决定不写 COMPLETED。
-    const errorMsg = (err as Error).message;
-
-    logger.error('[meeting-graph] conclude failed', {
-      topic: state.topic,
-      error: errorMsg,
-    });
-
-    return {
-      conclusion: `[会议纪要生成失败] ${errorMsg}\n\n请手动查看上方所有发言记录。`,
-      errors: [...state.errors, `conclude: ${errorMsg}`],
-    };
-  }
+/**
+ * concludeErrorFallback — conclude catch 分支 helper。
+ *
+ * 生成占位结论 + 计入 errors（router 据此不写 COMPLETED）。
+ */
+function concludeErrorFallback(
+  state: MeetingState,
+  errorMsg: string,
+): Partial<MeetingState> {
+  logger.error('[meeting-graph] conclude failed', {
+    topic: state.topic,
+    error: errorMsg,
+  });
+  return {
+    conclusion: `[会议纪要生成失败] ${errorMsg}\n\n请手动查看上方所有发言记录。`,
+    errors: [...state.errors, `conclude: ${errorMsg}`],
+  };
 }

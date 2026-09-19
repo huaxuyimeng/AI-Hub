@@ -12,6 +12,8 @@ prisma/migrations/dev*
 prisma/.tmp
 prisma/dev.db
 prisma/usage-test-*.db
+prisma/meeting-test-*.db
+prisma/chat-test-*.db
 dev.out
 tsconfig.tsbuildinfo
 probe-*.ps1

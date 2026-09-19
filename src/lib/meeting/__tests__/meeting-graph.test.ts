@@ -30,7 +30,7 @@ import {
   buildErrorFallback,
 } from '../meeting-graph';
 import { MAX_MEETING_ROUNDS } from '../types';
-import type { ParticipantConfig, TranscriptEntry } from '../types';
+import type { MeetingState, ParticipantConfig, TranscriptEntry } from '../types';
 
 // ── Test harness ──────────────────────────────────────────────────────────
 
