@@ -2,8 +2,11 @@
 
 > **AI 工作台 + AI 早报自动生成 + 多源信息聚合** —— 把 AI 内容工作流收拢在一个界面里。
 
+
 [简体中文](./README-zh.md) · [English](./README.md)
 
+
+演示文档URL：https://huaxuyimeng.github.io/ai-hub-landing/ 或则 https://ai-hub-landing.vercel.app/
 ---
 
 ## 一句话介绍
