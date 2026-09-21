@@ -3,6 +3,7 @@
 > **AI Workbench + AI Briefing Auto-Generation + Multi-Source Information Aggregation** — unify your AI content workflow in one interface.
 
 [English](./README.md) · [简体中文](./README-zh.md)
+---
 Demo Document URL: https://huaxuyimeng.github.io/ai-hub-landing/ or https://ai-hub-landing.vercel.app/
 ---
 
