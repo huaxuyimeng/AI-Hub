@@ -1,178 +1,180 @@
 # AIHub
 
-> **AI Workbench + AI Briefing Auto-Generation + Multi-Source Information Aggregation** — unify your AI content workflow in one interface.
+> **AI 工作台 + AI 早报自动生成 + 多源信息聚合** —— 把 AI 内容工作流收拢在一个界面里。
 
-[English](./README.md) · [简体中文](./README-zh.md)
----
-Demo Document URL: https://huaxuyimeng.github.io/ai-hub-landing/ or https://ai-hub-landing.vercel.app/
----
 
-## One-liner
+[简体中文](./README-zh.md) · [English](./README.md)
 
-**Let AI help you track AI news, auto-generate briefings, compare model prices, and follow Bilibili creators** — no more juggling between a dozen tools.
 
+演示文档URL：https://huaxuyimeng.github.io/ai-hub-landing/ 或则 https://ai-hub-landing.vercel.app/
 ---
 
-## Project Features
+## 一句话介绍
 
-- **Unified Workbench** — news aggregation, model rankings, Bilibili tracking, AI briefings, and multi-agent meetings in one app
-- **Multi-source News Aggregation** — auto-fetch from 10+ Chinese & English sources, scored on confidence × source quality × vendor tags
-- **Model Rankings with Cost-Performance Algorithm** — Pareto-frontier weighted (capability 40% + price 30% + context window 30%), daily-updated, 50+ models
-- **Bilibili Creator Tracking** — WBI signature reverse-engineering + SESSDATA Cookie login + RSS fallback, with subtitle semantic analysis
-- **PPT Briefing Pipeline** — daily cron → LLM-generated JSON → IR lint validation → PPTX export, with self-built slide-engine
-- **Multi-Role AI Meeting** — LangChain/LangGraph-based, multi-agent (PM / engineer / investor / critic) discussion, SSE streaming output
-- **Multi-tenant + RBAC** — `createTenantPrisma(ctx)` forces tenantId injection; 9 whitelisted models include soft delete
-- **Full TypeScript** — tRPC end-to-end type safety, zero implicit `any` from frontend → backend → database
-- **AI Key Smart Routing** — single entry `key-resolver.ts`, multi-provider (DeepSeek / 智谱 / Anthropic / Kimi) auto-fallback
-- **Production-Ready Engineering** — 180+ test cases, zero typecheck errors, comprehensive docs
+**让 AI 帮你追 AI 资讯、自动做早报、比价格、追 B 站**，不用在十几个工具之间切换。
 
 ---
 
-## Tech Stack
+## 项目特色
 
-### Frontend
-| Tech | Version | Note |
-|------|---------|------|
+- **一站式工作台** — 新闻聚合、模型排行、B 站追踪、AI 早报、多智能体会议，五大功能统一界面
+- **多源新闻聚合** — 自动抓取 10+ 中英文 AI 资讯源，按置信度 × 来源质量 × 厂商标签三维度评分
+- **性价比算法模型排行** — Pareto 前沿加权（能力 40% + 价格 30% + 上下文窗口 30%），每日更新，50+ 模型
+- **B 站 UP 主追踪** — WBI 签名逆向 + SESSDATA Cookie 登录 + RSS 兜底，支持字幕语义分析
+- **PPT 早报流水线** — 每日 cron → LLM 生成 JSON → IR lint 校验 → PPTX 导出，自研 slide-engine
+- **多角色 AI 会议** — 基于 LangChain / LangGraph，多智能体（产品经理 / 工程师 / 投资者 / 评论家）讨论，SSE 流式输出
+- **多租户 + RBAC** — `createTenantPrisma(ctx)` 强制注入 tenantId；白名单内 9 个模型含软删除
+- **全量 TypeScript** — tRPC 端到端类型安全，前端→后端→数据库零隐式 any
+- **AI Key 智能路由** — 单一入口 `key-resolver.ts`，多 Provider（DeepSeek / 智谱 / Anthropic / Kimi）自动降级
+- **生产级工程化** — 180+ 测试用例，typecheck 零错误，文档完备
+
+---
+
+## 技术栈
+
+### 前端
+| 技术 | 版本 | 说明 |
+|------|------|------|
 | Next.js | 14 | App Router |
-| TypeScript | 5 | Full type safety |
+| TypeScript | 5 | 全量类型 |
 | React | 18 | Server + Client Components |
-| tRPC | 11 | End-to-end typed API |
-| Tailwind / CSS Vars | - | 6 preset themes + HSL DIY |
-| @tabler/icons-react | - | Unified icon library |
+| tRPC | 11 | 端到端类型安全 API |
+| Tailwind / CSS 变量 | - | 6 套预设主题 + HSL DIY |
+| @tabler/icons-react | - | 统一图标库 |
 
-### Backend / AI
-| Tech | Version | Note |
-|------|---------|------|
-| tRPC | 11 | Type-safe RPC, end-to-end with frontend |
-| Prisma | 6 | ORM + multi-tenant + soft delete |
-| NextAuth.js | 4 | GitHub OAuth + dev default account |
-| LangChain Core | 0.3 | Streaming batching via custom adapter (`src/lib/ai/langchain-adapter`) |
-| LangGraph | 0.2 | Multi-agent meeting state machine (`src/lib/meeting/graph.ts`) |
-| OpenAI SDK | 4.65 | Direct calls + `ChatOpenAI` for smart routing |
-| Anthropic SDK | 0.123 | `ChatAnthropic` integration |
-| Google Generative AI | 0.24 | Gemini support |
-| Zod | 3.23 | Runtime validation (env, tRPC inputs, IR schemas) |
-| Superjson | 2.2 | tRPC transformer (Date / BigInt) |
+### 后端 / AI
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| tRPC | 11 | 类型安全 RPC，前后端端到端 |
+| Prisma | 6 | ORM + 多租户 + 软删除 |
+| NextAuth.js | 4 | GitHub OAuth + 本地开发默认账号 |
+| LangChain Core | 0.3 | 流式批处理（自研适配器 `src/lib/ai/langchain-adapter`） |
+| LangGraph | 0.2 | 多智能体会议状态机（`src/lib/meeting/graph.ts`） |
+| OpenAI SDK | 4.65 | 直连调用 + `ChatOpenAI` 智能路由 |
+| Anthropic SDK | 0.123 | `ChatAnthropic` 集成 |
+| Google Generative AI | 0.24 | Gemini 支持 |
+| Zod | 3.23 | 运行时校验（env / tRPC 入参 / IR schema） |
+| Superjson | 2.2 | tRPC transformer（Date / BigInt） |
 
-> Note: AI routing goes through **direct SDK calls** (OpenAI / Anthropic / Google Generative AI), not LiteLLM proxy. Multi-provider auto-fallback lives in `src/lib/ai/router.ts` and `src/lib/ai/key-resolver.ts`.
+> 说明：AI 路由走**直连 SDK**（OpenAI / Anthropic / Google Generative AI），不走 LiteLLM 代理。多 Provider 自动降级在 `src/lib/ai/router.ts` 与 `src/lib/ai/key-resolver.ts`。
 
-### Storage / Infrastructure
-| Tech | Version | Note |
-|------|---------|------|
-| PostgreSQL | 14+ | Production database |
-| SQLite | - | Development fallback |
-| Cloudflare R2 SDK (`@aws-sdk/client-s3`) | 3.654 | File storage (PPTX, avatars) |
-| Upstash Redis | 1.34 | Cache + rate limiting + distributed lock |
-| OpenTelemetry | 0.53 | APM tracing (`auto-instrumentations-node`) |
-| Playwright | 1.62 | E2E testing |
-| pptxgenjs | 4.0 | PPTX generation for daily briefings |
-| tsx | 4.19 | TypeScript script runner for cron + tests |
+### 存储 / 基础设施
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| PostgreSQL | 14+ | 生产数据库 |
+| SQLite | - | 开发退路 |
+| Cloudflare R2 SDK（`@aws-sdk/client-s3`） | 3.654 | 文件存储（PPTX、头像） |
+| Upstash Redis | 1.34 | 缓存 + 速率限制 + 分布式锁 |
+| OpenTelemetry | 0.53 | APM 链路追踪（`auto-instrumentations-node`） |
+| Playwright | 1.62 | E2E 测试 |
+| pptxgenjs | 4.0 | 每日早报 PPTX 生成 |
+| tsx | 4.19 | TypeScript 脚本运行器（cron + 测试） |
 
-### Notable Internal Modules
-| Module | Path | Purpose | Doc |
-|--------|------|---------|-----|
-| slide-engine | `src/lib/slide-engine/` | PPT IR + lint + render (PPTX/HTML) | [`refactor/modules/slideEngine.md`](./docs/refactor/modules/slideEngine.md) |
-| meeting | `src/lib/meeting/` | LangGraph multi-agent + streaming | [`refactor/modules/` + `docs/AI模块/langchain系列/`](./docs/AI%E6%A8%A1%E5%9D%97/langchain%E7%B3%BB%E5%88%97/) |
-| news | `src/lib/news/parsers/` | Multi-source adapters (RSS/HTML/API) | [`refactor/modules/news.md`](./docs/refactor/modules/news.md) · [PRD](./docs/prd/modules/01-news-aggregator-prd.md) |
-| bilibili | `src/lib/bilibili/` | WBI signature + Cookie + subtitle | [`refactor/modules/bilibili.md`](./docs/refactor/modules/bilibili.md) |
-| rankings | `src/lib/rankings/` | Weighted algorithm + scraper | [`refactor/modules/rankings.md`](./docs/refactor/modules/rankings.md) · [PRD](./docs/prd/modules/02-rankings-prd.md) |
-| ai langchain-adapter | `src/lib/ai/langchain-adapter/` | Streaming batching + usage callback | [`docs/AI模块/langchain系列/`](./docs/AI%E6%A8%A1%E5%9D%97/langchain%E7%B3%BB%E5%88%97/) |
-| rag | `src/lib/rag/` | Retrieval-augmented generation | [`refactor/modules/rag.md`](./docs/refactor/modules/rag.md) |
-| multimodal | `src/lib/multimodal/` | Multi-modal result fusion | [`refactor/modules/multimodal.md`](./docs/refactor/modules/multimodal.md) |
-| observability | `src/lib/observability/` | Logging + distributed lock + alert | [`refactor/modules/observability.md`](./docs/refactor/modules/observability.md) |
-
----
-
-## TL;DR
-
-AIHub is a personal-grade AI information platform that bundles **news aggregation / model rankings / Bilibili creator tracking / automated PPT briefings / multi-agent meetings** into one workbench.
-
-**Full Stack**: Next.js 14 (App Router) + React 18 + TypeScript 5. Backend is tRPC 11 (end-to-end type safety) + Prisma 6 ORM. Storage is PostgreSQL (dev fallback to SQLite) + Cloudflare R2 (files) + Upstash Redis (cache & rate-limit, distributed lock). AI routing via **direct SDK calls** — `@langchain/core` 0.3 + `@langchain/anthropic` / `@langchain/openai` for streaming batching, plus raw `openai` / `@anthropic-ai/sdk` / `@google/generative-ai` SDKs for direct multi-provider access (DeepSeek / Anthropic / Gemini). Auth is NextAuth.js (GitHub OAuth + local dev default account). UI uses CSS-variable-based theme system (6 presets + HSL DIY) with `@tabler/icons-react`. E2E testing via Playwright; APM via OpenTelemetry.
-
-**Positioning**: Graduation-project MVP (live at https://github.com/huaxuyimeng/AI-Hub), also usable as a personal AI toolbox.
+### 主要内部模块
+| 模块 | 路径 | 职责 | 文档 |
+|------|------|------|------|
+| slide-engine | `src/lib/slide-engine/` | PPT IR + lint + 渲染（PPTX/HTML） | [`refactor/modules/slideEngine.md`](./docs/refactor/modules/slideEngine.md) |
+| meeting | `src/lib/meeting/` | LangGraph 多智能体 + 流式 | [`refactor/modules/` + `docs/AI模块/langchain系列/`](./docs/AI%E6%A8%A1%E5%9D%97/langchain%E7%B3%BB%E5%88%97/) |
+| news | `src/lib/news/parsers/` | 多源适配器（RSS/HTML/API） | [`refactor/modules/news.md`](./docs/refactor/modules/news.md) · [PRD](./docs/prd/modules/01-news-aggregator-prd.md) |
+| bilibili | `src/lib/bilibili/` | WBI 签名 + Cookie + 字幕 | [`refactor/modules/bilibili.md`](./docs/refactor/modules/bilibili.md) |
+| rankings | `src/lib/rankings/` | 加权算法 + 爬虫 | [`refactor/modules/rankings.md`](./docs/refactor/modules/rankings.md) · [PRD](./docs/prd/modules/02-rankings-prd.md) |
+| ai langchain-adapter | `src/lib/ai/langchain-adapter/` | 流式批处理 + 用量回调 | [`docs/AI模块/langchain系列/`](./docs/AI%E6%A8%A1%E5%9D%97/langchain%E7%B3%BB%E5%88%97/) |
+| rag | `src/lib/rag/` | 检索增强生成 | [`refactor/modules/rag.md`](./docs/refactor/modules/rag.md) |
+| multimodal | `src/lib/multimodal/` | 多模态结果融合 | [`refactor/modules/multimodal.md`](./docs/refactor/modules/multimodal.md) |
+| observability | `src/lib/observability/` | 日志 + 分布式锁 + 告警 | [`refactor/modules/observability.md`](./docs/refactor/modules/observability.md) |
 
 ---
 
-## Project Structure
+## 一句话简介
+
+AIHub 是一个个人级 AI 信息平台，把 **新闻聚合 / 模型排行 / B 站 UP 主追踪 / PPT 自动早报 / 多智能体会议** 五件事收拢在一个工作台里。
+
+**全量技术栈**：前端 Next.js 14 (App Router) + React 18 + TypeScript 5；后端 tRPC 11（端到端类型安全）+ Prisma 6 ORM；存储 PostgreSQL（开发退化为 SQLite）+ Cloudflare R2（文件）+ Upstash Redis（缓存/速率限制/分布式锁）；AI 路由走**直连 SDK**——`@langchain/core` 0.3 + `@langchain/anthropic` / `@langchain/openai` 处理流式批处理，叠加原生 `openai` / `@anthropic-ai/sdk` / `@google/generative-ai` 直连多 Provider（DeepSeek / Anthropic / Gemini）；鉴权用 NextAuth.js（GitHub OAuth + 本地开发默认账号）；UI 用基于 CSS 变量的主题系统（6 套预设 + HSL DIY）+ `@tabler/icons-react` 图标库；E2E 用 Playwright；APM 用 OpenTelemetry。
+
+**定位**：毕业设计 MVP（已上线 https://github.com/huaxuyimeng/AI-Hub），可作为个人 AI 工具箱使用。
+
+---
+
+## 项目结构
 
 ```
 aihub/
 ├── src/
-│   ├── app/                  # Next.js App Router pages
-│   │   ├── (app)/           #   Workbench: /news /rankings /meeting /projects
-│   │   ├── api/             #   REST endpoints (cron / upload / news)
-│   │   └── privacy/ terms/  #   Compliance pages
-│   ├── components/          # Shared UI (app-shell, theme-*, news/*, rankings/*)
-│   ├── features/            # Business modules (daily-briefing PPT engine, etc.)
-│   ├── lib/                 # Core libraries
-│   │   ├── ai/              #   LiteLLM routing / key resolver / model discovery / LangChain
-│   │   ├── news/            #   Multi-source fetch / intent search / health
-│   │   ├── bilibili/        #   WBI signature / Cookie / subtitle
-│   │   ├── rankings/        #   Algorithm / scraper / scheduler
-│   │   ├── slide-engine/    #   PPT IR / lint / rendering
-│   │   ├── meeting/         #   LangGraph state machine / nodes / streaming
-│   │   └── observability/   #   Logging / monitoring
-│   └── server/              # tRPC routers + context (multi-tenant / RBAC)
+│   ├── app/                  # Next.js App Router 页面
+│   │   ├── (app)/           #   工作台：/news /rankings /meeting /projects
+│   │   ├── api/             #   REST 端点（cron / upload / news）
+│   │   └── privacy/ terms/  #   合规页面
+│   ├── components/          # 共享 UI（app-shell、theme-*、news/*、rankings/*）
+│   ├── features/            # 业务模块（daily-briefing PPT 引擎等）
+│   ├── lib/                 # 核心库
+│   │   ├── ai/              #   LiteLLM 路由 / key 解析 / 模型发现 / LangChain
+│   │   ├── news/            #   多源抓取 / 意图搜索 / 健康度
+│   │   ├── bilibili/        #   WBI 签名 / Cookie / 字幕
+│   │   ├── rankings/        #   算法 / 爬虫 / 调度
+│   │   ├── slide-engine/    #   PPT IR / lint / 渲染
+│   │   ├── meeting/         #   LangGraph 状态机 / 节点 / 流式
+│   │   └── observability/   #   日志 / 监控
+│   └── server/              # tRPC routers + 上下文（多租户 / RBAC）
 ├── prisma/                  # schema / migrations / seed
-├── landing/                 # Static product demo pages
-├── docs/                    # Design docs / implementation records
-└── public/                  # Static assets
+├── landing/                 # 静态产品演示页
+├── docs/                    # 设计文档 / 实施记录
+└── public/                  # 静态资源
 ```
 
 ---
 
-## Quick Start
+## 快速开始
 
-### Environment Requirements
+### 环境要求
 
 - Node.js 18+
 - pnpm 8+
-- PostgreSQL 14+ (or SQLite for dev)
-- (Optional) Cloudflare R2 account
-- (Optional) Upstash Redis account
-- (Optional) Bilibili SESSDATA Cookie
+- PostgreSQL 14+（或开发环境用 SQLite）
+- （可选）Cloudflare R2 账号
+- （可选）Upstash Redis 账号
+- （可选）B 站 SESSDATA Cookie
 
-### Step 1: Initialize Database
+### 一、初始化数据库
 
 ```bash
-# Option A: Use SQLite for development
-# Default DATABASE_URL in .env.example points to local SQLite
+# 选项 A：开发环境使用 SQLite
+# .env.example 中的默认 DATABASE_URL 指向本地 SQLite
 
-# Option B: Use PostgreSQL
+# 选项 B：使用 PostgreSQL
 createdb aihub
 psql -d aihub -f prisma/seed.sql
 ```
 
-### Step 2: Install Dependencies
+### 二、安装依赖
 
 ```bash
 pnpm install
 ```
 
-### Step 3: Configure Environment
+### 三、配置环境变量
 
 ```bash
 cp .env.example .env
 ```
 
-Required variables:
-- `DATABASE_URL` — Database connection string
-- `NEXTAUTH_SECRET` — NextAuth session encryption
-- `CRON_SECRET` — Cron endpoint authentication
+必填变量：
+- `DATABASE_URL` — 数据库连接
+- `NEXTAUTH_SECRET` — NextAuth session 加密
+- `CRON_SECRET` — Cron 端点鉴权
 
-Recommended variables:
-- At least one AI Provider Key (DeepSeek / 智谱 / Anthropic / Kimi)
-- `R2_*` — Cloudflare R2 file storage
-- `UPSTASH_*` — Upstash Redis cache
-- `BILIBILI_SESSDATA` — Bilibili creator tracking
+推荐变量：
+- 至少一个 AI Provider Key（DeepSeek / 智谱 / Anthropic / Kimi）
+- `R2_*` — Cloudflare R2 文件存储
+- `UPSTASH_*` — Upstash Redis 缓存
+- `BILIBILI_SESSDATA` — B 站爬虫登录态
 
-### Step 4: Run Migrations
+### 四、运行数据库迁移
 
 ```bash
 pnpm prisma migrate dev
 ```
 
-### Step 5: Start Dev Server
+### 五、启动开发服务
 
 ```bash
 pnpm dev
@@ -181,85 +183,85 @@ pnpm dev
 
 ---
 
-## Test Account
+## 测试账号
 
-| Username | Password | Role | Note |
-|----------|----------|------|------|
-| `admin@local` | `admin123` | Administrator | Full access |
-| `user@local` | `user123` | Regular User | Workbench access |
+| 用户名 | 密码 | 角色 | 说明 |
+|--------|------|------|------|
+| `admin@local` | `admin123` | 管理员 | 全部权限 |
+| `user@local` | `user123` | 普通用户 | 工作台权限 |
 
-Run `pnpm seed` to populate demo data. (See `prisma/seed.ts`)
-
----
-
-## API Overview
-
-### News
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/news.list` | List news with filters (source, category, confidence) |
-| GET | `/api/news.byId` | News detail |
-| POST | `/api/news.refresh` | Manual trigger fetch |
-
-### Rankings
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/rankings.list` | Top models by weighted score |
-| GET | `/api/rankings.byModel` | Model detail + price history |
-| POST | `/api/rankings.refresh` | Daily scraper trigger |
-
-### Briefing
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/briefing.generate` | Generate today's PPT |
-| GET | `/api/briefing.history` | Recent briefings |
-
-### Meeting (Multi-Agent)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/meeting.create` | Create meeting with participants |
-| GET | `/api/meeting.stream` | SSE streaming output |
-| POST | `/api/meeting.conclude` | Finalize meeting |
-
-### Bilibili
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/bilibili.followed` | List followed creators |
-| POST | `/api/bilibili.refresh` | Refresh videos + subtitles |
-
-Full API documentation in `docs/API.md`.
+运行 `pnpm seed` 填充演示数据（见 `prisma/seed.ts`）。
 
 ---
 
-## Security Mechanisms
+## API 接口概览
 
-- **Multi-tenant Isolation** — every DB call goes through `createTenantPrisma(ctx)` which forces `tenantId` injection; missing tenant = rejected
-- **RBAC Permission Control** — front-end route guards + back-end interceptors, three roles (USER / MERCHANT-style / ADMIN)
-- **Soft Delete** — 9 whitelisted models include `deletedAt` (User / Project / ApiKey / Conversation / Score / InstalledPlugin / PluginAuditLog / UsageStat)
-- **AI Key Resolution** — single entry `src/lib/ai/key-resolver.ts`, components cannot read env directly
-- **Cron Authentication** — all cron endpoints require `CRON_SECRET` header
-- **Unified Error Handling** — tRPC error formatter maps internal errors to safe messages
-- **CORS Whitelist** — explicit origins only, no wildcard in production
+### 新闻
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/news.list` | 新闻列表（支持来源、分类、置信度筛选） |
+| GET | `/api/news.byId` | 新闻详情 |
+| POST | `/api/news.refresh` | 手动触发抓取 |
+
+### 模型排行
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/rankings.list` | 按加权分数返回 Top 模型 |
+| GET | `/api/rankings.byModel` | 模型详情 + 价格走势 |
+| POST | `/api/rankings.refresh` | 每日爬虫触发 |
+
+### 早报
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | `/api/briefing.generate` | 生成今日 PPT |
+| GET | `/api/briefing.history` | 历史早报 |
+
+### 会议（多智能体）
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| POST | `/api/meeting.create` | 创建会议并指定参与者 |
+| GET | `/api/meeting.stream` | SSE 流式输出 |
+| POST | `/api/meeting.conclude` | 结束会议 |
+
+### B 站
+| 方法 | 端点 | 说明 |
+|------|------|------|
+| GET | `/api/bilibili.followed` | 已关注 UP 主列表 |
+| POST | `/api/bilibili.refresh` | 刷新视频 + 字幕 |
+
+完整接口文档见 `docs/API.md`。
 
 ---
 
-## Production Deployment Checklist
+## 安全机制
 
-Before deploying to production, you **must** modify:
+- **多租户隔离** — 所有 DB 调用经 `createTenantPrisma(ctx)` 强制注入 `tenantId`，缺失即拒绝
+- **RBAC 权限控制** — 前端路由守卫 + 后端拦截器，三类角色（USER / 类商家 / ADMIN）
+- **软删除** — 白名单内 9 个模型含 `deletedAt`（User / Project / ApiKey / Conversation / Score / InstalledPlugin / PluginAuditLog / UsageStat）
+- **AI Key 解析** — 单一入口 `src/lib/ai/key-resolver.ts`，组件禁止直接读 env
+- **Cron 鉴权** — 所有 cron 端点要求 `CRON_SECRET` 请求头
+- **统一错误处理** — tRPC error formatter 把内部错误映射为安全消息
+- **CORS 白名单** — 仅放行明确的前端源，生产环境不开通通配符
 
-**Environment Variables:**
-- `NEXTAUTH_SECRET` — at least 32-character random string
-- `CRON_SECRET` — at least 32-character random string
-- `DATABASE_URL` — use strong password
-- AI Provider Keys — rotate regularly
+---
 
-**Security Hardening:**
-- Enable HTTPS, disable HTTP
-- Remove demo accounts (`admin@local`, `user@local`)
-- Configure CORS whitelist with your actual frontend domain
-- Review `.env.example` for any leaked secrets (none should exist)
+## 生产部署必读
 
-Generate secrets via:
+部署到生产前，**必须**修改：
+
+**环境变量：**
+- `NEXTAUTH_SECRET` — 至少 32 位随机字符串
+- `CRON_SECRET` — 至少 32 位随机字符串
+- `DATABASE_URL` — 使用强密码
+- AI Provider Keys — 定期轮换
+
+**安全加固：**
+- 启用 HTTPS，关闭 HTTP
+- 删除演示账号（`admin@local`、`user@local`）
+- 配置 CORS 白名单为你的真实前端域名
+- 复查 `.env.example` 是否泄露了任何真实密钥（理论上不应有）
+
+生成密钥：
 ```bash
 openssl rand -base64 32   # → NEXTAUTH_SECRET
 openssl rand -hex 32      # → CRON_SECRET
@@ -267,50 +269,50 @@ openssl rand -hex 32      # → CRON_SECRET
 
 ---
 
-## Development Guide
+## 二次开发指南
 
-### Adding a New Module (Example: "AI Tool Directory")
+### 新增一个模块（示例：AI 工具目录）
 
-**1. Database**
-- Add model to `prisma/schema.prisma`
-- Run `pnpm prisma migrate dev --name add-tool-directory`
+**1. 数据库**
+- 在 `prisma/schema.prisma` 添加 model
+- 运行 `pnpm prisma migrate dev --name add-tool-directory`
 
-**2. Backend (tRPC)**
-- Create router in `src/server/routers/tools.ts`
-- Register in `src/server/router.ts`
+**2. 后端（tRPC）**
+- 在 `src/server/routers/tools.ts` 创建 router
+- 在 `src/server/router.ts` 注册
 
-**3. Frontend (App Router)**
-- Create page in `src/app/(app)/tools/page.tsx`
-- Add nav entry in `src/components/app-shell/nav-config.ts`
+**3. 前端（App Router）**
+- 在 `src/app/(app)/tools/page.tsx` 创建页面
+- 在 `src/components/app-shell/nav-config.ts` 添加导航条目
 
-**4. Tests**
-- Add unit test in `src/lib/tools/__tests__/`
-- Add integration test in `src/server/routers/tools.test.ts`
+**4. 测试**
+- 在 `src/lib/tools/__tests__/` 添加单元测试
+- 在 `src/server/routers/tools.test.ts` 添加集成测试
 
-### Debugging Tips
+### 调试技巧
 
-- Backend logs: `src/lib/observability/logger.ts` — debug level for AI calls
-- Type checking: `pnpm typecheck`
-- Single test: `npx tsx src/path/to/file.test.ts`
+- 后端日志：`src/lib/observability/logger.ts` — AI 调用 debug 级别
+- 类型检查：`pnpm typecheck`
+- 单文件测试：`npx tsx src/path/to/file.test.ts`
 
 ---
 
-## Test Coverage
+## 测试覆盖
 
-| Test Suite | Cases |
-|-----------|-------|
-| typecheck | 0 errors |
-| Model Ranking Algorithm | All pass |
-| Usage Billing | All pass |
-| PPT Briefing IR | 59/59 |
-| Meeting Graph State Machine | 47/47 |
-| LangChain Streaming Batching | 20/20 |
-| Meeting Router Integration | 28/28 |
+| 测试套件 | 用例数 |
+|---------|-------|
+| typecheck | 0 错误 |
+| 模型排行算法 | 全部通过 |
+| 用量计费 | 全部通过 |
+| PPT 早报 IR | 59/59 |
+| Meeting Graph 状态机 | 47/47 |
+| LangChain 流式批处理 | 20/20 |
+| Meeting Router 集成 | 28/28 |
 | Chat Router | 19/19 |
-| Server Context (P0 Protection) | 4/4 |
-| Briefing Postprocessor | 16/16 |
+| Server Context（P0 防护） | 4/4 |
+| Briefing 后处理器 | 16/16 |
 
-Run all tests:
+运行全部测试：
 ```bash
 pnpm typecheck
 npx tsx src/lib/rankings/algorithm.test.ts
@@ -321,21 +323,21 @@ npx tsx src/server/context.test.ts
 
 ---
 
-## Build & Deploy
+## 构建部署
 
-### Frontend Build
+### 前端构建
 ```bash
 pnpm build
-# Output: .next/ directory
+# 产物：.next/ 目录
 ```
 
-### Docker (Optional)
+### Docker（可选）
 ```bash
 docker build -t aihub .
 docker run -p 3000:3000 aihub
 ```
 
-### Nginx Reverse Proxy Example
+### Nginx 反向代理示例
 
 ```nginx
 server {
@@ -352,25 +354,25 @@ server {
 
 ---
 
-## FAQ
+## 常见问题
 
-**Q1: Backend throws "Communications link failure"?**
-A: Check if PostgreSQL/SQLite is running. Verify `DATABASE_URL` in `.env`.
+**Q1：后端启动报 "Communications link failure"？**
+A：检查 PostgreSQL/SQLite 是否启动；核实 `.env` 中的 `DATABASE_URL`。
 
-**Q2: AI provider returns 401?**
-A: Provider API key is invalid or expired. Check `src/lib/ai/key-resolver.ts` and rotate key.
+**Q2：AI Provider 返回 401？**
+A：API Key 无效或过期。检查 `src/lib/ai/key-resolver.ts` 并轮换 Key。
 
-**Q3: Bilibili tracking returns 403?**
-A: `BILIBILI_SESSDATA` cookie expired. Re-login and update.
+**Q3：B 站爬虫返回 403？**
+A：`BILIBILI_SESSDATA` Cookie 过期。重新登录并更新。
 
-**Q4: PPT generation fails lint?**
-A: Check `src/lib/slide-engine/lint-rules/` for the failed rule. Usually means LLM-generated JSON doesn't match IR schema.
+**Q4：PPT 生成 lint 失败？**
+A：查看 `src/lib/slide-engine/lint-rules/` 中失败的规则。通常表示 LLM 生成的 JSON 不符合 IR schema。
 
-**Q5: How to add new AI provider?**
-A: Implement adapter in `src/lib/ai/router.ts`, register in provider list, add corresponding env var.
+**Q5：如何添加新的 AI Provider？**
+A：在 `src/lib/ai/router.ts` 实现适配器，在 Provider 列表中注册，并添加对应 env 变量。
 
 ---
 
-## License
+## 许可
 
 MIT © 2026 AIHub Authors
